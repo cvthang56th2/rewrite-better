@@ -12,10 +12,30 @@ document.addEventListener('DOMContentLoaded', async function() {
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault(); // Prevent default behavior (new line)
       
-      // Trigger the rewrite button click
-      const rewriteButton = document.getElementById("rewrite");
-      rewriteButton.click();
+      // Trigger the process button click
+      const processButton = document.getElementById("processBtn");
+      processButton.click();
     }
+  });
+  
+  // Handle mode switching
+  const modeRadios = document.querySelectorAll('input[name="mode"]');
+  const rewriteOptions = document.getElementById('rewriteOptions');
+  const formatOptions = document.getElementById('formatOptions');
+  const processBtn = document.getElementById('processBtn');
+  
+  modeRadios.forEach(radio => {
+    radio.addEventListener('change', function() {
+      if (this.value === 'rewrite') {
+        rewriteOptions.style.display = 'block';
+        formatOptions.style.display = 'none';
+        processBtn.textContent = 'Rewrite with Groq AI';
+      } else if (this.value === 'format') {
+        rewriteOptions.style.display = 'none';
+        formatOptions.style.display = 'block';
+        processBtn.textContent = 'Format Document';
+      }
+    });
   });
 });
 
@@ -135,10 +155,9 @@ function getApiKey() {
   });
 }
 
-document.getElementById("rewrite").addEventListener("click", async () => {
+document.getElementById("processBtn").addEventListener("click", async () => {
   const input = document.getElementById("input").value;
-  const tone = document.getElementById("tone").value;
-  const model = 'llama-3.1-8b-instant'; // Hardcoded model
+  const mode = document.querySelector('input[name="mode"]:checked').value;
   const resultDiv = document.getElementById("result");
   const copyBtn = document.getElementById("copyBtn");
   
@@ -147,7 +166,7 @@ document.getElementById("rewrite").addEventListener("click", async () => {
   
   // Check if input is empty
   if (!input.trim()) {
-    resultDiv.innerHTML = "❌ Vui lòng nhập văn bản cần viết lại.";
+    resultDiv.innerHTML = "❌ Vui lòng nhập văn bản cần xử lý.";
     return;
   }
   
@@ -169,7 +188,14 @@ document.getElementById("rewrite").addEventListener("click", async () => {
   
   resultDiv.innerHTML = "⏳ Đang xử lý...";
   
-  const prompt = `Rewrite the following text in a ${tone} tone. Return only the rewritten text without any additional comments or explanations:\n\n${input}`;
+  let prompt;
+  if (mode === 'rewrite') {
+    const tone = document.getElementById("tone").value;
+    prompt = `Rewrite the following text in a ${tone} tone. Return only the rewritten text without any additional comments or explanations:\n\n${input}`;
+  } else if (mode === 'format') {
+    const formatType = document.getElementById("formatType").value;
+    prompt = getFormatPrompt(formatType, input);
+  }
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -179,7 +205,7 @@ document.getElementById("rewrite").addEventListener("click", async () => {
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: model,
+        model: 'llama-3.1-8b-instant',
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
         max_tokens: 1024
@@ -216,12 +242,12 @@ document.getElementById("rewrite").addEventListener("click", async () => {
     }
 
     const data = await response.json();
-    const rewritten = data.choices?.[0]?.message?.content || "❌ Không thể tạo văn bản viết lại.";
+    const processedText = data.choices?.[0]?.message?.content || "❌ Không thể xử lý văn bản.";
 
-    resultDiv.innerText = rewritten;
+    resultDiv.innerText = processedText;
     
     // Show copy button if content was successfully generated
-    if (rewritten && !rewritten.startsWith("❌")) {
+    if (processedText && !processedText.startsWith("❌")) {
       copyBtn.style.display = "block";
     }
   } catch (error) {
@@ -240,6 +266,29 @@ document.getElementById("rewrite").addEventListener("click", async () => {
     copyBtn.style.display = "none";
   }
 });
+
+// Function to generate format prompts
+function getFormatPrompt(formatType, input) {
+  const formatPrompts = {
+    'markdown': `Convert the following text to well-structured Markdown format with appropriate headers, lists, emphasis, and formatting. Return only the formatted Markdown:\n\n${input}`,
+    
+    'html': `Convert the following text to clean, semantic HTML with appropriate tags, headings, paragraphs, and lists. Return only the HTML code:\n\n${input}`,
+    
+    'bullet-points': `Convert the following text into clear, concise bullet points. Organize the information hierarchically with main points and sub-points where appropriate. Return only the bullet points:\n\n${input}`,
+    
+    'numbered-list': `Convert the following text into a well-organized numbered list. Use hierarchical numbering (1, 2, 3, then a, b, c, etc.) where appropriate. Return only the numbered list:\n\n${input}`,
+    
+    'table': `Convert the following text into a well-formatted table. Identify the key information and organize it into appropriate columns and rows. Use markdown table format. Return only the table:\n\n${input}`,
+    
+    'outline': `Convert the following text into a detailed outline format with main topics, subtopics, and supporting details. Use standard outline formatting (I, A, 1, a, etc.). Return only the outline:\n\n${input}`,
+    
+    'summary': `Convert the following text into a professional executive summary with key points, main findings, and actionable insights. Keep it concise but comprehensive. Return only the summary:\n\n${input}`,
+    
+    'faq': `Convert the following text into a FAQ (Frequently Asked Questions) format. Extract key information and present it as questions and answers. Return only the FAQ:\n\n${input}`
+  };
+  
+  return formatPrompts[formatType] || formatPrompts['bullet-points'];
+}
 
 // Debug function to test API key
 async function testApiKey() {

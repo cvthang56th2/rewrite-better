@@ -16,15 +16,41 @@
   
   <textarea id="input" placeholder="Paste your text here..."></textarea>
   
-  <select id="tone">
-    <option value="friendly">Friendly</option>
-    <option value="professional">Professional</option>
-    <option value="concise">Concise</option>
-    <option value="persuasive">Persuasive</option>
-    <option value="casual">Casual</option>
-  </select>
+  <div class="mode-selector">
+    <label>
+      <input type="radio" name="mode" value="rewrite" checked>
+      <span>Rewrite Text</span>
+    </label>
+    <label>
+      <input type="radio" name="mode" value="format">
+      <span>Format Document</span>
+    </label>
+  </div>
   
-  <button id="rewrite">Rewrite with Groq AI</button>
+  <div id="rewriteOptions" class="mode-options">
+    <select id="tone">
+      <option value="friendly">Friendly</option>
+      <option value="professional">Professional</option>
+      <option value="concise">Concise</option>
+      <option value="persuasive">Persuasive</option>
+      <option value="casual">Casual</option>
+    </select>
+  </div>
+  
+  <div id="formatOptions" class="mode-options" style="display: none;">
+    <select id="formatType">
+      <option value="markdown">Markdown</option>
+      <option value="html">HTML</option>
+      <option value="bullet-points">Bullet Points</option>
+      <option value="numbered-list">Numbered List</option>
+      <option value="table">Table Format</option>
+      <option value="outline">Outline Format</option>
+      <option value="summary">Executive Summary</option>
+      <option value="faq">FAQ Format</option>
+    </select>
+  </div>
+  
+  <button id="processBtn">Rewrite with Groq AI</button>
   <button id="copyBtn" class="copy-btn" style="display: none;">📋 Copy to Clipboard</button>
   <div id="result"></div>
   <script src="popup.js"></script>
