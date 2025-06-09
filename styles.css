@@ -134,3 +134,26 @@ select:focus {
   max-height: 200px;
   overflow-y: auto;
 }
+
+.copy-btn {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: white;
+  font-size: 13px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.copy-btn:hover {
+  background: linear-gradient(135deg, #219a52, #27ae60);
+  transform: translateY(-1px);
+}
+
+.copy-btn:active {
+  transform: translateY(0px);
+}
+
+.copy-btn.copied {
+  background: linear-gradient(135deg, #e67e22, #f39c12);
+}

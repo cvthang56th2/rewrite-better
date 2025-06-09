@@ -28,6 +28,52 @@ document.getElementById("model").addEventListener("change", function() {
   chrome.storage.sync.set({ selectedModel: selectedModel });
 });
 
+// Copy button handler
+document.getElementById("copyBtn").addEventListener("click", async function() {
+  const resultDiv = document.getElementById("result");
+  const copyBtn = document.getElementById("copyBtn");
+  
+  if (!resultDiv.innerText.trim()) {
+    return;
+  }
+  
+  try {
+    await navigator.clipboard.writeText(resultDiv.innerText);
+    
+    // Show success feedback
+    const originalText = copyBtn.textContent;
+    copyBtn.textContent = "✅ Đã sao chép!";
+    copyBtn.classList.add("copied");
+    
+    // Reset button after 2 seconds
+    setTimeout(() => {
+      copyBtn.textContent = originalText;
+      copyBtn.classList.remove("copied");
+    }, 2000);
+    
+  } catch (error) {
+    console.error('Failed to copy text:', error);
+    
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = resultDiv.innerText;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    
+    // Show success feedback
+    const originalText = copyBtn.textContent;
+    copyBtn.textContent = "✅ Đã sao chép!";
+    copyBtn.classList.add("copied");
+    
+    setTimeout(() => {
+      copyBtn.textContent = originalText;
+      copyBtn.classList.remove("copied");
+    }, 2000);
+  }
+});
+
 // Check and display API key status
 async function checkApiKeyStatus() {
   const apiStatus = document.getElementById('apiStatus');
@@ -111,6 +157,10 @@ document.getElementById("rewrite").addEventListener("click", async () => {
   const tone = document.getElementById("tone").value;
   const model = document.getElementById("model").value;
   const resultDiv = document.getElementById("result");
+  const copyBtn = document.getElementById("copyBtn");
+  
+  // Hide copy button initially
+  copyBtn.style.display = "none";
   
   // Check if input is empty
   if (!input.trim()) {
@@ -124,17 +174,19 @@ document.getElementById("rewrite").addEventListener("click", async () => {
     apiKey = await getApiKey();
   } catch (error) {
     resultDiv.innerHTML = "❌ Lỗi truy cập cài đặt.";
+    copyBtn.style.display = "none";
     return;
   }
   
   if (!apiKey) {
     resultDiv.innerHTML = "❌ Chưa cấu hình Groq API Key. Vui lòng vào Cài đặt để nhập API Key.";
+    copyBtn.style.display = "none";
     return;
   }
   
   resultDiv.innerHTML = "⏳ Đang xử lý...";
   
-  const prompt = `Rewrite the following text in a ${tone} tone:\n\n"${input}"`;
+  const prompt = `Rewrite the following text in a ${tone} tone. Return only the rewritten text without any additional comments or explanations:\n\n${input}`;
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -176,6 +228,7 @@ document.getElementById("rewrite").addEventListener("click", async () => {
       }
       
       resultDiv.innerHTML = errorMessage;
+      copyBtn.style.display = "none";
       return;
     }
 
@@ -183,6 +236,11 @@ document.getElementById("rewrite").addEventListener("click", async () => {
     const rewritten = data.choices?.[0]?.message?.content || "❌ Không thể tạo văn bản viết lại.";
 
     resultDiv.innerText = rewritten;
+    
+    // Show copy button if content was successfully generated
+    if (rewritten && !rewritten.startsWith("❌")) {
+      copyBtn.style.display = "block";
+    }
   } catch (error) {
     console.error('Error:', error);
     
@@ -196,6 +254,7 @@ document.getElementById("rewrite").addEventListener("click", async () => {
     }
     
     resultDiv.innerHTML = errorMessage;
+    copyBtn.style.display = "none";
   }
 });
 
