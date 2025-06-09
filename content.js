@@ -27,6 +27,32 @@ window.addEventListener('message', (event) => {
   }
 });
 
+// Additional keyboard shortcut listener for direct key combination
+document.addEventListener('keydown', (e) => {
+  // Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac)
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
+    e.preventDefault();
+    
+    // Get selected text
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+    
+    // Set mouse position to center of viewport if not set from context menu
+    if (mousePosition.x === 0 && mousePosition.y === 0) {
+      mousePosition.x = window.innerWidth / 2;
+      mousePosition.y = window.innerHeight / 2;
+    }
+    
+    showInlinePopup(selectedText);
+  }
+  
+  // ESC key to close popup
+  if (e.key === 'Escape' && currentPopup) {
+    e.preventDefault();
+    closePopup();
+  }
+});
+
 function showInlinePopup(selectedText) {
   // Xóa popup cũ nếu có
   closePopup();

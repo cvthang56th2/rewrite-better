@@ -22,3 +22,23 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     });
   }
 });
+
+// Handle keyboard shortcut commands
+chrome.commands.onCommand.addListener((command, tab) => {
+  if (command === "open-rewrite-popup") {
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => {
+        // Get selected text
+        const selection = window.getSelection();
+        const selectedText = selection.toString().trim();
+        
+        // If no text selected, show popup with empty content
+        window.postMessage({
+          type: 'REWRITE_BETTER_SHOW_POPUP',
+          selectedText: selectedText || ''
+        }, '*');
+      }
+    });
+  }
+});

@@ -19,6 +19,15 @@
       "js": ["content.js"]
     }
   ],
+  "commands": {
+    "open-rewrite-popup": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+R",
+        "mac": "Command+Shift+R"
+      },
+      "description": "Open Rewrite Better popup with selected text"
+    }
+  },
   "options_page": "options.html",
   "icons": {
     "48": "icon.png"
