@@ -1,11 +1,31 @@
 // Check API key status on page load
 document.addEventListener('DOMContentLoaded', async function() {
   await checkApiKeyStatus();
+  await loadDefaultModel();
 });
+
+// Load default model selection
+async function loadDefaultModel() {
+  try {
+    const savedModel = await getSelectedModel();
+    const modelSelect = document.getElementById("model");
+    if (modelSelect && savedModel) {
+      modelSelect.value = savedModel;
+    }
+  } catch (error) {
+    console.error('Error loading default model:', error);
+  }
+}
 
 // Settings button handler
 document.getElementById("settingsBtn").addEventListener("click", function() {
   chrome.tabs.create({ url: chrome.runtime.getURL('options.html') });
+});
+
+// Model selector change handler
+document.getElementById("model").addEventListener("change", function() {
+  const selectedModel = this.value;
+  chrome.storage.sync.set({ selectedModel: selectedModel });
 });
 
 // Check and display API key status
@@ -15,13 +35,13 @@ async function checkApiKeyStatus() {
   try {
     const apiKey = await getApiKey();
     
-    if (apiKey && apiKey.startsWith('sk-')) {
+    if (apiKey && apiKey.startsWith('gsk_')) {
       // Test API key validity
       const isValid = await testApiKey();
       
       if (isValid) {
         apiStatus.textContent = '';
-        apiStatus.innerHTML = '<span>✅ API Key hoạt động bình thường</span>';
+        apiStatus.innerHTML = '<span>✅ Groq API Key hoạt động bình thường</span>';
         apiStatus.className = 'api-status success';
       } else {
         apiStatus.textContent = '';
@@ -39,7 +59,7 @@ async function checkApiKeyStatus() {
       }
     } else {
       apiStatus.textContent = '';
-      apiStatus.innerHTML = '<span>⚠️ Chưa cấu hình API Key. </span><a href="#" id="configureLink">Cấu hình ngay</a>';
+      apiStatus.innerHTML = '<span>⚠️ Chưa cấu hình Groq API Key. </span><a href="#" id="configureLink">Cấu hình ngay</a>';
       apiStatus.className = 'api-status warning';
       
       // Add click handler for configure link
@@ -63,11 +83,24 @@ async function checkApiKeyStatus() {
 // Get API key from storage
 function getApiKey() {
   return new Promise((resolve, reject) => {
-    chrome.storage.sync.get(['openaiApiKey'], function(result) {
+    chrome.storage.sync.get(['groqApiKey'], function(result) {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError);
       } else {
-        resolve(result.openaiApiKey || null);
+        resolve(result.groqApiKey || null);
+      }
+    });
+  });
+}
+
+// Get selected model from storage or use default
+function getSelectedModel() {
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync.get(['selectedModel'], function(result) {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(result.selectedModel || 'llama-3.1-70b-versatile');
       }
     });
   });
@@ -76,6 +109,7 @@ function getApiKey() {
 document.getElementById("rewrite").addEventListener("click", async () => {
   const input = document.getElementById("input").value;
   const tone = document.getElementById("tone").value;
+  const model = document.getElementById("model").value;
   const resultDiv = document.getElementById("result");
   
   // Check if input is empty
@@ -94,7 +128,7 @@ document.getElementById("rewrite").addEventListener("click", async () => {
   }
   
   if (!apiKey) {
-    resultDiv.innerHTML = "❌ Chưa cấu hình API Key. Vui lòng vào Cài đặt để nhập API Key.";
+    resultDiv.innerHTML = "❌ Chưa cấu hình Groq API Key. Vui lòng vào Cài đặt để nhập API Key.";
     return;
   }
   
@@ -103,17 +137,17 @@ document.getElementById("rewrite").addEventListener("click", async () => {
   const prompt = `Rewrite the following text in a ${tone} tone:\n\n"${input}"`;
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: model,
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
-        max_tokens: 1000
+        max_tokens: 1024
       })
     });
 
@@ -121,7 +155,7 @@ document.getElementById("rewrite").addEventListener("click", async () => {
       const errorData = await response.json().catch(() => ({}));
       console.error('API Error:', response.status, errorData);
       
-      let errorMessage = "❌ Lỗi API: ";
+      let errorMessage = "❌ Lỗi Groq API: ";
       switch (response.status) {
         case 401:
           errorMessage += "API Key không hợp lệ hoặc đã hết hạn.";
@@ -135,7 +169,7 @@ document.getElementById("rewrite").addEventListener("click", async () => {
         case 500:
         case 502:
         case 503:
-          errorMessage += "Lỗi server OpenAI. Vui lòng thử lại sau.";
+          errorMessage += "Lỗi server Groq. Vui lòng thử lại sau.";
           break;
         default:
           errorMessage += `HTTP ${response.status} - ${errorData?.error?.message || 'Lỗi không xác định'}`;
@@ -177,7 +211,7 @@ async function testApiKey() {
     console.log('🔑 API Key found:', apiKey.substring(0, 10) + '...' + apiKey.substring(apiKey.length - 4));
     
     // Test with a simple request
-    const response = await fetch("https://api.openai.com/v1/models", {
+    const response = await fetch("https://api.groq.com/openai/v1/models", {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${apiKey}`
@@ -185,11 +219,11 @@ async function testApiKey() {
     });
     
     if (response.ok) {
-      console.log('✅ API Key is valid');
+      console.log('✅ Groq API Key is valid');
       return true;
     } else {
       const errorData = await response.json().catch(() => ({}));
-      console.log('❌ API Key test failed:', response.status, errorData);
+      console.log('❌ Groq API Key test failed:', response.status, errorData);
       return false;
     }
   } catch (error) {
