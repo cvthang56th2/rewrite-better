@@ -89,7 +89,7 @@ function showInlinePopup(selectedText) {
     </div>
     
     <div style="padding: 16px; flex: 1; overflow-y: auto;">
-      <textarea id="popupInput" style="width: 100%; height: 80px; border: 1px solid #ddd; border-radius: 4px; padding: 8px; font-size: 14px; resize: vertical; box-sizing: border-box;" placeholder="Your text will appear here...">${selectedText}</textarea>
+      <textarea id="popupInput" style="width: 100%; height: 80px; border: 1px solid #ddd; border-radius: 4px; padding: 8px; font-size: 14px; resize: vertical; box-sizing: border-box;" placeholder="Your text will appear here... (Alt+Enter hoặc Option+Enter để submit)">${selectedText}</textarea>
       
       <div style="margin: 12px 0;">
         <select id="popupTone" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
@@ -147,6 +147,20 @@ function showInlinePopup(selectedText) {
 
   // Event listeners
   document.getElementById('closePopup').addEventListener('click', closePopup);
+
+  // Add keyboard shortcut listener for Control+Enter or Command+Enter in popup textarea
+  document.getElementById('popupInput').addEventListener('keydown', function(event) {
+    // Check for Control+Enter (Windows) or Option+Enter (macOS)
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault(); // Prevent default behavior (new line)
+      
+      // Trigger the rewrite button click
+      const rewriteButton = document.getElementById('popupRewrite');
+      if (!rewriteButton.disabled) {
+        rewriteButton.click();
+      }
+    }
+  });
 
   document.getElementById('popupRewrite').addEventListener('click', async () => {
     const input = document.getElementById('popupInput').value;

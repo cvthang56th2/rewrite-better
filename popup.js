@@ -1,6 +1,19 @@
 // Check API key status on page load
 document.addEventListener('DOMContentLoaded', async function() {
   await checkApiKeyStatus();
+  
+  // Add keyboard shortcut listener for Alt+Enter or Option+Enter
+  const inputTextarea = document.getElementById("input");
+  inputTextarea.addEventListener("keydown", function(event) {
+    // Check for Control+Enter (Windows) or Command+Enter (macOS)
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault(); // Prevent default behavior (new line)
+      
+      // Trigger the rewrite button click
+      const rewriteButton = document.getElementById("rewrite");
+      rewriteButton.click();
+    }
+  });
 });
 
 // Settings button handler
