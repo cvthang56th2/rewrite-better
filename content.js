@@ -29,8 +29,8 @@ window.addEventListener('message', (event) => {
 
 // Additional keyboard shortcut listener for direct key combination
 document.addEventListener('keydown', (e) => {
-  // Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (Mac)
-  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'r') {
+  // Ctrl+Shift+E (Windows/Linux) or Cmd+Shift+E (Mac)
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'e') {
     e.preventDefault();
     
     // Get selected text

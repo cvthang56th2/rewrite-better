@@ -22,8 +22,8 @@
   "commands": {
     "open-rewrite-popup": {
       "suggested_key": {
-        "default": "Ctrl+Shift+R",
-        "mac": "Command+Shift+R"
+        "default": "Ctrl+Shift+E",
+        "mac": "Command+Shift+E"
       },
       "description": "Open Rewrite Better popup with selected text"
     }
