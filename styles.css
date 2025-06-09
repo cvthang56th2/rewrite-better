@@ -1,3 +1,31 @@
+:root {
+  /* Light theme colors */
+  --bg-color: #ffffff;
+  --text-color: #2c3e50;
+  --border-color: #e0e6ed;
+  --hover-bg: #f0f0f0;
+  --result-bg: #f8f9fa;
+  --result-border: #e9ecef;
+  --input-bg: #ffffff;
+  --secondary-text: #7f8c8d;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark theme colors */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1e1e1e;
+    --text-color: #e8e8e8;
+    --border-color: #404040;
+    --hover-bg: #2d2d2d;
+    --result-bg: #2d2d2d;
+    --result-border: #404040;
+    --input-bg: #2d2d2d;
+    --secondary-text: #b0b0b0;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+  }
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   padding: 15px;
@@ -6,6 +34,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .header {
@@ -18,7 +48,7 @@ body {
 h1 {
   margin: 0;
   font-size: 18px;
-  color: #2c3e50;
+  color: var(--text-color);
 }
 
 .settings-btn {
@@ -31,10 +61,11 @@ h1 {
   transition: background-color 0.2s;
   width: auto;
   margin: 0;
+  color: var(--text-color);
 }
 
 .settings-btn:hover {
-  background-color: #f0f0f0;
+  background-color: var(--hover-bg);
 }
 
 .api-status {
@@ -53,16 +84,40 @@ h1 {
   border: 1px solid #c3e6cb;
 }
 
+@media (prefers-color-scheme: dark) {
+  .api-status.success {
+    background-color: #1e3a25;
+    color: #75dd8b;
+    border: 1px solid #2d5a34;
+  }
+}
+
 .api-status.warning {
   background-color: #fff3cd;
   color: #856404;
   border: 1px solid #ffeaa7;
 }
 
+@media (prefers-color-scheme: dark) {
+  .api-status.warning {
+    background-color: #3d3316;
+    color: #ffdd57;
+    border: 1px solid #5a4a1f;
+  }
+}
+
 .api-status.error {
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
+}
+
+@media (prefers-color-scheme: dark) {
+  .api-status.error {
+    background-color: #3d1a1e;
+    color: #ff6b7a;
+    border: 1px solid #5a2429;
+  }
 }
 
 .api-status a {
@@ -75,12 +130,14 @@ textarea {
   width: 100%;
   height: 100px;
   margin-bottom: 10px;
-  border: 2px solid #e0e6ed;
+  border: 2px solid var(--border-color);
   border-radius: 6px;
   padding: 10px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
   resize: vertical;
   box-sizing: border-box;
+  background-color: var(--input-bg);
+  color: var(--text-color);
 }
 
 textarea:focus {
@@ -92,10 +149,12 @@ select, button {
   width: 100%;
   margin-bottom: 10px;
   padding: 10px;
-  border: 2px solid #e0e6ed;
+  border: 2px solid var(--border-color);
   border-radius: 6px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
   box-sizing: border-box;
+  background-color: var(--input-bg);
+  color: var(--text-color);
 }
 
 button {
@@ -124,15 +183,16 @@ select:focus {
 }
 
 #result {
-  background: #f8f9fa;
+  background: var(--result-bg);
   padding: 15px;
   white-space: pre-wrap;
   border-radius: 6px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--result-border);
   font-size: 14px;
   line-height: 1.5;
   max-height: 200px;
   overflow-y: auto;
+  color: var(--text-color);
 }
 
 .copy-btn {
@@ -170,7 +230,7 @@ select:focus {
   align-items: center;
   cursor: pointer;
   font-size: 14px;
-  color: #2c3e50;
+  color: var(--text-color);
 }
 
 .mode-selector input[type="radio"] {
@@ -184,4 +244,61 @@ select:focus {
 
 .mode-options select {
   margin-bottom: 0;
+}
+
+/* Translation feature styles */
+.translate-section {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border-color);
+}
+
+.translate-checkbox {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-color);
+  margin-bottom: 12px;
+}
+
+.translate-checkbox input[type="checkbox"] {
+  margin-right: 8px;
+  width: auto;
+  margin-bottom: 0;
+}
+
+.translate-options {
+  transition: all 0.3s ease;
+}
+
+.language-selectors {
+  display: flex;
+  gap: 10px;
+}
+
+.language-selector {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.language-selector label {
+  font-size: 12px;
+  color: var(--secondary-text);
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.language-selector select {
+  margin-bottom: 0;
+  padding: 8px;
+  font-size: 13px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.language-selector select:focus {
+  border-color: #3498db;
 }

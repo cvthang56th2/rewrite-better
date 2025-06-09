@@ -101,13 +101,65 @@ function showInlinePopup(selectedText) {
         </select>
       </div>
       
+      <div style="margin: 12px 0; padding-top: 12px; border-top: 1px solid #eee;">
+        <label style="display: flex; align-items: center; cursor: pointer; font-size: 14px; color: black; margin-bottom: 10px;">
+          <input type="checkbox" id="popupEnableTranslate" style="margin-right: 8px; width: auto;">
+          <span>Enable Translation</span>
+        </label>
+        
+        <div id="popupTranslateOptions" style="display: none;">
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <div style="flex: 1;">
+              <label style="font-size: 12px; color: #666; margin-bottom: 4px; display: block;">From:</label>
+              <select id="popupFromLanguage" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; background: white; color: black; font-size: 13px;">
+                <option value="auto">Auto Detect</option>
+                <option value="en">English</option>
+                <option value="vi">Vietnamese</option>
+                <option value="zh">Chinese</option>
+                <option value="ja">Japanese</option>
+                <option value="ko">Korean</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="es">Spanish</option>
+                <option value="it">Italian</option>
+                <option value="pt">Portuguese</option>
+                <option value="ru">Russian</option>
+                <option value="ar">Arabic</option>
+                <option value="hi">Hindi</option>
+                <option value="th">Thai</option>
+              </select>
+            </div>
+            
+            <div style="flex: 1;">
+              <label style="font-size: 12px; color: #666; margin-bottom: 4px; display: block;">To:</label>
+              <select id="popupToLanguage" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; background: white; color: black; font-size: 13px;">
+                <option value="en">English</option>
+                <option value="vi">Vietnamese</option>
+                <option value="zh">Chinese</option>
+                <option value="ja">Japanese</option>
+                <option value="ko">Korean</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="es">Spanish</option>
+                <option value="it">Italian</option>
+                <option value="pt">Portuguese</option>
+                <option value="ru">Russian</option>
+                <option value="ar">Arabic</option>
+                <option value="hi">Hindi</option>
+                <option value="th">Thai</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <button id="popupRewrite" style="width: 100%; padding: 10px; background: #007acc; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-bottom: 8px; box-sizing: border-box;">
         Rewrite with Groq AI
       </button>
       
       <div id="popupResult" style="margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 4px; display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <strong>Rewritten Text:</strong>
+          <strong style="color: black;">Rewritten Text:</strong>
           <button id="popupCopy" style="background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">Copy</button>
         </div>
         <div id="popupResultText" style="line-height: 1.5; max-height: 200px; overflow-y: auto; word-wrap: break-word;color: black;"></div>
@@ -160,6 +212,18 @@ function showInlinePopup(selectedText) {
   // Event listeners
   document.getElementById('closePopup').addEventListener('click', closePopup);
 
+  // Handle translation checkbox
+  const popupEnableTranslate = document.getElementById('popupEnableTranslate');
+  const popupTranslateOptions = document.getElementById('popupTranslateOptions');
+  
+  popupEnableTranslate.addEventListener('change', function() {
+    if (this.checked) {
+      popupTranslateOptions.style.display = 'block';
+    } else {
+      popupTranslateOptions.style.display = 'none';
+    }
+  });
+
   // Add keyboard shortcut listener for Control+Enter or Command+Enter in popup textarea
   document.getElementById('popupInput').addEventListener('keydown', function(event) {
     // Check for Control+Enter (Windows) or Option+Enter (macOS)
@@ -178,6 +242,7 @@ function showInlinePopup(selectedText) {
     const input = document.getElementById('popupInput').value;
     const model = 'llama-3.1-8b-instant'; // Hardcoded model
     const tone = document.getElementById('popupTone').value;
+    const enableTranslate = document.getElementById('popupEnableTranslate').checked;
     
     if (!input.trim()) {
       alert('Please enter some text to rewrite.');
@@ -190,7 +255,15 @@ function showInlinePopup(selectedText) {
     document.getElementById('popupRewrite').disabled = true;
 
     try {
-      const result = await rewriteText(input, model, tone);
+      let translationOptions = null;
+      if (enableTranslate) {
+        translationOptions = {
+          fromLanguage: document.getElementById('popupFromLanguage').value,
+          toLanguage: document.getElementById('popupToLanguage').value
+        };
+      }
+      
+      const result = await rewriteText(input, model, tone, translationOptions);
       document.getElementById('popupResultText').textContent = result;
       document.getElementById('popupResult').style.display = 'block';
     } catch (error) {
@@ -228,7 +301,7 @@ function showInlinePopup(selectedText) {
   }, 100);
 }
 
-async function rewriteText(text, model, tone) {
+async function rewriteText(text, model, tone, translationOptions = null) {
   return new Promise((resolve, reject) => {
     // Check if chrome APIs are available
     if (typeof chrome === 'undefined') {
@@ -253,6 +326,43 @@ async function rewriteText(text, model, tone) {
       }
 
       try {
+        let systemPrompt;
+        let userPrompt;
+        
+        if (translationOptions) {
+          // Create language mapping for better prompts
+          const languageNames = {
+            'auto': 'automatically detected language',
+            'en': 'English',
+            'vi': 'Vietnamese',
+            'zh': 'Chinese',
+            'ja': 'Japanese',
+            'ko': 'Korean',
+            'fr': 'French',
+            'de': 'German',
+            'es': 'Spanish',
+            'it': 'Italian',
+            'pt': 'Portuguese',
+            'ru': 'Russian',
+            'ar': 'Arabic',
+            'hi': 'Hindi',
+            'th': 'Thai'
+          };
+          
+          const fromLangName = languageNames[translationOptions.fromLanguage] || translationOptions.fromLanguage;
+          const toLangName = languageNames[translationOptions.toLanguage] || translationOptions.toLanguage;
+          
+          if (translationOptions.fromLanguage === 'auto') {
+            systemPrompt = `You are a helpful translation and writing assistant. First, translate the given text to ${toLangName}, then rewrite it in a ${tone} tone. The output should be in ${toLangName} and maintain a ${tone} style. Only return the final rewritten text without any explanations or additional comments.`;
+          } else {
+            systemPrompt = `You are a helpful translation and writing assistant. First, translate the given text from ${fromLangName} to ${toLangName}, then rewrite it in a ${tone} tone. The output should be in ${toLangName} and maintain a ${tone} style. Only return the final rewritten text without any explanations or additional comments.`;
+          }
+          userPrompt = text;
+        } else {
+          systemPrompt = `You are a helpful writing assistant. Rewrite the given text in a ${tone} tone. Keep the meaning intact but improve clarity, grammar, and style. Only return the rewritten text without any explanations or additional comments.`;
+          userPrompt = text;
+        }
+
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -263,11 +373,11 @@ async function rewriteText(text, model, tone) {
             messages: [
               {
                 role: 'system',
-                content: `You are a helpful writing assistant. Rewrite the given text in a ${tone} tone. Keep the meaning intact but improve clarity, grammar, and style. Only return the rewritten text without any explanations or additional comments.`
+                content: systemPrompt
               },
               {
                 role: 'user',
-                content: text
+                content: userPrompt
               }
             ],
             model: model,

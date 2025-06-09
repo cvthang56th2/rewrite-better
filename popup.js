@@ -37,6 +37,20 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
     });
   });
+  
+  // Handle translation checkbox
+  const enableTranslateCheckbox = document.getElementById('enableTranslate');
+  const translateOptions = document.getElementById('translateOptions');
+  
+  if (enableTranslateCheckbox && translateOptions) {
+    enableTranslateCheckbox.addEventListener('change', function() {
+      if (this.checked) {
+        translateOptions.style.display = 'block';
+      } else {
+        translateOptions.style.display = 'none';
+      }
+    });
+  }
 });
 
 // Settings button handler
@@ -211,7 +225,42 @@ document.getElementById("processBtn").addEventListener("click", async () => {
   let prompt;
   if (mode === 'rewrite') {
     const tone = document.getElementById("tone").value;
-    prompt = `Rewrite the following text in a ${tone} tone. Return only the rewritten text without any additional comments or explanations:\n\n${input}`;
+    const enableTranslate = document.getElementById("enableTranslate").checked;
+    
+    if (enableTranslate) {
+      const fromLanguage = document.getElementById("fromLanguage").value;
+      const toLanguage = document.getElementById("toLanguage").value;
+      
+      // Create language mapping for better prompts
+      const languageNames = {
+        'auto': 'automatically detected language',
+        'en': 'English',
+        'vi': 'Vietnamese',
+        'zh': 'Chinese',
+        'ja': 'Japanese',
+        'ko': 'Korean',
+        'fr': 'French',
+        'de': 'German',
+        'es': 'Spanish',
+        'it': 'Italian',
+        'pt': 'Portuguese',
+        'ru': 'Russian',
+        'ar': 'Arabic',
+        'hi': 'Hindi',
+        'th': 'Thai'
+      };
+      
+      const fromLangName = languageNames[fromLanguage] || fromLanguage;
+      const toLangName = languageNames[toLanguage] || toLanguage;
+      
+      if (fromLanguage === 'auto') {
+        prompt = `First, translate the following text to ${toLangName}, then rewrite it in a ${tone} tone. The output should be in ${toLangName} and maintain a ${tone} style. Return only the final rewritten text without any explanations:\n\n${input}`;
+      } else {
+        prompt = `First, translate the following text from ${fromLangName} to ${toLangName}, then rewrite it in a ${tone} tone. The output should be in ${toLangName} and maintain a ${tone} style. Return only the final rewritten text without any explanations:\n\n${input}`;
+      }
+    } else {
+      prompt = `Rewrite the following text in a ${tone} tone. Return only the rewritten text without any additional comments or explanations:\n\n${input}`;
+    }
   } else if (mode === 'format') {
     const formatType = document.getElementById("formatType").value;
     prompt = getFormatPrompt(formatType, input);
