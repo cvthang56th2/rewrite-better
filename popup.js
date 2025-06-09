@@ -1,31 +1,11 @@
 // Check API key status on page load
 document.addEventListener('DOMContentLoaded', async function() {
   await checkApiKeyStatus();
-  await loadDefaultModel();
 });
-
-// Load default model selection
-async function loadDefaultModel() {
-  try {
-    const savedModel = await getSelectedModel();
-    const modelSelect = document.getElementById("model");
-    if (modelSelect && savedModel) {
-      modelSelect.value = savedModel;
-    }
-  } catch (error) {
-    console.error('Error loading default model:', error);
-  }
-}
 
 // Settings button handler
 document.getElementById("settingsBtn").addEventListener("click", function() {
   chrome.tabs.create({ url: chrome.runtime.getURL('options.html') });
-});
-
-// Model selector change handler
-document.getElementById("model").addEventListener("change", function() {
-  const selectedModel = this.value;
-  chrome.storage.sync.set({ selectedModel: selectedModel });
 });
 
 // Copy button handler
@@ -139,23 +119,10 @@ function getApiKey() {
   });
 }
 
-// Get selected model from storage or use default
-function getSelectedModel() {
-  return new Promise((resolve, reject) => {
-    chrome.storage.sync.get(['selectedModel'], function(result) {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(result.selectedModel || 'llama-3.1-70b-versatile');
-      }
-    });
-  });
-}
-
 document.getElementById("rewrite").addEventListener("click", async () => {
   const input = document.getElementById("input").value;
   const tone = document.getElementById("tone").value;
-  const model = document.getElementById("model").value;
+  const model = 'llama-3.1-8b-instant'; // Hardcoded model
   const resultDiv = document.getElementById("result");
   const copyBtn = document.getElementById("copyBtn");
   

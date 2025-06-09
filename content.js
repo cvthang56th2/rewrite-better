@@ -92,11 +92,6 @@ function showInlinePopup(selectedText) {
       <textarea id="popupInput" style="width: 100%; height: 80px; border: 1px solid #ddd; border-radius: 4px; padding: 8px; font-size: 14px; resize: vertical; box-sizing: border-box;" placeholder="Your text will appear here...">${selectedText}</textarea>
       
       <div style="margin: 12px 0;">
-        <select id="popupModel" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; box-sizing: border-box;">
-          <option value="llama-3.1-8b-instant">Llama 3.1 8B (Fastest)</option>
-          <option value="mixtral-8x7b-32768">Mixtral 8x7B (Good Balance)</option>
-        </select>
-        
         <select id="popupTone" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
           <option value="friendly">Friendly</option>
           <option value="professional">Professional</option>
@@ -155,7 +150,7 @@ function showInlinePopup(selectedText) {
 
   document.getElementById('popupRewrite').addEventListener('click', async () => {
     const input = document.getElementById('popupInput').value;
-    const model = document.getElementById('popupModel').value;
+    const model = 'llama-3.1-8b-instant'; // Hardcoded model
     const tone = document.getElementById('popupTone').value;
     
     if (!input.trim()) {
