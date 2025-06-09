@@ -89,10 +89,10 @@ function showInlinePopup(selectedText) {
     </div>
     
     <div style="padding: 16px; flex: 1; overflow-y: auto;">
-      <textarea id="popupInput" style="width: 100%; height: 80px; border: 1px solid #ddd; border-radius: 4px; padding: 8px; font-size: 14px; resize: vertical; box-sizing: border-box;" placeholder="Your text will appear here... (Alt+Enter hoặc Option+Enter để submit)">${selectedText}</textarea>
+      <textarea id="popupInput" style="width: 100%; height: 80px; border: 1px solid #ddd; border-radius: 4px; padding: 8px; font-size: 14px; resize: vertical; box-sizing: border-box;background: white; color: black;" placeholder="Your text will appear here... ">${selectedText}</textarea>
       
       <div style="margin: 12px 0;">
-        <select id="popupTone" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        <select id="popupTone" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;background: white; color: black;">
           <option value="friendly">Friendly</option>
           <option value="professional">Professional</option>
           <option value="concise">Concise</option>
@@ -110,7 +110,7 @@ function showInlinePopup(selectedText) {
           <strong>Rewritten Text:</strong>
           <button id="popupCopy" style="background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">Copy</button>
         </div>
-        <div id="popupResultText" style="line-height: 1.5; max-height: 200px; overflow-y: auto; word-wrap: break-word;"></div>
+        <div id="popupResultText" style="line-height: 1.5; max-height: 200px; overflow-y: auto; word-wrap: break-word;color: black;"></div>
       </div>
       
       <div id="popupLoading" style="text-align: center; padding: 20px; display: none;">
