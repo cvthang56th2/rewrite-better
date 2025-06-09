@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rewrite Better</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="header">
+    <h1>Rewrite Better</h1>
+    <button id="settingsBtn" class="settings-btn" title="Cài đặt">⚙️</button>
+  </div>
+  
+  <div id="apiStatus" class="api-status"></div>
+  
+  <textarea id="input" placeholder="Paste your text here..."></textarea>
+  <select id="tone">
+    <option value="professional">Professional</option>
+    <option value="friendly">Friendly</option>
+    <option value="concise">Concise</option>
+    <option value="persuasive">Persuasive</option>
+    <option value="casual">Casual</option>
+  </select>
+  <button id="rewrite">Rewrite</button>
+  <div id="result"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+
+{
+  "manifest_version": 3,
+  "name": "Rewrite Better",
+  "version": "1.0",
+  "description": "Rewrite selected text using AI",
+  "permissions": ["contextMenus", "activeTab", "scripting", "storage"],
+  "host_permissions": ["https://api.openai.com/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "options_page": "options.html",
+  "icons": {
+    "48": "icon.png"
+  }
+}
