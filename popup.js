@@ -2,8 +2,11 @@
 document.addEventListener('DOMContentLoaded', async function() {
   await checkApiKeyStatus();
   
-  // Add keyboard shortcut listener for Alt+Enter or Option+Enter
+  // Focus on input and scroll to bottom
   const inputTextarea = document.getElementById("input");
+  inputTextarea.focus();
+  
+  // Add keyboard shortcut listener for Alt+Enter or Option+Enter
   inputTextarea.addEventListener("keydown", function(event) {
     // Check for Control+Enter (Windows) or Command+Enter (macOS)
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {

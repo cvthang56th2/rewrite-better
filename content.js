@@ -136,6 +136,18 @@ function showInlinePopup(selectedText) {
   document.body.appendChild(popup);
   currentPopup = popup;
 
+  // Focus on the input textarea after popup is created
+  setTimeout(() => {
+    const inputElement = document.getElementById('popupInput');
+    if (inputElement) {
+      inputElement.focus();
+      // Move cursor to end of text if there's selected text
+      inputElement.setSelectionRange(inputElement.value.length, inputElement.value.length);
+      // Scroll to bottom to ensure cursor is visible
+      inputElement.scrollTop = inputElement.scrollHeight;
+    }
+  }, 100);
+
   // Đảm bảo popup không bị cắt khỏi màn hình
   const rect = popup.getBoundingClientRect();
   if (rect.right > window.innerWidth) {
