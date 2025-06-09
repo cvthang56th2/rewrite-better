@@ -41,6 +41,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 // Settings button handler
 document.getElementById("settingsBtn").addEventListener("click", function() {
+  if (typeof chrome === 'undefined' || !chrome.tabs) {
+    alert('Chrome extension APIs are not available. Please reload the extension.');
+    return;
+  }
   chrome.tabs.create({ url: chrome.runtime.getURL('options.html') });
 });
 
@@ -145,6 +149,22 @@ async function checkApiKeyStatus() {
 // Get API key from storage
 function getApiKey() {
   return new Promise((resolve, reject) => {
+    // Check if chrome APIs are available
+    if (typeof chrome === 'undefined') {
+      reject(new Error('Chrome extension APIs are not available. Please make sure the extension is properly loaded.'));
+      return;
+    }
+    
+    if (!chrome.storage) {
+      reject(new Error('Chrome storage API is not available. Please check extension permissions.'));
+      return;
+    }
+    
+    if (!chrome.storage.sync) {
+      reject(new Error('Chrome storage.sync API is not available. Please check extension permissions.'));
+      return;
+    }
+    
     chrome.storage.sync.get(['groqApiKey'], function(result) {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError);

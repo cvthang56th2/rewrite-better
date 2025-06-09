@@ -230,7 +230,23 @@ function showInlinePopup(selectedText) {
 
 async function rewriteText(text, model, tone) {
   return new Promise((resolve, reject) => {
+    // Check if chrome APIs are available
+    if (typeof chrome === 'undefined') {
+      reject(new Error('Chrome extension APIs are not available. Please reload the extension.'));
+      return;
+    }
+    
+    if (!chrome.storage || !chrome.storage.sync) {
+      reject(new Error('Chrome storage API is not available. Please check extension permissions.'));
+      return;
+    }
+    
     chrome.storage.sync.get(['groqApiKey'], async (result) => {
+      if (chrome.runtime.lastError) {
+        reject(new Error('Error accessing storage: ' + chrome.runtime.lastError.message));
+        return;
+      }
+      
       if (!result.groqApiKey) {
         reject(new Error('Please set your Groq API key in the extension options.'));
         return;
