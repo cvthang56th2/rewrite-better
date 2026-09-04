@@ -12,7 +12,7 @@ A Chrome extension that rewrites, translates, and formats text using [Groq AI](h
 - **Document formatting** — Convert text to Markdown, HTML, bullet points, tables, outlines, FAQ, and more
 - **Copy to clipboard** — One-click copy of rewritten output
 
-Powered by Groq's `llama-3.1-8b-instant` model. Groq currently offers free API access — no paid plan required to get started.
+Powered by Groq's `openai/gpt-oss-20b` model. Groq currently offers free API access — no paid plan required to get started.
 
 ## Installation
 

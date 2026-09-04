@@ -240,7 +240,7 @@ function showInlinePopup(selectedText) {
 
   document.getElementById('popupRewrite').addEventListener('click', async () => {
     const input = document.getElementById('popupInput').value;
-    const model = 'llama-3.1-8b-instant'; // Hardcoded model
+    const model = 'openai/gpt-oss-20b'; // Hardcoded model
     const tone = document.getElementById('popupTone').value;
     const enableTranslate = document.getElementById('popupEnableTranslate').checked;
     
