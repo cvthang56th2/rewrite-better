@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D29EE9E49E524BDA889C135B /* GhostTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A05D826D6E54F72819E4F0B /* GhostTextEditor.swift */; };
+		40BCE9C5568E4F9DAF33B18A /* WritingAssistController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F91DC3B9F89B4D19B71AFB3C /* WritingAssistController.swift */; };
+		122D3339B4064351B388A889 /* WritingAssistPrompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCC9796F789A4BA18AC4F67A /* WritingAssistPrompts.swift */; };
+		F9A75B4C80C3493EA6F6B0CF /* WritingIssue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7119AFD4F3144E90AB31D235 /* WritingIssue.swift */; };
 		3A2B4FAB5CA748CE9854EDD1 /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B84780C0A28947E9A34E0DA3 /* LaunchAtLogin.swift */; };
 		13B35682E64B41C49BA4AFCA /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52BAC7AD04A9483693AD7DDF /* ServiceManagement.framework */; };
 		A2B06F99D9E14A1DBDEAC50C /* RewriteBetterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F7C752CA364E57B7CA27F1 /* RewriteBetterApp.swift */; };
@@ -26,6 +30,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3A05D826D6E54F72819E4F0B /* GhostTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhostTextEditor.swift; sourceTree = "<group>"; };
+		F91DC3B9F89B4D19B71AFB3C /* WritingAssistController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WritingAssistController.swift; sourceTree = "<group>"; };
+		CCC9796F789A4BA18AC4F67A /* WritingAssistPrompts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WritingAssistPrompts.swift; sourceTree = "<group>"; };
+		7119AFD4F3144E90AB31D235 /* WritingIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WritingIssue.swift; sourceTree = "<group>"; };
 		B84780C0A28947E9A34E0DA3 /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
 		52BAC7AD04A9483693AD7DDF /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		47F7C752CA364E57B7CA27F1 /* RewriteBetterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewriteBetterApp.swift; sourceTree = "<group>"; };
@@ -92,6 +100,7 @@
 			isa = PBXGroup;
 			children = (
 				444D9725A2B34025981F7504 /* Options.swift */,
+				7119AFD4F3144E90AB31D235 /* WritingIssue.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -105,6 +114,8 @@
 				7841CA434DF84865BA9BA5D4 /* TextCaptureService.swift */,
 				1B9C7D5982414DAF97E37CA9 /* HotkeyService.swift */,
 				B84780C0A28947E9A34E0DA3 /* LaunchAtLogin.swift */,
+				F91DC3B9F89B4D19B71AFB3C /* WritingAssistController.swift */,
+				CCC9796F789A4BA18AC4F67A /* WritingAssistPrompts.swift */,
 				F793784217FC44BB9EC12025 /* PanelController.swift */,
 			);
 			path = Services;
@@ -115,6 +126,7 @@
 			children = (
 				041A94C98BE548F6A47BBCE1 /* ChipGroup.swift */,
 				420866AF73E64A13A842D63E /* PanelView.swift */,
+				3A05D826D6E54F72819E4F0B /* GhostTextEditor.swift */,
 				B30AC7ADAF1D468EA132DE6B /* SettingsView.swift */,
 			);
 			path = Views;
@@ -186,6 +198,10 @@
 			files = (
 				A2B06F99D9E14A1DBDEAC50C /* RewriteBetterApp.swift in Sources */,
 				E3A5F6A6FC2F4881A29317A4 /* Options.swift in Sources */,
+				D29EE9E49E524BDA889C135B /* GhostTextEditor.swift in Sources */,
+				40BCE9C5568E4F9DAF33B18A /* WritingAssistController.swift in Sources */,
+				122D3339B4064351B388A889 /* WritingAssistPrompts.swift in Sources */,
+				F9A75B4C80C3493EA6F6B0CF /* WritingIssue.swift in Sources */,
 				77359588B6324FFAACDBAAC6 /* PromptBuilder.swift in Sources */,
 				77A49482BF0F4F769F09755D /* GroqClient.swift in Sources */,
 				7A9F05F2B65C4B34A5CF1798 /* SettingsStore.swift in Sources */,

@@ -132,6 +132,8 @@ final class PanelViewModel: ObservableObject {
 struct PanelView: View {
     @EnvironmentObject private var panel: PanelController
     @StateObject private var vm = PanelViewModel()
+    @StateObject private var inputAssist = WritingAssistController()
+    @StateObject private var notesAssist = WritingAssistController()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -152,6 +154,7 @@ struct PanelView: View {
             vm.resultText = ""
             vm.statusMessage = ""
             vm.copyFeedback = false
+            inputAssist.dismissGhost()
         }
     }
 
@@ -173,18 +176,32 @@ struct PanelView: View {
     private var leftColumn: some View {
         VStack(alignment: .leading, spacing: 10) {
             inputSection
-                .frame(maxHeight: vm.mode == .reply ? 160 : 220)
+                .frame(maxHeight: vm.mode == .reply ? 140 : 200)
 
             if vm.mode == .reply {
                 notesSection
-                    .frame(height: 72)
+                    .frame(height: 90)
             }
+
+            writingAssistBar(
+                assist: activeAssist,
+                enabled: vm.mode == .reply ? $notesAssist.assistEnabled : $inputAssist.assistEnabled,
+                text: activeTextBinding
+            )
 
             actionRow
 
             statusAndResult
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
+    }
+
+    private var activeAssist: WritingAssistController {
+        vm.mode == .reply ? notesAssist : inputAssist
+    }
+
+    private var activeTextBinding: Binding<String> {
+        vm.mode == .reply ? $vm.notes : $vm.inputText
     }
 
     private var rightColumn: some View {
@@ -292,32 +309,116 @@ struct PanelView: View {
 
     private var inputSection: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(vm.mode == .reply ? "Received message" : "Input")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            TextEditor(text: $vm.inputText)
-                .font(.body)
-                .scrollContentBackground(.hidden)
-                .padding(6)
-                .background(Color(nsColor: .textBackgroundColor))
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25)))
-                .cornerRadius(8)
-                .frame(minHeight: 100, maxHeight: .infinity)
+            HStack {
+                Text(vm.mode == .reply ? "Received message" : "Input")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if vm.mode != .reply {
+                    assistHint(inputAssist)
+                }
+            }
+            GhostTextEditor(
+                text: $vm.inputText,
+                ghostText: $inputAssist.ghostText,
+                onTextChange: { text, caretAtEnd in
+                    // Full writing assist on input for rewrite/format; light assist on reply message too
+                    inputAssist.textDidChange(text, caretAtEnd: caretAtEnd)
+                }
+            )
+            .frame(minHeight: 100, maxHeight: .infinity)
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25)))
+            .cornerRadius(8)
         }
     }
 
     private var notesSection: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Your notes (optional)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            TextEditor(text: $vm.notes)
-                .font(.body)
-                .scrollContentBackground(.hidden)
-                .padding(6)
-                .background(Color(nsColor: .textBackgroundColor))
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25)))
-                .cornerRadius(8)
+            HStack {
+                Text("Your notes (optional)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                assistHint(notesAssist)
+            }
+            GhostTextEditor(
+                text: $vm.notes,
+                ghostText: $notesAssist.ghostText,
+                onTextChange: { text, caretAtEnd in
+                    notesAssist.textDidChange(text, caretAtEnd: caretAtEnd)
+                }
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25)))
+            .cornerRadius(8)
+        }
+    }
+
+    private func assistHint(_ assist: WritingAssistController) -> some View {
+        Group {
+            if assist.isSuggesting {
+                Text("Suggesting…")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            } else if !assist.ghostText.isEmpty {
+                Text("Tab to accept · Esc to dismiss")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func writingAssistBar(
+        assist: WritingAssistController,
+        enabled: Binding<Bool>,
+        text: Binding<String>
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Toggle("Writing assist", isOn: enabled)
+                    .toggleStyle(.checkbox)
+                    .font(.caption)
+                Spacer()
+                Button(assist.isChecking ? "Checking…" : "Check writing") {
+                    Task { await assist.checkNow(text.wrappedValue) }
+                }
+                .disabled(assist.isChecking || text.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).count < 12)
+                .controlSize(.small)
+            }
+
+            if !assist.issues.isEmpty {
+                Text("Suggestions")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                ForEach(assist.issues.prefix(6)) { issue in
+                    HStack(alignment: .top, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(issue.kind.rawValue.capitalized)
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(.orange)
+                            Text(issue.message)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text("“\(issue.original)” → “\(issue.replacement)”")
+                                .font(.caption2)
+                                .foregroundStyle(.primary)
+                                .lineLimit(2)
+                        }
+                        Spacer(minLength: 0)
+                        Button("Apply") {
+                            var value = text.wrappedValue
+                            assist.apply(issue: issue, to: &value)
+                            text.wrappedValue = value
+                        }
+                        .controlSize(.small)
+                        .buttonStyle(.bordered)
+                    }
+                    .padding(6)
+                    .background(Color(nsColor: .controlBackgroundColor))
+                    .cornerRadius(6)
+                }
+            }
         }
     }
 

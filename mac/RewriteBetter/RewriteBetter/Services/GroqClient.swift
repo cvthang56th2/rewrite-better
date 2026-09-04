@@ -33,7 +33,12 @@ struct GroqClient {
         self.session = session
     }
 
-    func complete(prompt: String, apiKey: String) async throws -> String {
+    func complete(
+        prompt: String,
+        apiKey: String,
+        temperature: Double = 0.7,
+        maxTokens: Int = 1024
+    ) async throws -> String {
         guard let url = URL(string: "https://api.groq.com/openai/v1/chat/completions") else {
             throw GroqError.network("Invalid URL")
         }
@@ -46,8 +51,8 @@ struct GroqClient {
         let body: [String: Any] = [
             "model": AppOptions.model,
             "messages": [["role": "user", "content": prompt]],
-            "temperature": 0.7,
-            "max_tokens": 1024
+            "temperature": temperature,
+            "max_tokens": maxTokens
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
