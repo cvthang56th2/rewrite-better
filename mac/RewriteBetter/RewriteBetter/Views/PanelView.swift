@@ -32,8 +32,6 @@ final class PanelViewModel: ObservableObject {
         case unknown, ok, missing, invalid
     }
 
-    private let client = GroqClient()
-
     var inputPlaceholder: String {
         mode == .reply
             ? "Paste received message to reply (or leave empty to compose)…"
@@ -49,11 +47,7 @@ final class PanelViewModel: ObservableObject {
     }
 
     func refreshApiStatus() async {
-        guard let key = SettingsStore.shared.apiKey, key.hasPrefix("gsk_") else {
-            apiStatus = .missing
-            return
-        }
-        apiStatus = .ok
+        apiStatus = SettingsStore.shared.hasAnyApiKey ? .ok : .missing
     }
 
     func process() async {
@@ -72,8 +66,8 @@ final class PanelViewModel: ObservableObject {
             return
         }
 
-        guard let apiKey = SettingsStore.shared.apiKey, !apiKey.isEmpty else {
-            statusMessage = GroqError.missingKey.localizedDescription
+        guard SettingsStore.shared.hasAnyApiKey else {
+            statusMessage = LLMError.missingKey.localizedDescription
             return
         }
 
@@ -111,7 +105,7 @@ final class PanelViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let text = try await client.complete(prompt: prompt, apiKey: apiKey)
+            let text = try await LLMClient.shared.complete(prompt: prompt)
             resultText = text
             statusMessage = ""
             TextCaptureService.copyToClipboard(text)
@@ -279,7 +273,7 @@ struct PanelView: View {
                 EmptyView()
             case .missing:
                 HStack(spacing: 4) {
-                    Text("⚠️ Chưa cấu hình Groq API Key.")
+                    Text("⚠️ Chưa cấu hình API Key.")
                     Button("Cấu hình") { panel.openSettings() }
                         .buttonStyle(.link)
                 }

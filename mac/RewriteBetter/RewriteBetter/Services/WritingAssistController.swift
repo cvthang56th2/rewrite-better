@@ -8,7 +8,6 @@ final class WritingAssistController: ObservableObject {
     @Published var isChecking = false
     @Published var assistEnabled = true
 
-    private let client = GroqClient()
     private var suggestTask: Task<Void, Never>?
     private var checkTask: Task<Void, Never>?
     private var lastSuggestedFor = ""
@@ -57,7 +56,7 @@ final class WritingAssistController: ObservableObject {
     }
 
     private func fetchSuggestion(for text: String) async {
-        guard let apiKey = SettingsStore.shared.apiKey, !apiKey.isEmpty else { return }
+        guard SettingsStore.shared.hasAnyApiKey else { return }
         guard text != lastSuggestedFor else { return }
 
         isSuggesting = true
@@ -65,11 +64,10 @@ final class WritingAssistController: ObservableObject {
 
         do {
             let prompt = WritingAssistPrompts.autocomplete(prefix: text)
-            let raw = try await client.complete(
+            let raw = try await LLMClient.shared.complete(
                 prompt: prompt,
-                apiKey: apiKey,
                 temperature: 0.4,
-                maxTokens: 120
+                maxTokens: 512
             )
             guard !Task.isCancelled else { return }
             let cleaned = sanitizeSuggestion(raw, prefix: text)
@@ -92,16 +90,15 @@ final class WritingAssistController: ObservableObject {
             issues = []
             return
         }
-        guard let apiKey = SettingsStore.shared.apiKey, !apiKey.isEmpty else { return }
+        guard SettingsStore.shared.hasAnyApiKey else { return }
 
         isChecking = true
         defer { isChecking = false }
 
         do {
             let prompt = WritingAssistPrompts.grammarCheck(text: text)
-            let raw = try await client.complete(
+            let raw = try await LLMClient.shared.complete(
                 prompt: prompt,
-                apiKey: apiKey,
                 temperature: 0.2,
                 maxTokens: 700
             )

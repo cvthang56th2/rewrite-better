@@ -16,7 +16,9 @@
 		A2B06F99D9E14A1DBDEAC50C /* RewriteBetterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F7C752CA364E57B7CA27F1 /* RewriteBetterApp.swift */; };
 		E3A5F6A6FC2F4881A29317A4 /* Options.swift in Sources */ = {isa = PBXBuildFile; fileRef = 444D9725A2B34025981F7504 /* Options.swift */; };
 		77359588B6324FFAACDBAAC6 /* PromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866499DFC1AD42ADB79DA8CC /* PromptBuilder.swift */; };
-		77A49482BF0F4F769F09755D /* GroqClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F33BA3796B4403AD1CF891 /* GroqClient.swift */; };
+		77A49482BF0F4F769F09755D /* LLMClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F33BA3796B4403AD1CF891 /* LLMClient.swift */; };
+		A8C1D2E3F4A5B6C7D8E9F0A1 /* LLMProviders.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6B7C8D9E0F1A2 /* LLMProviders.swift */; };
+		C0D1E2F3A4B5C6D7E8F9A0B1 /* DailyKeySkipStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1E2F3A4B5C6D7E8F9A0B1C2 /* DailyKeySkipStore.swift */; };
 		7A9F05F2B65C4B34A5CF1798 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42B2478F7FAB4A4BBD2AA684 /* SettingsStore.swift */; };
 		A001961A69354C0F847A7CB1 /* TextCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7841CA434DF84865BA9BA5D4 /* TextCaptureService.swift */; };
 		E7E3FD0AE2CD4F31B9E081A1 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B9C7D5982414DAF97E37CA9 /* HotkeyService.swift */; };
@@ -39,7 +41,9 @@
 		47F7C752CA364E57B7CA27F1 /* RewriteBetterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewriteBetterApp.swift; sourceTree = "<group>"; };
 		444D9725A2B34025981F7504 /* Options.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Options.swift; sourceTree = "<group>"; };
 		866499DFC1AD42ADB79DA8CC /* PromptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptBuilder.swift; sourceTree = "<group>"; };
-		79F33BA3796B4403AD1CF891 /* GroqClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroqClient.swift; sourceTree = "<group>"; };
+		79F33BA3796B4403AD1CF891 /* LLMClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMClient.swift; sourceTree = "<group>"; };
+		B1C2D3E4F5A6B7C8D9E0F1A2 /* LLMProviders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMProviders.swift; sourceTree = "<group>"; };
+		D1E2F3A4B5C6D7E8F9A0B1C2 /* DailyKeySkipStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyKeySkipStore.swift; sourceTree = "<group>"; };
 		42B2478F7FAB4A4BBD2AA684 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
 		7841CA434DF84865BA9BA5D4 /* TextCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextCaptureService.swift; sourceTree = "<group>"; };
 		1B9C7D5982414DAF97E37CA9 /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
@@ -109,7 +113,9 @@
 			isa = PBXGroup;
 			children = (
 				866499DFC1AD42ADB79DA8CC /* PromptBuilder.swift */,
-				79F33BA3796B4403AD1CF891 /* GroqClient.swift */,
+				79F33BA3796B4403AD1CF891 /* LLMClient.swift */,
+				B1C2D3E4F5A6B7C8D9E0F1A2 /* LLMProviders.swift */,
+				D1E2F3A4B5C6D7E8F9A0B1C2 /* DailyKeySkipStore.swift */,
 				42B2478F7FAB4A4BBD2AA684 /* SettingsStore.swift */,
 				7841CA434DF84865BA9BA5D4 /* TextCaptureService.swift */,
 				1B9C7D5982414DAF97E37CA9 /* HotkeyService.swift */,
@@ -203,7 +209,9 @@
 				122D3339B4064351B388A889 /* WritingAssistPrompts.swift in Sources */,
 				F9A75B4C80C3493EA6F6B0CF /* WritingIssue.swift in Sources */,
 				77359588B6324FFAACDBAAC6 /* PromptBuilder.swift in Sources */,
-				77A49482BF0F4F769F09755D /* GroqClient.swift in Sources */,
+				77A49482BF0F4F769F09755D /* LLMClient.swift in Sources */,
+				A8C1D2E3F4A5B6C7D8E9F0A1 /* LLMProviders.swift in Sources */,
+				C0D1E2F3A4B5C6D7E8F9A0B1 /* DailyKeySkipStore.swift in Sources */,
 				7A9F05F2B65C4B34A5CF1798 /* SettingsStore.swift in Sources */,
 				A001961A69354C0F847A7CB1 /* TextCaptureService.swift in Sources */,
 				E7E3FD0AE2CD4F31B9E081A1 /* HotkeyService.swift in Sources */,

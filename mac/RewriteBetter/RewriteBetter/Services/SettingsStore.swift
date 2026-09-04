@@ -5,27 +5,68 @@ final class SettingsStore {
     static let shared = SettingsStore()
 
     private let service = "com.rewritebetter.macos"
-    private let account = "groqApiKey"
+    private let legacyGroqAccount = "groqApiKey"
 
-    private init() {}
+    private init() {
+        migrateLegacyGroqKeyIfNeeded()
+    }
 
+    var hasAnyApiKey: Bool {
+        !resolveBackends().isEmpty
+    }
+
+    func keys(for provider: ChatProvider) -> String {
+        readKeychain(account: account(for: provider)) ?? ""
+    }
+
+    func setKeys(_ value: String, for provider: ChatProvider) {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            deleteKeychain(account: account(for: provider))
+        } else {
+            saveKeychain(trimmed, account: account(for: provider))
+        }
+        LLMClient.shared.resetDailySkips()
+    }
+
+    func keysByProvider() -> [ChatProvider: String] {
+        Dictionary(uniqueKeysWithValues: ChatProvider.allCases.map { ($0, keys(for: $0)) })
+    }
+
+    func resolveBackends() -> [ChatBackend] {
+        LLMProviders.resolveChatBackends(keysByProvider: keysByProvider())
+    }
+
+    // MARK: - Legacy
+
+    /// Old single-key API used by earlier builds — maps to Groq raw string.
     var apiKey: String? {
-        get { readKeychain() }
+        get {
+            let groq = keys(for: .groq)
+            return groq.isEmpty ? nil : groq
+        }
         set {
-            if let newValue, !newValue.isEmpty {
-                saveKeychain(newValue)
-            } else {
-                deleteKeychain()
-            }
+            setKeys(newValue ?? "", for: .groq)
         }
     }
 
-    var hasApiKey: Bool {
-        guard let key = apiKey else { return false }
-        return key.hasPrefix("gsk_")
+    var hasApiKey: Bool { hasAnyApiKey }
+
+    // MARK: - Keychain
+
+    private func account(for provider: ChatProvider) -> String {
+        "\(provider.rawValue)ApiKeys"
     }
 
-    private func readKeychain() -> String? {
+    private func migrateLegacyGroqKeyIfNeeded() {
+        let current = readKeychain(account: account(for: .groq))
+        if let current, !current.isEmpty { return }
+        guard let legacy = readKeychain(account: legacyGroqAccount), !legacy.isEmpty else { return }
+        saveKeychain(legacy, account: account(for: .groq))
+        deleteKeychain(account: legacyGroqAccount)
+    }
+
+    private func readKeychain(account: String) -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -39,8 +80,8 @@ final class SettingsStore {
         return String(data: data, encoding: .utf8)
     }
 
-    private func saveKeychain(_ value: String) {
-        deleteKeychain()
+    private func saveKeychain(_ value: String, account: String) {
+        deleteKeychain(account: account)
         let data = Data(value.utf8)
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -52,7 +93,7 @@ final class SettingsStore {
         SecItemAdd(query as CFDictionary, nil)
     }
 
-    private func deleteKeychain() {
+    private func deleteKeychain(account: String) {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,

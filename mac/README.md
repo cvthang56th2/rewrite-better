@@ -23,6 +23,12 @@ xcodebuild -scheme RewriteBetter -configuration Debug -derivedDataPath ./Derived
 open DerivedData/Build/Products/Debug/RewriteBetter.app
 ```
 
+Kill, rebuild, and relaunch in one step:
+
+```bash
+./mac/restart.sh
+```
+
 ## Usage
 
 1. Launch the app — it appears in the menu bar (no Dock icon)

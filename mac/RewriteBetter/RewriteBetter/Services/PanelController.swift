@@ -92,8 +92,9 @@ final class PanelController: ObservableObject {
             let hosting = NSHostingController(rootView: view)
             let window = NSWindow(contentViewController: hosting)
             window.title = "Rewrite Better Settings"
-            window.styleMask = [.titled, .closable]
-            window.setContentSize(NSSize(width: 440, height: 360))
+            window.styleMask = [.titled, .closable, .resizable]
+            window.setContentSize(NSSize(width: 560, height: 640))
+            window.minSize = NSSize(width: 520, height: 400)
             window.center()
             settingsWindow = window
         }
