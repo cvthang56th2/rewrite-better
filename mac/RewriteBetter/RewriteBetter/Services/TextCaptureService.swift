@@ -36,16 +36,13 @@ final class FrontmostAppTracker {
 }
 
 enum TextCaptureService {
-    /// Selection first (Accessibility → Cmd+C probe), then clipboard.
+    /// Selected text only (Accessibility → Cmd+C probe). Does not read the clipboard.
     @MainActor
     static func capturePreferredText() -> String {
         if let selected = readSelectedText(), !selected.isEmpty {
             return selected
         }
-
-        let clipboard = NSPasteboard.general.string(forType: .string)?
-            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return clipboard
+        return ""
     }
 
     static func copyToClipboard(_ text: String) {
