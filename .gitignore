@@ -1,0 +1,5 @@
+mac/RewriteBetter/DerivedData/
+mac/dist/
+*.xcuserstate
+xcuserdata/
+.DS_Store

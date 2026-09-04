@@ -1,0 +1,299 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A2B06F99D9E14A1DBDEAC50C /* RewriteBetterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F7C752CA364E57B7CA27F1 /* RewriteBetterApp.swift */; };
+		E3A5F6A6FC2F4881A29317A4 /* Options.swift in Sources */ = {isa = PBXBuildFile; fileRef = 444D9725A2B34025981F7504 /* Options.swift */; };
+		77359588B6324FFAACDBAAC6 /* PromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866499DFC1AD42ADB79DA8CC /* PromptBuilder.swift */; };
+		77A49482BF0F4F769F09755D /* GroqClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79F33BA3796B4403AD1CF891 /* GroqClient.swift */; };
+		7A9F05F2B65C4B34A5CF1798 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42B2478F7FAB4A4BBD2AA684 /* SettingsStore.swift */; };
+		A001961A69354C0F847A7CB1 /* TextCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7841CA434DF84865BA9BA5D4 /* TextCaptureService.swift */; };
+		E7E3FD0AE2CD4F31B9E081A1 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B9C7D5982414DAF97E37CA9 /* HotkeyService.swift */; };
+		7DDBF3AD008A42BF9CC41A08 /* PanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F793784217FC44BB9EC12025 /* PanelController.swift */; };
+		28C62889B8AB436D9CB6C1D9 /* ChipGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 041A94C98BE548F6A47BBCE1 /* ChipGroup.swift */; };
+		EAC89B3417264C4F85C4B932 /* PanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420866AF73E64A13A842D63E /* PanelView.swift */; };
+		2377ABC8AE7A4170A76B9120 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30AC7ADAF1D468EA132DE6B /* SettingsView.swift */; };
+		3FA707A7184C4872A509928A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7110642F8F4E4A688581EEE1 /* Assets.xcassets */; };
+		1254ABB6C45C4E7097BC64D9 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8C9F3623DD945F0AA80A047 /* Carbon.framework */; };
+
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		47F7C752CA364E57B7CA27F1 /* RewriteBetterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewriteBetterApp.swift; sourceTree = "<group>"; };
+		444D9725A2B34025981F7504 /* Options.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Options.swift; sourceTree = "<group>"; };
+		866499DFC1AD42ADB79DA8CC /* PromptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptBuilder.swift; sourceTree = "<group>"; };
+		79F33BA3796B4403AD1CF891 /* GroqClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroqClient.swift; sourceTree = "<group>"; };
+		42B2478F7FAB4A4BBD2AA684 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		7841CA434DF84865BA9BA5D4 /* TextCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextCaptureService.swift; sourceTree = "<group>"; };
+		1B9C7D5982414DAF97E37CA9 /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
+		F793784217FC44BB9EC12025 /* PanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelController.swift; sourceTree = "<group>"; };
+		041A94C98BE548F6A47BBCE1 /* ChipGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChipGroup.swift; sourceTree = "<group>"; };
+		420866AF73E64A13A842D63E /* PanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelView.swift; sourceTree = "<group>"; };
+		B30AC7ADAF1D468EA132DE6B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		7110642F8F4E4A688581EEE1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F70B51C13B0B4C52982ECE66 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E9DEB460C3DA416990E22D46 /* RewriteBetter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RewriteBetter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E8C9F3623DD945F0AA80A047 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
+
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D49A7CAAD6414FDD872B8F40 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1254ABB6C45C4E7097BC64D9 /* Carbon.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D15CB5344A73445991719758 = {
+			isa = PBXGroup;
+			children = (
+				87BE3B290EBA464B837CFD94 /* RewriteBetter */,
+				C5B06EC205BE4F1985E8D49D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C5B06EC205BE4F1985E8D49D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E9DEB460C3DA416990E22D46 /* RewriteBetter.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		87BE3B290EBA464B837CFD94 /* RewriteBetter */ = {
+			isa = PBXGroup;
+			children = (
+				47F7C752CA364E57B7CA27F1 /* RewriteBetterApp.swift */,
+				7110642F8F4E4A688581EEE1 /* Assets.xcassets */,
+				F70B51C13B0B4C52982ECE66 /* Info.plist */,
+				DACC769A1232419CADD9799F /* Models */,
+				87266344F4194FBF9705EAC5 /* Services */,
+				1C8CE9C584934C2C8102170A /* Views */,
+			);
+			path = RewriteBetter;
+			sourceTree = "<group>";
+		};
+		DACC769A1232419CADD9799F /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				444D9725A2B34025981F7504 /* Options.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		87266344F4194FBF9705EAC5 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				866499DFC1AD42ADB79DA8CC /* PromptBuilder.swift */,
+				79F33BA3796B4403AD1CF891 /* GroqClient.swift */,
+				42B2478F7FAB4A4BBD2AA684 /* SettingsStore.swift */,
+				7841CA434DF84865BA9BA5D4 /* TextCaptureService.swift */,
+				1B9C7D5982414DAF97E37CA9 /* HotkeyService.swift */,
+				F793784217FC44BB9EC12025 /* PanelController.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		1C8CE9C584934C2C8102170A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				041A94C98BE548F6A47BBCE1 /* ChipGroup.swift */,
+				420866AF73E64A13A842D63E /* PanelView.swift */,
+				B30AC7ADAF1D468EA132DE6B /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		63E4F9E56F62456B87C27181 /* RewriteBetter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4D9D682DD7B2450A87F1214A /* Build configuration list for PBXNativeTarget "RewriteBetter" */;
+			buildPhases = (
+				A59946BDACEE499B9CF48E65 /* Sources */,
+				D49A7CAAD6414FDD872B8F40 /* Frameworks */,
+				DC4882305C2249CBBAB24668 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RewriteBetter;
+			productName = RewriteBetter;
+			productReference = E9DEB460C3DA416990E22D46 /* RewriteBetter.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E99023DE4F764ADCBFE0CE69 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2610;
+				LastUpgradeCheck = 2610;
+			};
+			buildConfigurationList = 891200ED0BAB4B8DBC548A78 /* Build configuration list for PBXProject "RewriteBetter" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D15CB5344A73445991719758;
+			productRefGroup = C5B06EC205BE4F1985E8D49D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				63E4F9E56F62456B87C27181 /* RewriteBetter */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DC4882305C2249CBBAB24668 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3FA707A7184C4872A509928A /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A59946BDACEE499B9CF48E65 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A2B06F99D9E14A1DBDEAC50C /* RewriteBetterApp.swift in Sources */,
+				E3A5F6A6FC2F4881A29317A4 /* Options.swift in Sources */,
+				77359588B6324FFAACDBAAC6 /* PromptBuilder.swift in Sources */,
+				77A49482BF0F4F769F09755D /* GroqClient.swift in Sources */,
+				7A9F05F2B65C4B34A5CF1798 /* SettingsStore.swift in Sources */,
+				A001961A69354C0F847A7CB1 /* TextCaptureService.swift in Sources */,
+				E7E3FD0AE2CD4F31B9E081A1 /* HotkeyService.swift in Sources */,
+				7DDBF3AD008A42BF9CC41A08 /* PanelController.swift in Sources */,
+				28C62889B8AB436D9CB6C1D9 /* ChipGroup.swift in Sources */,
+				EAC89B3417264C4F85C4B932 /* PanelView.swift in Sources */,
+				2377ABC8AE7A4170A76B9120 /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BB0367C17AA648DDBF4CA131 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_DYNAMIC_NO_PIC = NO;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		ACE47DA8B0354885A3728D56 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		F66FF4BDC2C64CE2857C45CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = RewriteBetter/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rewritebetter.macos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		85D77C8A1BDC46F588951863 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = RewriteBetter/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rewritebetter.macos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		891200ED0BAB4B8DBC548A78 /* Build configuration list for PBXProject "RewriteBetter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB0367C17AA648DDBF4CA131 /* Debug */,
+				ACE47DA8B0354885A3728D56 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4D9D682DD7B2450A87F1214A /* Build configuration list for PBXNativeTarget "RewriteBetter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F66FF4BDC2C64CE2857C45CE /* Debug */,
+				85D77C8A1BDC46F588951863 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E99023DE4F764ADCBFE0CE69 /* Project object */;
+}

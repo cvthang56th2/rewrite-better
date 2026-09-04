@@ -2,6 +2,8 @@
 
 A Chrome extension that rewrites, formats, translates, and drafts message/email replies using [Groq AI](https://groq.com) — **free to use** with a Groq account. Works on any webpage via a context menu, keyboard shortcut, or toolbar popup.
 
+Also available as a **native macOS menu bar app** — see [`mac/README.md`](mac/README.md).
+
 ## Features
 
 - **Shared panel** — Toolbar popup and inline popup use the same UI and options
