@@ -5,6 +5,8 @@ struct SettingsView: View {
     @State private var apiKey: String = SettingsStore.shared.apiKey ?? ""
     @State private var message = ""
     @State private var isTesting = false
+    @State private var launchAtLogin = LaunchAtLogin.isEnabled
+    @State private var launchAtLoginError = ""
 
     var body: some View {
         Form {
@@ -15,6 +17,32 @@ struct SettingsView: View {
                 Text("Get a free key at console.groq.com. The key is stored only in your Mac Keychain.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+
+            Section {
+                Toggle("Open at login", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { newValue in
+                        do {
+                            _ = try LaunchAtLogin.setEnabled(newValue)
+                            launchAtLogin = LaunchAtLogin.isEnabled
+                            launchAtLoginError = ""
+                            message = newValue ? "✅ Will open when you log in" : "✅ Won’t open at login"
+                        } catch {
+                            launchAtLogin = LaunchAtLogin.isEnabled
+                            launchAtLoginError = error.localizedDescription
+                            message = "❌ Không bật được Open at login"
+                        }
+                    }
+
+                Text("Starts Rewrite Better in the menu bar when you log in to this Mac.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                if !launchAtLoginError.isEmpty {
+                    Text(launchAtLoginError)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
             }
 
             Section {
@@ -33,10 +61,7 @@ struct SettingsView: View {
                     Spacer()
 
                     Button("Open Accessibility…") {
-                        TextCaptureService.requestAccessibilityPermission()
-                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                            NSWorkspace.shared.open(url)
-                        }
+                        TextCaptureService.openAccessibilitySettings()
                     }
                 }
 
@@ -45,13 +70,16 @@ struct SettingsView: View {
                         .font(.callout)
                 }
 
-                Text("Global hotkey: ⌘⇧E — needs Accessibility permission to read selected text.")
+                Text("Global hotkey: ⌘⇧E — needs Accessibility to read selected text. Prefer the copy in /Applications.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
         .padding(20)
-        .frame(width: 420, height: 260)
+        .frame(width: 440, height: 340)
+        .onAppear {
+            launchAtLogin = LaunchAtLogin.isEnabled
+        }
     }
 
     private func testKey() async {

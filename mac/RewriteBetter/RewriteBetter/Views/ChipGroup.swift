@@ -5,25 +5,26 @@ struct ChipGroup: View {
     let options: [OptionItem]
     @Binding var selection: String
 
-    private let columns = [GridItem(.adaptive(minimum: 72), spacing: 6)]
+    private let columns = [GridItem(.adaptive(minimum: 64), spacing: 5)]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 5) {
             if !title.isEmpty {
                 Text(title)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            LazyVGrid(columns: columns, alignment: .leading, spacing: 6) {
+            LazyVGrid(columns: columns, alignment: .leading, spacing: 5) {
                 ForEach(options) { item in
                     Button {
                         selection = item.value
                     } label: {
                         Text(item.label)
-                            .font(.caption)
+                            .font(.caption2)
                             .lineLimit(1)
+                            .minimumScaleFactor(0.85)
                             .frame(maxWidth: .infinity)
-                            .padding(.horizontal, 8)
+                            .padding(.horizontal, 6)
                             .padding(.vertical, 5)
                             .background(selection == item.value ? Color.accentColor.opacity(0.18) : Color(nsColor: .controlBackgroundColor))
                             .overlay(

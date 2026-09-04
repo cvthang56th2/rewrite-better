@@ -36,6 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Accessory app: no Dock icon.
         NSApp.setActivationPolicy(.accessory)
+        FrontmostAppTracker.shared.start()
         PanelController.shared.setup()
     }
 

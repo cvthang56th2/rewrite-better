@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3A2B4FAB5CA748CE9854EDD1 /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B84780C0A28947E9A34E0DA3 /* LaunchAtLogin.swift */; };
+		13B35682E64B41C49BA4AFCA /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52BAC7AD04A9483693AD7DDF /* ServiceManagement.framework */; };
 		A2B06F99D9E14A1DBDEAC50C /* RewriteBetterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F7C752CA364E57B7CA27F1 /* RewriteBetterApp.swift */; };
 		E3A5F6A6FC2F4881A29317A4 /* Options.swift in Sources */ = {isa = PBXBuildFile; fileRef = 444D9725A2B34025981F7504 /* Options.swift */; };
 		77359588B6324FFAACDBAAC6 /* PromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866499DFC1AD42ADB79DA8CC /* PromptBuilder.swift */; };
@@ -24,6 +26,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B84780C0A28947E9A34E0DA3 /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
+		52BAC7AD04A9483693AD7DDF /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		47F7C752CA364E57B7CA27F1 /* RewriteBetterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewriteBetterApp.swift; sourceTree = "<group>"; };
 		444D9725A2B34025981F7504 /* Options.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Options.swift; sourceTree = "<group>"; };
 		866499DFC1AD42ADB79DA8CC /* PromptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptBuilder.swift; sourceTree = "<group>"; };
@@ -48,6 +52,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1254ABB6C45C4E7097BC64D9 /* Carbon.framework in Frameworks */,
+				13B35682E64B41C49BA4AFCA /* ServiceManagement.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -99,6 +104,7 @@
 				42B2478F7FAB4A4BBD2AA684 /* SettingsStore.swift */,
 				7841CA434DF84865BA9BA5D4 /* TextCaptureService.swift */,
 				1B9C7D5982414DAF97E37CA9 /* HotkeyService.swift */,
+				B84780C0A28947E9A34E0DA3 /* LaunchAtLogin.swift */,
 				F793784217FC44BB9EC12025 /* PanelController.swift */,
 			);
 			path = Services;
@@ -185,6 +191,7 @@
 				7A9F05F2B65C4B34A5CF1798 /* SettingsStore.swift in Sources */,
 				A001961A69354C0F847A7CB1 /* TextCaptureService.swift in Sources */,
 				E7E3FD0AE2CD4F31B9E081A1 /* HotkeyService.swift in Sources */,
+				3A2B4FAB5CA748CE9854EDD1 /* LaunchAtLogin.swift in Sources */,
 				7DDBF3AD008A42BF9CC41A08 /* PanelController.swift in Sources */,
 				28C62889B8AB436D9CB6C1D9 /* ChipGroup.swift in Sources */,
 				EAC89B3417264C4F85C4B932 /* PanelView.swift in Sources */,
@@ -228,10 +235,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TQHJYDS43X;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = RewriteBetter/Info.plist;
@@ -252,10 +260,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TQHJYDS43X;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = RewriteBetter/Info.plist;

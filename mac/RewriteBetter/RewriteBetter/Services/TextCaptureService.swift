@@ -1,34 +1,51 @@
 import AppKit
 import ApplicationServices
 
-enum TextCaptureService {
-    /// Prefer current selection (via temporary Cmd+C); fall back to existing clipboard.
-    static func capturePreferredText() -> String {
-        let pasteboard = NSPasteboard.general
-        let previous = pasteboard.string(forType: .string)
+/// Remembers the last frontmost app that isn't Rewrite Better, so menu-bar
+/// opens can still read selection after our menu steals focus.
+@MainActor
+final class FrontmostAppTracker {
+    static let shared = FrontmostAppTracker()
 
-        pasteboard.clearContents()
-        usleep(30_000)
-        sendCommandC()
-        usleep(120_000)
+    private(set) var lastForeignAppPID: pid_t?
+    private var observer: NSObjectProtocol?
 
-        let selected = pasteboard.string(forType: .string)?.trimmingCharacters(in: .whitespacesAndNewlines)
+    private init() {}
 
-        if let selected, !selected.isEmpty {
-            // Restore previous clipboard; keep selection only as panel input.
-            pasteboard.clearContents()
-            if let previous {
-                pasteboard.setString(previous, forType: .string)
+    func start() {
+        guard observer == nil else { return }
+        update(from: NSWorkspace.shared.frontmostApplication)
+        observer = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] note in
+            let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+            Task { @MainActor in
+                self?.update(from: app)
             }
+        }
+    }
+
+    private func update(from app: NSRunningApplication?) {
+        guard let app, app.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return }
+        // Ignore our own helper processes; keep real user apps.
+        if app.bundleIdentifier == Bundle.main.bundleIdentifier { return }
+        lastForeignAppPID = app.processIdentifier
+    }
+}
+
+enum TextCaptureService {
+    /// Selection first (Accessibility → Cmd+C probe), then clipboard.
+    @MainActor
+    static func capturePreferredText() -> String {
+        if let selected = readSelectedText(), !selected.isEmpty {
             return selected
         }
 
-        pasteboard.clearContents()
-        if let previous {
-            pasteboard.setString(previous, forType: .string)
-            return previous.trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-        return ""
+        let clipboard = NSPasteboard.general.string(forType: .string)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return clipboard
     }
 
     static func copyToClipboard(_ text: String) {
@@ -41,9 +58,115 @@ enum TextCaptureService {
         AXIsProcessTrusted()
     }
 
-    static func requestAccessibilityPermission() {
-        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
-        AXIsProcessTrustedWithOptions(options)
+    static func openAccessibilitySettings() {
+        let urls = [
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility"
+        ]
+        for raw in urls {
+            if let url = URL(string: raw), NSWorkspace.shared.open(url) {
+                return
+            }
+        }
+    }
+
+    // MARK: - Selection
+
+    @MainActor
+    private static func readSelectedText() -> String? {
+        guard hasAccessibilityPermission else { return nil }
+
+        // 1) Focused UI element (works best with global hotkey while other app is focused)
+        if let text = selectedTextFromSystemFocus(), !text.isEmpty {
+            return text
+        }
+
+        // 2) Last foreign app (menu-bar click often moves focus away)
+        if let pid = FrontmostAppTracker.shared.lastForeignAppPID,
+           let text = selectedText(inApplicationPID: pid), !text.isEmpty {
+            return text
+        }
+
+        // 3) Temporary Cmd+C without clearing clipboard first
+        if let text = selectedTextViaCopyShortcut(), !text.isEmpty {
+            return text
+        }
+
+        return nil
+    }
+
+    private static func selectedTextFromSystemFocus() -> String? {
+        let systemWide = AXUIElementCreateSystemWide()
+        return selectedText(fromFocusedElementOf: systemWide)
+    }
+
+    private static func selectedText(inApplicationPID pid: pid_t) -> String? {
+        let appElement = AXUIElementCreateApplication(pid)
+        return selectedText(fromFocusedElementOf: appElement)
+    }
+
+    private static func selectedText(fromFocusedElementOf root: AXUIElement) -> String? {
+        var focusedRef: CFTypeRef?
+        let status = AXUIElementCopyAttributeValue(
+            root,
+            kAXFocusedUIElementAttribute as CFString,
+            &focusedRef
+        )
+        guard status == .success, let focusedRef else { return nil }
+        let focused = focusedRef as! AXUIElement
+
+        var selectedRef: CFTypeRef?
+        let selectedStatus = AXUIElementCopyAttributeValue(
+            focused,
+            kAXSelectedTextAttribute as CFString,
+            &selectedRef
+        )
+        if selectedStatus == .success, let text = selectedRef as? String {
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? nil : trimmed
+        }
+
+        // Fallback: some fields expose full value only
+        var valueRef: CFTypeRef?
+        if AXUIElementCopyAttributeValue(focused, kAXValueAttribute as CFString, &valueRef) == .success,
+           let text = valueRef as? String {
+            // Only use full value if it's short enough to likely be a selection/field contents
+            // Prefer not to dump huge documents — skip if very long without selected text attr.
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty && trimmed.count <= 8000 {
+                // Without selected-text attribute we can't know selection vs whole field.
+                // Don't use full value — avoid overwriting with entire document.
+                return nil
+            }
+        }
+        return nil
+    }
+
+    /// Probe selection by synthesizing ⌘C; restore previous clipboard afterward.
+    private static func selectedTextViaCopyShortcut() -> String? {
+        let pasteboard = NSPasteboard.general
+        let previousChangeCount = pasteboard.changeCount
+        let previousString = pasteboard.string(forType: .string)
+
+        sendCommandC()
+
+        var copied: String?
+        for _ in 0..<15 {
+            usleep(20_000)
+            if pasteboard.changeCount != previousChangeCount {
+                copied = pasteboard.string(forType: .string)
+                break
+            }
+        }
+
+        // Restore prior clipboard so we don't leave the selection on the pasteboard.
+        if let previousString {
+            pasteboard.clearContents()
+            pasteboard.setString(previousString, forType: .string)
+        }
+
+        let trimmed = copied?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return trimmed.isEmpty ? nil : trimmed
     }
 
     private static func sendCommandC() {

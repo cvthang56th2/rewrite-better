@@ -34,6 +34,12 @@ final class PanelViewModel: ObservableObject {
 
     private let client = GroqClient()
 
+    var inputPlaceholder: String {
+        mode == .reply
+            ? "Paste received message to reply (or leave empty to compose)…"
+            : "Paste or type text here…"
+    }
+
     func syncInput(from controller: PanelController) {
         inputText = controller.inputText
         resultText = ""
@@ -43,7 +49,6 @@ final class PanelViewModel: ObservableObject {
     }
 
     func refreshApiStatus() async {
-        // Avoid hitting Groq on every open; full test lives in Settings.
         guard let key = SettingsStore.shared.apiKey, key.hasPrefix("gsk_") else {
             apiStatus = .missing
             return
@@ -129,70 +134,16 @@ struct PanelView: View {
     @StateObject private var vm = PanelViewModel()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 10) {
             header
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-                .padding(.bottom, 8)
+            apiBanner
 
-            ScrollView(.vertical, showsIndicators: true) {
-                VStack(alignment: .leading, spacing: 12) {
-                    apiBanner
-
-                    TextEditor(text: $vm.inputText)
-                        .font(.body)
-                        .frame(height: 100)
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25)))
-
-                    modeSelector
-
-                    Group {
-                        switch vm.mode {
-                        case .rewrite: rewriteOptions
-                        case .format: formatOptions
-                        case .reply: replyOptions
-                        }
-                    }
-
-                    HStack {
-                        Button(vm.mode.buttonLabel) {
-                            Task { await vm.process() }
-                        }
-                        .keyboardShortcut(.return, modifiers: .command)
-                        .disabled(vm.isLoading)
-                        .buttonStyle(.borderedProminent)
-
-                        if !vm.resultText.isEmpty {
-                            Button(vm.copyFeedback ? "✅ Copied" : "📋 Copy") {
-                                vm.copyResult()
-                            }
-                        }
-                    }
-
-                    if !vm.statusMessage.isEmpty {
-                        Text(vm.statusMessage)
-                            .font(.callout)
-                            .foregroundStyle(vm.statusMessage.hasPrefix("❌") ? .red : .secondary)
-                            .textSelection(.enabled)
-                    }
-
-                    if !vm.resultText.isEmpty {
-                        Text(vm.resultText)
-                            .font(.body)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .textSelection(.enabled)
-                            .padding(8)
-                            .background(Color(nsColor: .textBackgroundColor))
-                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25)))
-                            .cornerRadius(8)
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
+            // Always two columns; window min width guarantees this fits on Mac.
+            twoColumnLayout
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(minWidth: 380, minHeight: 480)
+        .padding(16)
+        .frame(minWidth: 720, idealWidth: 780, minHeight: 460, idealHeight: 540)
         .onAppear {
             vm.syncInput(from: panel)
         }
@@ -203,6 +154,51 @@ struct PanelView: View {
             vm.copyFeedback = false
         }
     }
+
+    // MARK: - Layouts
+
+    private var twoColumnLayout: some View {
+        HStack(alignment: .top, spacing: 16) {
+            leftColumn
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+
+            Divider()
+
+            rightColumn
+                .frame(width: 300, alignment: .top)
+                .frame(maxHeight: .infinity, alignment: .top)
+        }
+    }
+
+    private var leftColumn: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            inputSection
+                .frame(maxHeight: vm.mode == .reply ? 160 : 220)
+
+            if vm.mode == .reply {
+                notesSection
+                    .frame(height: 72)
+            }
+
+            actionRow
+
+            statusAndResult
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+    }
+
+    private var rightColumn: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            modeSelector
+            ScrollView(.vertical, showsIndicators: true) {
+                modeOptions
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .frame(maxHeight: .infinity)
+        }
+    }
+
+    // MARK: - Sections
 
     private var header: some View {
         HStack {
@@ -229,76 +225,182 @@ struct PanelView: View {
 
     @ViewBuilder
     private var apiBanner: some View {
-        switch vm.apiStatus {
-        case .ok:
-            Text("✅ Groq API Key hoạt động bình thường")
+        VStack(alignment: .leading, spacing: 6) {
+            if panel.needsAccessibility {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("⚠️ macOS chưa trust bản app đang chạy (thường do toggle đang gắn entry cũ).")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("1) Open Settings → Accessibility\n2) Xóa mọi “RewriteBetter” cũ → thêm lại / bật bản đang chạy\n3) Quit app hẳn rồi mở lại → Recheck")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Text(Bundle.main.bundleURL.path)
+                        .font(.system(.caption2, design: .monospaced))
+                        .textSelection(.enabled)
+                        .foregroundStyle(.secondary)
+                    HStack {
+                        Button("Open Settings") {
+                            TextCaptureService.openAccessibilitySettings()
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                        Button("Recheck") {
+                            panel.refreshAccessibilityStatus()
+                        }
+                        .buttonStyle(.borderless)
+                        .controlSize(.small)
+                    }
+                }
+                .padding(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.orange.opacity(0.12))
+                .cornerRadius(8)
+            }
+
+            switch vm.apiStatus {
+            case .ok:
+                EmptyView()
+            case .missing:
+                HStack(spacing: 4) {
+                    Text("⚠️ Chưa cấu hình Groq API Key.")
+                    Button("Cấu hình") { panel.openSettings() }
+                        .buttonStyle(.link)
+                }
                 .font(.caption)
-                .foregroundStyle(.green)
-        case .missing:
-            HStack(spacing: 4) {
-                Text("⚠️ Chưa cấu hình Groq API Key.")
-                Button("Cấu hình") { panel.openSettings() }
-                    .buttonStyle(.link)
+            case .invalid:
+                HStack(spacing: 4) {
+                    Text("⚠️ API Key có vấn đề.")
+                    Button("Kiểm tra") { panel.openSettings() }
+                        .buttonStyle(.link)
+                }
+                .font(.caption)
+            case .unknown:
+                EmptyView()
             }
-            .font(.caption)
-        case .invalid:
-            HStack(spacing: 4) {
-                Text("⚠️ API Key có vấn đề.")
-                Button("Kiểm tra") { panel.openSettings() }
-                    .buttonStyle(.link)
-            }
-            .font(.caption)
-        case .unknown:
-            EmptyView()
         }
     }
 
     private var modeSelector: some View {
-        HStack(spacing: 8) {
+        Picker("Mode", selection: $vm.mode) {
             ForEach(AppMode.allCases) { mode in
-                Button(mode.label) {
-                    vm.mode = mode
-                }
-                .buttonStyle(.bordered)
-                .tint(vm.mode == mode ? .accentColor : .secondary)
+                Text(mode.label).tag(mode)
             }
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+    }
+
+    private var inputSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(vm.mode == .reply ? "Received message" : "Input")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            TextEditor(text: $vm.inputText)
+                .font(.body)
+                .scrollContentBackground(.hidden)
+                .padding(6)
+                .background(Color(nsColor: .textBackgroundColor))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25)))
+                .cornerRadius(8)
+                .frame(minHeight: 100, maxHeight: .infinity)
         }
     }
 
-    private var rewriteOptions: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            ChipGroup(title: "Tone", options: AppOptions.tones, selection: $vm.tone)
-            Toggle("Enable Translation", isOn: $vm.enableTranslate)
-            if vm.enableTranslate {
-                ChipGroup(title: "From", options: AppOptions.languages, selection: $vm.fromLanguage)
-                ChipGroup(title: "To", options: AppOptions.outputLanguages, selection: $vm.toLanguage)
-            }
-        }
-    }
-
-    private var formatOptions: some View {
-        ChipGroup(title: "Format", options: AppOptions.formatTypes, selection: $vm.formatType)
-    }
-
-    private var replyOptions: some View {
-        VStack(alignment: .leading, spacing: 10) {
+    private var notesSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
             Text("Your notes (optional)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             TextEditor(text: $vm.notes)
                 .font(.body)
-                .frame(height: 56)
+                .scrollContentBackground(.hidden)
+                .padding(6)
+                .background(Color(nsColor: .textBackgroundColor))
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25)))
+                .cornerRadius(8)
+        }
+    }
 
-            ChipGroup(title: "Type", options: AppOptions.channels, selection: $vm.channel)
-            ChipGroup(title: "Intent", options: AppOptions.intents, selection: $vm.intent)
-            ChipGroup(title: "Tone", options: AppOptions.tones, selection: $vm.replyTone)
-            ChipGroup(title: "Length", options: AppOptions.lengths, selection: $vm.length)
-            ChipGroup(title: "Language", options: AppOptions.outputLanguages, selection: $vm.outputLanguage)
+    @ViewBuilder
+    private var modeOptions: some View {
+        switch vm.mode {
+        case .rewrite:
+            VStack(alignment: .leading, spacing: 10) {
+                ChipGroup(title: "Tone", options: AppOptions.tones, selection: $vm.tone)
+                Toggle("Enable Translation", isOn: $vm.enableTranslate)
+                if vm.enableTranslate {
+                    ChipGroup(title: "From", options: AppOptions.languages, selection: $vm.fromLanguage)
+                    ChipGroup(title: "To", options: AppOptions.outputLanguages, selection: $vm.toLanguage)
+                }
+            }
+        case .format:
+            ChipGroup(title: "Format", options: AppOptions.formatTypes, selection: $vm.formatType)
+        case .reply:
+            VStack(alignment: .leading, spacing: 10) {
+                ChipGroup(title: "Type", options: AppOptions.channels, selection: $vm.channel)
+                ChipGroup(title: "Intent", options: AppOptions.intents, selection: $vm.intent)
+                ChipGroup(title: "Tone", options: AppOptions.tones, selection: $vm.replyTone)
+                ChipGroup(title: "Length", options: AppOptions.lengths, selection: $vm.length)
+                ChipGroup(title: "Language", options: AppOptions.outputLanguages, selection: $vm.outputLanguage)
+                Text("Leave message empty and use notes to compose new.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
 
-            Text("Paste the received message above to reply, or leave it empty and use notes to compose new.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+    private var actionRow: some View {
+        HStack(spacing: 8) {
+            Button(vm.mode.buttonLabel) {
+                Task { await vm.process() }
+            }
+            .keyboardShortcut(.return, modifiers: .command)
+            .disabled(vm.isLoading)
+            .buttonStyle(.borderedProminent)
+
+            if !vm.resultText.isEmpty {
+                Button(vm.copyFeedback ? "✅ Copied" : "📋 Copy") {
+                    vm.copyResult()
+                }
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    @ViewBuilder
+    private var statusAndResult: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if !vm.statusMessage.isEmpty {
+                Text(vm.statusMessage)
+                    .font(.callout)
+                    .foregroundStyle(vm.statusMessage.hasPrefix("❌") ? .red : .secondary)
+                    .textSelection(.enabled)
+            }
+
+            if !vm.resultText.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Result")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    ScrollView {
+                        Text(vm.resultText)
+                            .font(.body)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
+                            .padding(8)
+                    }
+                    .frame(minHeight: 80, maxHeight: .infinity)
+                    .background(Color(nsColor: .textBackgroundColor))
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25)))
+                    .cornerRadius(8)
+                }
+            } else if vm.statusMessage.isEmpty {
+                Text("Result will appear here. ⌘↩ to run.")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(.top, 4)
+            }
         }
     }
 }

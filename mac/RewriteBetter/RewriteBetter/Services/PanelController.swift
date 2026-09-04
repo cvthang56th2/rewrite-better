@@ -9,6 +9,7 @@ final class PanelController: ObservableObject {
     @Published var inputText = ""
     @Published var isPresented = false
     @Published var showSettings = false
+    @Published var needsAccessibility = false
 
     private var panel: NSPanel?
     private var settingsWindow: NSWindow?
@@ -16,6 +17,7 @@ final class PanelController: ObservableObject {
     private init() {}
 
     func setup() {
+        FrontmostAppTracker.shared.start()
         HotkeyService.shared.onHotkey = { [weak self] in
             Task { @MainActor in
                 self?.toggleFromHotkey()
@@ -37,17 +39,20 @@ final class PanelController: ObservableObject {
     }
 
     func openWithCapturedText() {
-        if !TextCaptureService.hasAccessibilityPermission {
-            TextCaptureService.requestAccessibilityPermission()
-        }
-        let text = TextCaptureService.capturePreferredText()
-        inputText = text
+        // Capture while the previous app still owns focus whenever possible.
+        needsAccessibility = !TextCaptureService.hasAccessibilityPermission
+        inputText = TextCaptureService.capturePreferredText()
         show()
     }
 
     func openEmpty() {
+        needsAccessibility = !TextCaptureService.hasAccessibilityPermission
         inputText = ""
         show()
+    }
+
+    func refreshAccessibilityStatus() {
+        needsAccessibility = !TextCaptureService.hasAccessibilityPermission
     }
 
     func show() {
@@ -56,12 +61,20 @@ final class PanelController: ObservableObject {
         }
         guard let panel else { return }
 
-        if let screen = NSScreen.main {
-            let size = panel.frame.size
-            let x = screen.visibleFrame.midX - size.width / 2
-            let y = screen.visibleFrame.midY - size.height / 2
-            panel.setFrameOrigin(NSPoint(x: x, y: y))
+        let preferred = NSSize(width: 780, height: 540)
+        var frame = panel.frame
+        if frame.width < preferred.width || frame.height < preferred.height {
+            frame.size = preferred
         }
+
+        if let screen = NSScreen.main {
+            let visible = screen.visibleFrame
+            frame.size.width = min(frame.size.width, visible.width - 40)
+            frame.size.height = min(frame.size.height, visible.height - 40)
+            frame.origin.x = visible.midX - frame.width / 2
+            frame.origin.y = visible.midY - frame.height / 2
+        }
+        panel.setFrame(frame, display: true)
 
         NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
@@ -80,7 +93,7 @@ final class PanelController: ObservableObject {
             let window = NSWindow(contentViewController: hosting)
             window.title = "Rewrite Better Settings"
             window.styleMask = [.titled, .closable]
-            window.setContentSize(NSSize(width: 420, height: 280))
+            window.setContentSize(NSSize(width: 440, height: 360))
             window.center()
             settingsWindow = window
         }
@@ -94,7 +107,7 @@ final class PanelController: ObservableObject {
 
         let hosting = NSHostingController(rootView: panelView)
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 420, height: 560),
+            contentRect: NSRect(x: 0, y: 0, width: 780, height: 540),
             styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -105,7 +118,7 @@ final class PanelController: ObservableObject {
         panel.level = .floating
         panel.hidesOnDeactivate = false
         panel.isReleasedWhenClosed = false
-        panel.minSize = NSSize(width: 360, height: 420)
+        panel.minSize = NSSize(width: 720, height: 440)
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         self.panel = panel
     }
