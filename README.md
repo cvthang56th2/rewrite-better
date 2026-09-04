@@ -1,16 +1,17 @@
 # Rewrite Better
 
-A Chrome extension that rewrites, translates, and formats text using [Groq AI](https://groq.com) — **free to use** with a Groq account. Works on any webpage via a context menu, keyboard shortcut, or toolbar popup.
+A Chrome extension that rewrites, formats, translates, and drafts message/email replies using [Groq AI](https://groq.com) — **free to use** with a Groq account. Works on any webpage via a context menu, keyboard shortcut, or toolbar popup.
 
 ## Features
 
+- **Shared panel** — Toolbar popup and inline popup use the same UI and options
 - **Inline popup** — Select text on any page, right-click, and choose **Rewrite with Rewrite Better**
 - **Keyboard shortcut** — `Ctrl+Shift+E` (Windows/Linux) or `Cmd+Shift+E` (Mac)
-- **Toolbar popup** — Click the extension icon for a full rewrite/format panel
-- **Tone control** — Friendly, Professional, Concise, Persuasive, or Casual
-- **Translation** — Optional translate-then-rewrite with auto-detect and 14+ languages
-- **Document formatting** — Convert text to Markdown, HTML, bullet points, tables, outlines, FAQ, and more
-- **Copy to clipboard** — One-click copy of rewritten output
+- **Toolbar popup** — Click the extension icon for the full panel
+- **Rewrite** — Tone control + optional translation (visible chip selectors)
+- **Format Document** — Markdown, HTML, bullets, tables, outlines, FAQ, and more
+- **Reply / Compose** — Draft a chat message or email reply from a received message and/or your notes (intent, length, language)
+- **Copy to clipboard** — One-click copy of output
 
 Powered by Groq's `openai/gpt-oss-20b` model. Groq currently offers free API access — no paid plan required to get started.
 
@@ -47,28 +48,32 @@ The toolbar popup shows whether your key is configured and valid.
 
 The inline popup appears near your cursor and pre-fills the selected text.
 
-### Toolbar popup
+### Modes
 
-Click the extension icon to open the full panel with two modes:
+- **Rewrite** — Choose tone; optionally enable translation with From/To language chips
+- **Format** — Convert to Markdown, HTML, bullet points, numbered list, table, outline, summary, or FAQ
+- **Reply** — Choose Message or Email, intent, tone, length, and output language. Paste a received message to reply, and/or add notes to guide (or compose) the draft
 
-- **Rewrite Text** — Choose tone and optional translation
-- **Format Document** — Convert to Markdown, HTML, bullet points, numbered list, table, outline, summary, or FAQ
+## Supported languages
 
-## Supported languages (translation)
-
-Auto-detect, English, Vietnamese, Chinese, Japanese, Korean, French, German, Spanish, Italian, Portuguese, Russian, Arabic, Hindi, Thai
+Auto-detect (rewrite From), English, Vietnamese, Chinese, Japanese, Korean, French, German, Spanish, Italian, Portuguese, Russian, Arabic, Hindi, Thai
 
 ## Project structure
 
 ```
 rewrite-better/
-├── manifest.json    # Extension manifest (MV3)
-├── background.js    # Context menu & keyboard command handlers
-├── content.js       # Inline popup on web pages
-├── popup.html/js    # Toolbar popup UI
-├── options.html/js  # API key settings
-├── styles.css       # Shared styles
-└── icon.png         # Extension icon
+├── manifest.json
+├── background.js
+├── content.js          # Inline shell
+├── popup.html/js       # Toolbar shell
+├── options.html/js
+├── styles.css
+├── shared/
+│   ├── options.js      # Tone, format, intent, languages…
+│   ├── prompts.js      # Prompt builders
+│   ├── api.js          # Groq API helpers
+│   └── panel.js        # Shared panel UI
+└── icon.png
 ```
 
 ## Privacy
