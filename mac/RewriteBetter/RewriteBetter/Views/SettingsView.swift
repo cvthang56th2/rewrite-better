@@ -20,14 +20,12 @@ struct SettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
-                    providerField("Gemini", text: $geminiKeys, placeholder: ChatProvider.gemini.placeholder)
-                    providerField("Groq", text: $groqKeys, placeholder: ChatProvider.groq.placeholder)
-                    providerField("Cerebras", text: $cerebrasKeys, placeholder: ChatProvider.cerebras.placeholder)
-                    providerField("OpenAI", text: $openaiKeys, placeholder: ChatProvider.openai.placeholder)
+                    ProviderKeyField(provider: .gemini, text: $geminiKeys)
+                    ProviderKeyField(provider: .groq, text: $groqKeys)
+                    ProviderKeyField(provider: .cerebras, text: $cerebrasKeys)
+                    ProviderKeyField(provider: .openai, text: $openaiKeys)
 
-                    Text("Keys are stored only in your Mac Keychain.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    APIKeyDisclaimer()
                 }
 
                 Divider()
@@ -132,27 +130,6 @@ struct SettingsView: View {
             .contains { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
 
-    @ViewBuilder
-    private func providerField(_ title: String, text: Binding<String>, placeholder: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.subheadline.weight(.medium))
-            TextEditor(text: text)
-                .font(.system(.body, design: .monospaced))
-                .frame(minHeight: 44, maxHeight: 72)
-                .overlay(alignment: .topLeading) {
-                    if text.wrappedValue.isEmpty {
-                        Text(placeholder)
-                            .font(.system(.caption, design: .monospaced))
-                            .foregroundStyle(.tertiary)
-                            .padding(.top, 8)
-                            .padding(.leading, 5)
-                            .allowsHitTesting(false)
-                    }
-                }
-        }
-    }
-
     private func saveKeys() {
         SettingsStore.shared.setKeys(geminiKeys, for: .gemini)
         SettingsStore.shared.setKeys(groqKeys, for: .groq)
@@ -184,5 +161,121 @@ struct SettingsView: View {
         } else {
             message = "⚠️ \(okCount) OK · \(failCount) failed"
         }
+    }
+}
+
+private struct APIKeyDisclaimer: View {
+    var showBackground = true
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "lock.shield")
+                .foregroundStyle(.secondary)
+                .padding(.top, 1)
+
+            Text("API keys are stored only on this Mac (Keychain). They are never uploaded or saved anywhere else. You are responsible for keeping them private. The developer is not liable if a key is leaked.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(showBackground ? 10 : 0)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background {
+            if showBackground {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(nsColor: .controlBackgroundColor))
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private struct ProviderKeyField: View {
+    let provider: ChatProvider
+    @Binding var text: String
+    @State private var showingHelp = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                Text(provider.displayName)
+                    .font(.subheadline.weight(.medium))
+
+                Button {
+                    showingHelp.toggle()
+                } label: {
+                    Image(systemName: "info.circle")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("How to get a \(provider.displayName) API key")
+                .accessibilityLabel("How to get a \(provider.displayName) API key")
+                .popover(isPresented: $showingHelp, arrowEdge: .trailing) {
+                    ProviderAPIKeyHelpView(provider: provider)
+                }
+            }
+
+            TextEditor(text: $text)
+                .font(.system(.body, design: .monospaced))
+                .frame(minHeight: 44, maxHeight: 72)
+                .overlay(alignment: .topLeading) {
+                    if text.isEmpty {
+                        Text(provider.placeholder)
+                            .font(.system(.caption, design: .monospaced))
+                            .foregroundStyle(.tertiary)
+                            .padding(.top, 8)
+                            .padding(.leading, 5)
+                            .allowsHitTesting(false)
+                    }
+                }
+        }
+    }
+}
+
+private struct ProviderAPIKeyHelpView: View {
+    let provider: ChatProvider
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Get a \(provider.displayName) API key")
+                    .font(.headline)
+                Text(provider.helpSummary)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(Array(provider.helpSteps.enumerated()), id: \.offset) { index, step in
+                    HStack(alignment: .top, spacing: 8) {
+                        Text("\(index + 1)")
+                            .font(.caption.weight(.semibold).monospacedDigit())
+                            .foregroundStyle(.secondary)
+                            .frame(width: 16, alignment: .trailing)
+                        Text(step)
+                            .font(.callout)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+
+            Button {
+                NSWorkspace.shared.open(provider.helpURL)
+            } label: {
+                Label("Open \(provider.helpURL.host ?? provider.displayName)", systemImage: "arrow.up.right")
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+
+            Text("You can add more than one key, separated by comma or newline.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            APIKeyDisclaimer(showBackground: false)
+        }
+        .padding(16)
+        .frame(width: 340, alignment: .leading)
     }
 }

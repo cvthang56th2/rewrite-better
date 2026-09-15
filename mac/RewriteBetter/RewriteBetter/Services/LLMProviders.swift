@@ -23,12 +23,67 @@ enum ChatProvider: String, CaseIterable, Identifiable {
         }
     }
 
-    var helpURL: String {
+    var keyPrefixHint: String {
         switch self {
-        case .gemini: return "aistudio.google.com/apikey"
-        case .groq: return "console.groq.com"
-        case .cerebras: return "cloud.cerebras.ai"
-        case .openai: return "platform.openai.com/api-keys"
+        case .gemini: return "AIza"
+        case .groq: return "gsk_"
+        case .cerebras: return "csk_"
+        case .openai: return "sk-"
+        }
+    }
+
+    var helpURL: URL {
+        switch self {
+        case .gemini: return URL(string: "https://aistudio.google.com/apikey")!
+        case .groq: return URL(string: "https://console.groq.com/keys")!
+        case .cerebras: return URL(string: "https://cloud.cerebras.ai")!
+        case .openai: return URL(string: "https://platform.openai.com/api-keys")!
+        }
+    }
+
+    var helpSummary: String {
+        switch self {
+        case .gemini:
+            return "Tried first. Google AI Studio gives a free quota after you sign in with Google."
+        case .groq:
+            return "Second fallback. Groq is fast and has a free tier after you create an account."
+        case .cerebras:
+            return "Third fallback. Cerebras Cloud has a free trial. Open API Keys in the left sidebar."
+        case .openai:
+            return "Last in the chain. Create a secret key on the OpenAI platform. Billing is required after any trial."
+        }
+    }
+
+    var helpSteps: [String] {
+        switch self {
+        case .gemini:
+            return [
+                "Open Google AI Studio (link below).",
+                "Sign in with your Google account.",
+                "Click Create API key. Create or pick a Google Cloud project if asked.",
+                "Copy the key and paste it here. It starts with \(keyPrefixHint)."
+            ]
+        case .groq:
+            return [
+                "Open Groq Console (link below).",
+                "Sign up or sign in.",
+                "Open API Keys and create a new key.",
+                "Copy it and paste here. It starts with \(keyPrefixHint)."
+            ]
+        case .cerebras:
+            return [
+                "Open Cerebras Cloud (link below).",
+                "Sign up or sign in.",
+                "Open API Keys in the left sidebar. On a paid account, pick a project first.",
+                "Generate a key, copy it, and paste here. It starts with \(keyPrefixHint)."
+            ]
+        case .openai:
+            return [
+                "Open the OpenAI API keys page (link below).",
+                "Sign in to your OpenAI account.",
+                "Click Create new secret key and copy it immediately.",
+                "Paste it here. It starts with \(keyPrefixHint)."
+            ]
         }
     }
 }
