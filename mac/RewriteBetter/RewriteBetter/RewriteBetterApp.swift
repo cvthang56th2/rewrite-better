@@ -4,13 +4,14 @@ import AppKit
 @main
 struct RewriteBetterApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @ObservedObject private var hotkeys = HotkeyService.shared
 
     var body: some Scene {
         MenuBarExtra("Rewrite Better", systemImage: "text.bubble") {
             Button("Open Panel") {
                 PanelController.shared.openFromMenu()
             }
-            .keyboardShortcut("e", modifiers: [.command, .shift])
+            .panelHotkeyShortcut(hotkeys.current)
 
             Button("Open Empty Panel") {
                 PanelController.shared.openEmpty()
@@ -28,6 +29,17 @@ struct RewriteBetterApp: App {
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q", modifiers: [.command])
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func panelHotkeyShortcut(_ hotkey: PanelHotkey) -> some View {
+        if let keyEquivalent = hotkey.keyEquivalent {
+            self.keyboardShortcut(keyEquivalent, modifiers: hotkey.swiftUIModifiers)
+        } else {
+            self
         }
     }
 }

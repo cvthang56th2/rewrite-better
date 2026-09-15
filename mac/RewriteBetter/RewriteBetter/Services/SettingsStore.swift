@@ -52,6 +52,29 @@ final class SettingsStore {
 
     var hasApiKey: Bool { hasAnyApiKey }
 
+    // MARK: - Panel hotkey
+
+    private let hotkeyKeyCodeKey = "panelHotkeyKeyCode"
+    private let hotkeyModifiersKey = "panelHotkeyModifiers"
+
+    var panelHotkey: PanelHotkey {
+        get {
+            let defaults = UserDefaults.standard
+            guard defaults.object(forKey: hotkeyKeyCodeKey) != nil else {
+                return .default
+            }
+            return PanelHotkey(
+                keyCode: UInt32(defaults.integer(forKey: hotkeyKeyCodeKey)),
+                carbonModifiers: UInt32(defaults.integer(forKey: hotkeyModifiersKey))
+            )
+        }
+        set {
+            let defaults = UserDefaults.standard
+            defaults.set(Int(newValue.keyCode), forKey: hotkeyKeyCodeKey)
+            defaults.set(Int(newValue.carbonModifiers), forKey: hotkeyModifiersKey)
+        }
+    }
+
     // MARK: - Keychain
 
     private func account(for provider: ChatProvider) -> String {

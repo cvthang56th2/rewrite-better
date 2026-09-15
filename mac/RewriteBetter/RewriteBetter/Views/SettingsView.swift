@@ -11,6 +11,7 @@ struct SettingsView: View {
     @State private var isTesting = false
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
     @State private var launchAtLoginError = ""
+    @ObservedObject private var hotkeys = HotkeyService.shared
 
     var body: some View {
         ScrollView {
@@ -54,6 +55,25 @@ struct SettingsView: View {
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
+
+                    HStack(spacing: 8) {
+                        Text("Open panel shortcut")
+                            .font(.subheadline.weight(.medium))
+                        Spacer()
+                        if hotkeys.current != .default {
+                            Button("Reset") {
+                                applyHotkey(.default)
+                            }
+                            .controlSize(.small)
+                        }
+                        HotkeyRecorderButton(hotkey: hotkeys.current) { shortcut in
+                            applyHotkey(shortcut)
+                        }
+                    }
+
+                    Text("Click the shortcut, then press a new combo. Include ⌘, ⌥, or ⌃. Esc cancels.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
 
                 Divider()
@@ -107,7 +127,7 @@ struct SettingsView: View {
                         }
                     }
 
-                    Text("Global hotkey: ⌘⇧E — needs Accessibility to read selected text. Prefer the copy in /Applications.")
+                    Text("\(hotkeys.current.displayString) needs Accessibility to read selected text. Prefer the copy in /Applications.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -135,6 +155,14 @@ struct SettingsView: View {
         SettingsStore.shared.setKeys(groqKeys, for: .groq)
         SettingsStore.shared.setKeys(cerebrasKeys, for: .cerebras)
         SettingsStore.shared.setKeys(openaiKeys, for: .openai)
+    }
+
+    private func applyHotkey(_ shortcut: PanelHotkey) {
+        if HotkeyService.shared.apply(shortcut) {
+            message = "✅ Shortcut set to \(shortcut.displayString)"
+        } else {
+            message = "Couldn't register \(shortcut.displayString). That combo may already be in use."
+        }
     }
 
     private func testKeys() async {
@@ -277,5 +305,87 @@ private struct ProviderAPIKeyHelpView: View {
         }
         .padding(16)
         .frame(width: 340, alignment: .leading)
+    }
+}
+
+private final class HotkeyCaptureMonitor: ObservableObject {
+    private var monitor: Any?
+
+    func start(_ handler: @escaping (NSEvent) -> NSEvent?) {
+        stop()
+        monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown, handler: handler)
+    }
+
+    func stop() {
+        if let monitor {
+            NSEvent.removeMonitor(monitor)
+            self.monitor = nil
+        }
+    }
+
+    deinit { stop() }
+}
+
+private struct HotkeyRecorderButton: View {
+    let hotkey: PanelHotkey
+    let onCapture: (PanelHotkey) -> Void
+
+    @State private var isRecording = false
+    @StateObject private var capture = HotkeyCaptureMonitor()
+
+    var body: some View {
+        Button {
+            if isRecording {
+                stopRecording()
+            } else {
+                startRecording()
+            }
+        } label: {
+            Text(isRecording ? "Type shortcut…" : hotkey.displayString)
+                .font(.body.weight(.medium))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color(nsColor: .controlBackgroundColor))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(isRecording ? Color.accentColor : Color.secondary.opacity(0.35), lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .help(isRecording ? "Press a shortcut, or Esc to cancel" : "Click to change the shortcut")
+        .onDisappear { stopRecording() }
+        .accessibilityLabel("Open panel shortcut")
+        .accessibilityValue(hotkey.displayString)
+    }
+
+    private func startRecording() {
+        isRecording = true
+        capture.start { event in
+            handle(event)
+            return nil
+        }
+    }
+
+    private func stopRecording() {
+        capture.stop()
+        isRecording = false
+    }
+
+    private func handle(_ event: NSEvent) {
+        if event.isARepeat { return }
+        if event.keyCode == 53 {
+            stopRecording()
+            return
+        }
+        let shortcut = PanelHotkey.from(event: event)
+        guard shortcut.hasRequiredModifier else {
+            NSSound.beep()
+            return
+        }
+        onCapture(shortcut)
+        stopRecording()
     }
 }
