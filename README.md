@@ -22,8 +22,10 @@ Powered by Groq's `openai/gpt-oss-20b` model. Groq currently offers free API acc
 1. Clone or download this repository
 2. Open Chrome and go to `chrome://extensions`
 3. Enable **Developer mode** (top right)
-4. Click **Load unpacked** and select the project folder
+4. Click **Load unpacked** and select the `chrome/` folder
 5. Pin the extension from the toolbar for quick access
+
+If you previously loaded the extension from the repo root, remove it and load `chrome/` instead.
 
 ## Setup
 
@@ -64,18 +66,22 @@ Auto-detect (rewrite From), English, Vietnamese, Chinese, Japanese, Korean, Fren
 
 ```
 rewrite-better/
-├── manifest.json
-├── background.js
-├── content.js          # Inline shell
-├── popup.html/js       # Toolbar shell
-├── options.html/js
-├── styles.css
-├── shared/
-│   ├── options.js      # Tone, format, intent, languages…
-│   ├── prompts.js      # Prompt builders
-│   ├── api.js          # Groq API helpers
-│   └── panel.js        # Shared panel UI
-└── icon.png
+├── chrome/                 # Chrome extension (Load unpacked here)
+│   ├── manifest.json
+│   ├── background.js
+│   ├── content.js          # Inline shell
+│   ├── popup.html/js       # Toolbar shell
+│   ├── options.html/js
+│   ├── styles.css
+│   ├── shared/
+│   │   ├── options.js      # Tone, format, intent, languages…
+│   │   ├── prompts.js      # Prompt builders
+│   │   ├── api.js          # Groq API helpers
+│   │   └── panel.js        # Shared panel UI
+│   └── icon.png
+├── mac/                    # Native macOS menu bar app
+├── win/                    # Native Windows app (planned)
+└── docs/
 ```
 
 ## Privacy

@@ -24,8 +24,8 @@ mac/RewriteBetter/
   TextCaptureService     — selection → clipboard fallback
   SettingsStore          — Keychain API key
   GroqClient             — chat completions
-  PromptBuilder          — port of shared/prompts.js
-  Options                — port of shared/options.js
+  PromptBuilder          — port of chrome/shared/prompts.js
+  Options                — port of chrome/shared/options.js
   PanelView / SettingsView
 ```
 
@@ -34,7 +34,7 @@ mac/RewriteBetter/
 - macOS 13+ (MenuBarExtra)
 - No App Sandbox in v1 (Accessibility + global hotkey simpler)
 - Same model: `openai/gpt-oss-20b`
-- Lives in `mac/` alongside the Chrome extension
+- Lives in `mac/` alongside the Chrome extension in `chrome/`
 
 ## Out of scope (v1)
 
