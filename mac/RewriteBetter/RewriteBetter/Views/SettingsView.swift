@@ -12,6 +12,9 @@ struct SettingsView: View {
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
     @State private var launchAtLoginError = ""
     @ObservedObject private var hotkeys = HotkeyService.shared
+    @State private var rewriteExtra = ""
+    @State private var formatExtra = ""
+    @State private var replyExtra = ""
 
     var body: some View {
         ScrollView {
@@ -74,6 +77,33 @@ struct SettingsView: View {
                     Text("Click the shortcut, then press a new combo. Include ⌘, ⌥, or ⌃. Esc cancels.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                }
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Extra instructions")
+                        .font(.headline)
+
+                    Text("Optional. Added on top of the built-in prompt for that mode. The app still requires only the final text back — these cannot replace that rule.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    ExtraInstructionsEditor(
+                        title: "Rewrite",
+                        text: $rewriteExtra,
+                        placeholder: "e.g. Always write in Vietnamese. Keep my voice. No emoji."
+                    )
+                    ExtraInstructionsEditor(
+                        title: "Format",
+                        text: $formatExtra,
+                        placeholder: "e.g. Prefer ATX headings. Never wrap in a code fence."
+                    )
+                    ExtraInstructionsEditor(
+                        title: "Reply",
+                        text: $replyExtra,
+                        placeholder: "e.g. Sign off as Thắng. Be warm but brief."
+                    )
                 }
 
                 Divider()
@@ -142,6 +172,9 @@ struct SettingsView: View {
             groqKeys = SettingsStore.shared.keys(for: .groq)
             cerebrasKeys = SettingsStore.shared.keys(for: .cerebras)
             openaiKeys = SettingsStore.shared.keys(for: .openai)
+            rewriteExtra = SettingsStore.shared.extraInstructions(for: .rewrite)
+            formatExtra = SettingsStore.shared.extraInstructions(for: .format)
+            replyExtra = SettingsStore.shared.extraInstructions(for: .reply)
         }
     }
 
@@ -155,6 +188,9 @@ struct SettingsView: View {
         SettingsStore.shared.setKeys(groqKeys, for: .groq)
         SettingsStore.shared.setKeys(cerebrasKeys, for: .cerebras)
         SettingsStore.shared.setKeys(openaiKeys, for: .openai)
+        SettingsStore.shared.setExtraInstructions(rewriteExtra, for: .rewrite)
+        SettingsStore.shared.setExtraInstructions(formatExtra, for: .format)
+        SettingsStore.shared.setExtraInstructions(replyExtra, for: .reply)
     }
 
     private func applyHotkey(_ shortcut: PanelHotkey) {
@@ -188,6 +224,37 @@ struct SettingsView: View {
             message = "❌ All \(failCount) key(s) failed"
         } else {
             message = "⚠️ \(okCount) OK · \(failCount) failed"
+        }
+    }
+}
+
+private struct ExtraInstructionsEditor: View {
+    let title: String
+    @Binding var text: String
+    let placeholder: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.subheadline.weight(.medium))
+
+            TextEditor(text: $text)
+                .font(.system(.body))
+                .frame(minHeight: 56, maxHeight: 88)
+                .overlay(alignment: .topLeading) {
+                    if text.isEmpty {
+                        Text(placeholder)
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                            .padding(.top, 8)
+                            .padding(.leading, 5)
+                            .allowsHitTesting(false)
+                    }
+                }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.secondary.opacity(0.25))
+                )
         }
     }
 }

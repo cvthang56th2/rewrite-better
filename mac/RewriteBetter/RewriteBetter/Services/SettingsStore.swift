@@ -75,6 +75,26 @@ final class SettingsStore {
         }
     }
 
+    // MARK: - Extra instructions (per mode)
+
+    func extraInstructions(for mode: AppMode) -> String {
+        UserDefaults.standard.string(forKey: extraInstructionsKey(for: mode)) ?? ""
+    }
+
+    func setExtraInstructions(_ value: String, for mode: AppMode) {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        let key = extraInstructionsKey(for: mode)
+        if trimmed.isEmpty {
+            UserDefaults.standard.removeObject(forKey: key)
+        } else {
+            UserDefaults.standard.set(trimmed, forKey: key)
+        }
+    }
+
+    private func extraInstructionsKey(for mode: AppMode) -> String {
+        "extraInstructions.\(mode.rawValue)"
+    }
+
     // MARK: - Keychain
 
     private func account(for provider: ChatProvider) -> String {

@@ -71,6 +71,7 @@ final class PanelViewModel: ObservableObject {
             return
         }
 
+        let extra = SettingsStore.shared.extraInstructions(for: mode)
         let prompt: String?
         switch mode {
         case .rewrite:
@@ -79,10 +80,15 @@ final class PanelViewModel: ObservableObject {
                 tone: tone,
                 translationEnabled: enableTranslate,
                 fromLanguage: fromLanguage,
-                toLanguage: toLanguage
+                toLanguage: toLanguage,
+                extraInstructions: extra
             )
         case .format:
-            prompt = PromptBuilder.buildFormat(formatType: formatType, input: inputText)
+            prompt = PromptBuilder.buildFormat(
+                formatType: formatType,
+                input: inputText,
+                extraInstructions: extra
+            )
         case .reply:
             prompt = PromptBuilder.buildReply(
                 channel: channel,
@@ -91,7 +97,8 @@ final class PanelViewModel: ObservableObject {
                 length: length,
                 outputLanguage: outputLanguage,
                 incomingText: inputText,
-                notes: notes
+                notes: notes,
+                extraInstructions: extra
             )
         }
 
@@ -427,9 +434,13 @@ struct PanelView: View {
                     ChipGroup(title: "From", options: AppOptions.languages, selection: $vm.fromLanguage)
                     ChipGroup(title: "To", options: AppOptions.outputLanguages, selection: $vm.toLanguage)
                 }
+                extraInstructionsHint
             }
         case .format:
-            ChipGroup(title: "Format", options: AppOptions.formatTypes, selection: $vm.formatType)
+            VStack(alignment: .leading, spacing: 10) {
+                ChipGroup(title: "Format", options: AppOptions.formatTypes, selection: $vm.formatType)
+                extraInstructionsHint
+            }
         case .reply:
             VStack(alignment: .leading, spacing: 10) {
                 ChipGroup(title: "Type", options: AppOptions.channels, selection: $vm.channel)
@@ -440,7 +451,19 @@ struct PanelView: View {
                 Text("Leave message empty and use notes to compose new.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
+                extraInstructionsHint
             }
+        }
+    }
+
+    @ViewBuilder
+    private var extraInstructionsHint: some View {
+        let extra = SettingsStore.shared.extraInstructions(for: vm.mode)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if !extra.isEmpty {
+            Text("Using extra instructions from Settings.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
         }
     }
 

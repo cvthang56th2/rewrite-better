@@ -28,6 +28,9 @@
 		2377ABC8AE7A4170A76B9120 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B30AC7ADAF1D468EA132DE6B /* SettingsView.swift */; };
 		3FA707A7184C4872A509928A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7110642F8F4E4A688581EEE1 /* Assets.xcassets */; };
 		1254ABB6C45C4E7097BC64D9 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8C9F3623DD945F0AA80A047 /* Carbon.framework */; };
+		82B3C4D5E64F7A8192A3B4C5 /* PromptBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91A2B3C4D5E64F7A8192A3B4 /* PromptBuilderTests.swift */; };
+		73C4D5E64F7A8192A3B4C5D6 /* PromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866499DFC1AD42ADB79DA8CC /* PromptBuilder.swift */; };
+		64D5E64F7A8192A3B4C5D6E7 /* Options.swift in Sources */ = {isa = PBXBuildFile; fileRef = 444D9725A2B34025981F7504 /* Options.swift */; };
 
 /* End PBXBuildFile section */
 
@@ -55,6 +58,8 @@
 		F70B51C13B0B4C52982ECE66 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E9DEB460C3DA416990E22D46 /* RewriteBetter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RewriteBetter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8C9F3623DD945F0AA80A047 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
+		91A2B3C4D5E64F7A8192A3B4 /* PromptBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptBuilderTests.swift; sourceTree = "<group>"; };
+		55E64F7A8192A3B4C5D6E7F8 /* RewriteBetterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RewriteBetterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 
 /* End PBXFileReference section */
 
@@ -68,6 +73,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		28A192A3B4C5D6E7F8091A2B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -75,6 +87,7 @@
 			isa = PBXGroup;
 			children = (
 				87BE3B290EBA464B837CFD94 /* RewriteBetter */,
+				19A2B3C4D5E64F7A8192A3C4 /* RewriteBetterTests */,
 				C5B06EC205BE4F1985E8D49D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -83,8 +96,17 @@
 			isa = PBXGroup;
 			children = (
 				E9DEB460C3DA416990E22D46 /* RewriteBetter.app */,
+				55E64F7A8192A3B4C5D6E7F8 /* RewriteBetterTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		19A2B3C4D5E64F7A8192A3C4 /* RewriteBetterTests */ = {
+			isa = PBXGroup;
+			children = (
+				91A2B3C4D5E64F7A8192A3B4 /* PromptBuilderTests.swift */,
+			);
+			path = RewriteBetterTests;
 			sourceTree = "<group>";
 		};
 		87BE3B290EBA464B837CFD94 /* RewriteBetter */ = {
@@ -158,6 +180,22 @@
 			productReference = E9DEB460C3DA416990E22D46 /* RewriteBetter.app */;
 			productType = "com.apple.product-type.application";
 		};
+		46F7A8192A3B4C5D6E7F8091 /* RewriteBetterTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E23B4C5D6E7F8192A3B4C5D8 /* Build configuration list for PBXNativeTarget "RewriteBetterTests" */;
+			buildPhases = (
+				37A8192A3B4C5D6E7F8091A2 /* Sources */,
+				28A192A3B4C5D6E7F8091A2B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RewriteBetterTests;
+			productName = RewriteBetterTests;
+			productReference = 55E64F7A8192A3B4C5D6E7F8 /* RewriteBetterTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -182,6 +220,7 @@
 			projectRoot = "";
 			targets = (
 				63E4F9E56F62456B87C27181 /* RewriteBetter */,
+				46F7A8192A3B4C5D6E7F8091 /* RewriteBetterTests */,
 			);
 		};
 /* End PBXProject section */
@@ -220,6 +259,16 @@
 				28C62889B8AB436D9CB6C1D9 /* ChipGroup.swift in Sources */,
 				EAC89B3417264C4F85C4B932 /* PanelView.swift in Sources */,
 				2377ABC8AE7A4170A76B9120 /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		37A8192A3B4C5D6E7F8091A2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				82B3C4D5E64F7A8192A3B4C5 /* PromptBuilderTests.swift in Sources */,
+				73C4D5E64F7A8192A3B4C5D6 /* PromptBuilder.swift in Sources */,
+				64D5E64F7A8192A3B4C5D6E7 /* Options.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -305,6 +354,38 @@
 			};
 			name = Release;
 		};
+		0A3B4C5D6E7F8192A3B4C5D6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TQHJYDS43X;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rewritebetter.macos.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F13B4C5D6E7F8192A3B4C5D7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TQHJYDS43X;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rewritebetter.macos.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -322,6 +403,15 @@
 			buildConfigurations = (
 				F66FF4BDC2C64CE2857C45CE /* Debug */,
 				85D77C8A1BDC46F588951863 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E23B4C5D6E7F8192A3B4C5D8 /* Build configuration list for PBXNativeTarget "RewriteBetterTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A3B4C5D6E7F8192A3B4C5D6 /* Debug */,
+				F13B4C5D6E7F8192A3B4C5D7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

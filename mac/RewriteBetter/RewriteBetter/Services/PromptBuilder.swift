@@ -5,30 +5,42 @@ enum PromptBuilder {
         AppOptions.languageNames[code] ?? code
     }
 
-    static func buildRewrite(input: String, tone: String, translationEnabled: Bool, fromLanguage: String, toLanguage: String) -> String {
+    static func buildRewrite(
+        input: String,
+        tone: String,
+        translationEnabled: Bool,
+        fromLanguage: String,
+        toLanguage: String,
+        extraInstructions: String = ""
+    ) -> String {
+        let instruction: String
         if translationEnabled {
             let toName = langName(toLanguage)
             if fromLanguage == "auto" {
-                return "First, translate the following text to \(toName), then rewrite it in a \(tone) tone. The output should be in \(toName) and maintain a \(tone) style. Return only the final rewritten text without any explanations:\n\n\(input)"
+                instruction = "First, translate the following text to \(toName), then rewrite it in a \(tone) tone. The output should be in \(toName) and maintain a \(tone) style. Return only the final rewritten text without any explanations:"
+            } else {
+                let fromName = langName(fromLanguage)
+                instruction = "First, translate the following text from \(fromName) to \(toName), then rewrite it in a \(tone) tone. The output should be in \(toName) and maintain a \(tone) style. Return only the final rewritten text without any explanations:"
             }
-            let fromName = langName(fromLanguage)
-            return "First, translate the following text from \(fromName) to \(toName), then rewrite it in a \(tone) tone. The output should be in \(toName) and maintain a \(tone) style. Return only the final rewritten text without any explanations:\n\n\(input)"
+        } else {
+            instruction = "Rewrite the following text in a \(tone) tone. Return only the rewritten text without any additional comments or explanations:"
         }
-        return "Rewrite the following text in a \(tone) tone. Return only the rewritten text without any additional comments or explanations:\n\n\(input)"
+        return withUserContent(input, extraInstructions: extraInstructions, attachedTo: instruction)
     }
 
-    static func buildFormat(formatType: String, input: String) -> String {
+    static func buildFormat(formatType: String, input: String, extraInstructions: String = "") -> String {
         let prompts: [String: String] = [
-            "markdown": "Convert the following text to well-structured Markdown format with appropriate headers, lists, emphasis, and formatting. Return only the formatted Markdown:\n\n\(input)",
-            "html": "Convert the following text to clean, semantic HTML with appropriate tags, headings, paragraphs, and lists. Return only the HTML code:\n\n\(input)",
-            "bullet-points": "Convert the following text into clear, concise bullet points. Organize the information hierarchically with main points and sub-points where appropriate. Return only the bullet points:\n\n\(input)",
-            "numbered-list": "Convert the following text into a well-organized numbered list. Use hierarchical numbering (1, 2, 3, then a, b, c, etc.) where appropriate. Return only the numbered list:\n\n\(input)",
-            "table": "Convert the following text into a well-formatted table. Identify the key information and organize it into appropriate columns and rows. Use markdown table format. Return only the table:\n\n\(input)",
-            "outline": "Convert the following text into a detailed outline format with main topics, subtopics, and supporting details. Use standard outline formatting (I, A, 1, a, etc.). Return only the outline:\n\n\(input)",
-            "summary": "Convert the following text into a professional executive summary with key points, main findings, and actionable insights. Keep it concise but comprehensive. Return only the summary:\n\n\(input)",
-            "faq": "Convert the following text into a FAQ (Frequently Asked Questions) format. Extract key information and present it as questions and answers. Return only the FAQ:\n\n\(input)"
+            "markdown": "Convert the following text to well-structured Markdown format with appropriate headers, lists, emphasis, and formatting. Return only the formatted Markdown:",
+            "html": "Convert the following text to clean, semantic HTML with appropriate tags, headings, paragraphs, and lists. Return only the HTML code:",
+            "bullet-points": "Convert the following text into clear, concise bullet points. Organize the information hierarchically with main points and sub-points where appropriate. Return only the bullet points:",
+            "numbered-list": "Convert the following text into a well-organized numbered list. Use hierarchical numbering (1, 2, 3, then a, b, c, etc.) where appropriate. Return only the numbered list:",
+            "table": "Convert the following text into a well-formatted table. Identify the key information and organize it into appropriate columns and rows. Use markdown table format. Return only the table:",
+            "outline": "Convert the following text into a detailed outline format with main topics, subtopics, and supporting details. Use standard outline formatting (I, A, 1, a, etc.). Return only the outline:",
+            "summary": "Convert the following text into a professional executive summary with key points, main findings, and actionable insights. Keep it concise but comprehensive. Return only the summary:",
+            "faq": "Convert the following text into a FAQ (Frequently Asked Questions) format. Extract key information and present it as questions and answers. Return only the FAQ:"
         ]
-        return prompts[formatType] ?? prompts["bullet-points"]!
+        let instruction = prompts[formatType] ?? prompts["bullet-points"]!
+        return withUserContent(input, extraInstructions: extraInstructions, attachedTo: instruction)
     }
 
     static func buildReply(
@@ -38,7 +50,8 @@ enum PromptBuilder {
         length: String,
         outputLanguage: String,
         incomingText: String,
-        notes: String
+        notes: String,
+        extraInstructions: String = ""
     ) -> String? {
         let outLang = langName(outputLanguage)
         let isEmail = channel == "email"
@@ -86,6 +99,8 @@ enum PromptBuilder {
         Return only the final \(isEmail ? "email (subject + body)" : "message") — no explanations or meta commentary.
         """
 
+        prompt = appendExtraInstructions(extraInstructions, to: prompt)
+
         if hasIncoming {
             prompt += "\n\n--- Received message ---\n\(incomingText.trimmingCharacters(in: .whitespacesAndNewlines))"
         }
@@ -93,5 +108,30 @@ enum PromptBuilder {
             prompt += "\n\n--- Writer's notes ---\n\(notes.trimmingCharacters(in: .whitespacesAndNewlines))"
         }
         return prompt
+    }
+
+    private static func withUserContent(_ input: String, extraInstructions: String, attachedTo instruction: String) -> String {
+        let withExtra = appendExtraInstructions(extraInstructions, to: instruction)
+        if extraInstructions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return "\(withExtra)\n\n\(input)"
+        }
+        return """
+        \(withExtra)
+
+        --- Text ---
+        \(input)
+        """
+    }
+
+    private static func appendExtraInstructions(_ extraInstructions: String, to prompt: String) -> String {
+        let extra = extraInstructions.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !extra.isEmpty else { return prompt }
+        return """
+        \(prompt)
+
+        --- Extra instructions ---
+        \(extra)
+        Follow the extra instructions, but still return only the final output — no explanations or meta commentary.
+        """
     }
 }
