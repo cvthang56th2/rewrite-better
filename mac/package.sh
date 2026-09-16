@@ -48,7 +48,11 @@ xcodebuild \
   -project "$PROJECT" \
   -scheme RewriteBetter \
   -configuration Release \
+  -destination 'generic/platform=macOS' \
   -derivedDataPath "$DERIVED" \
+  CODE_SIGN_IDENTITY="-" \
+  CODE_SIGNING_REQUIRED=NO \
+  DEVELOPMENT_TEAM="" \
   build
 
 APP="$DERIVED/Build/Products/Release/${APP_NAME}.app"
