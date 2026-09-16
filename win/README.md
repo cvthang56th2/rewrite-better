@@ -1,6 +1,6 @@
 # Rewrite Better for Windows
 
-Tauri 2 system-tray app with the same Rewrite / Format / Reply features as the Chrome extension and macOS menu bar app.
+Tauri 2 system-tray app with the same Rewrite / Format / Reply panel as the macOS app: two-column layout, writing assist, extra instructions, multi-provider failover, and Replace/Paste back into the app you came from.
 
 ## Requirements
 
@@ -14,7 +14,7 @@ Tauri 2 system-tray app with the same Rewrite / Format / Reply features as the C
 2. The app lives in the system tray (no taskbar window while idle)
 3. Open **Settings** and paste at least one API key
 4. Select text in any app → press **Ctrl+Shift+E** (or use the tray menu)
-5. Choose mode/options → run → the result is copied to the clipboard
+5. Choose mode/options → run → **Replace** (Ctrl+Alt+Enter) to put the result back, or copy from the panel
 
 Selected text is captured with a `Ctrl+C` probe, then the previous clipboard is restored. Elevated windows (apps run as Administrator) cannot be captured unless Rewrite Better is also elevated.
 

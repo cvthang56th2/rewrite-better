@@ -1,6 +1,7 @@
 let currentPopup = null;
 let mousePosition = { x: 0, y: 0 };
 let panelApi = null;
+let capturedTarget = null;
 
 function closePopup() {
   if (panelApi) {
@@ -10,6 +11,76 @@ function closePopup() {
   if (currentPopup) {
     currentPopup.remove();
     currentPopup = null;
+  }
+}
+
+function captureEditableTarget() {
+  const el = document.activeElement;
+  if (
+    el &&
+    (el.tagName === 'TEXTAREA' ||
+      (el.tagName === 'INPUT' &&
+        /^(text|search|email|url|tel|password|)$/i.test(el.type || 'text')))
+  ) {
+    return {
+      type: 'input',
+      el,
+      start: el.selectionStart,
+      end: el.selectionEnd,
+      hadSelection: el.selectionStart !== el.selectionEnd
+    };
+  }
+  if (el && el.isContentEditable) {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      return {
+        type: 'range',
+        range: sel.getRangeAt(0).cloneRange(),
+        hadSelection: !sel.isCollapsed
+      };
+    }
+  }
+  const sel = window.getSelection();
+  return {
+    type: 'none',
+    hadSelection: !!(sel && String(sel).trim())
+  };
+}
+
+function replaceCapturedSelection(text) {
+  const captured = capturedTarget;
+  if (!captured) return false;
+  if (captured.type === 'input' && captured.el && document.contains(captured.el)) {
+    const el = captured.el;
+    const start = captured.start;
+    const end = captured.end;
+    const value = el.value;
+    el.focus();
+    el.value = value.slice(0, start) + text + value.slice(end);
+    const pos = start + text.length;
+    el.setSelectionRange(pos, pos);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    return true;
+  }
+  if (captured.type === 'range' && captured.range) {
+    const range = captured.range;
+    range.deleteContents();
+    range.insertNode(document.createTextNode(text));
+    return true;
+  }
+  return false;
+}
+
+async function copyFallback(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (err) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
   }
 }
 
@@ -52,6 +123,7 @@ function ensureInlineStyles() {
 }
 
 function showInlinePopup(selectedText) {
+  capturedTarget = captureEditableTarget();
   closePopup();
   ensureInlineStyles();
 
@@ -72,7 +144,17 @@ function showInlinePopup(selectedText) {
       showSettings: true,
       showApiStatus: false,
       compact: true,
-      onClose: closePopup
+      onClose: closePopup,
+      pasteBack: {
+        hadSelection: !!(capturedTarget && capturedTarget.hadSelection) || !!String(selectedText || '').trim(),
+        appName: RewriteBetter.t('paste.previousApp'),
+        async perform(text) {
+          const replaced = replaceCapturedSelection(text);
+          if (!replaced) await copyFallback(text);
+          if (replaced) closePopup();
+          return replaced;
+        }
+      }
     });
 
     const rect = popup.getBoundingClientRect();

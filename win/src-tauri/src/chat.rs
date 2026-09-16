@@ -8,6 +8,7 @@ pub struct ChatRequest {
     pub model: String,
     pub prompt: String,
     pub max_tokens: u32,
+    pub temperature: Option<f32>,
     pub extras: serde_json::Value,
 }
 
@@ -31,7 +32,7 @@ pub async fn chat_completion(request: ChatRequest) -> Result<String, ChatError> 
     let mut body = serde_json::json!({
         "model": request.model,
         "messages": [{ "role": "user", "content": request.prompt }],
-        "temperature": 0.7,
+        "temperature": request.temperature.unwrap_or(0.7),
         "max_tokens": request.max_tokens
     });
     if let Some(obj) = body.as_object_mut() {

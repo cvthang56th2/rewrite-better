@@ -36,8 +36,9 @@
 body.rb-popup-body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   margin: 0;
-  padding: 12px;
-  width: 380px;
+  padding: 16px;
+  width: 760px;
+  min-height: 480px;
   background: var(--rb-bg);
   color: var(--rb-text);
   -webkit-font-smoothing: antialiased;
@@ -60,9 +61,9 @@ body.rb-desktop .rb-root {
   height: 100%;
 }
 
-body.rb-desktop .rb-input {
-  min-height: 120px;
+body.rb-desktop .rb-ghost-editor {
   flex: 1;
+  min-height: 120px;
 }
 
 body.rb-desktop .rb-result {
@@ -167,6 +168,11 @@ body.rb-settings-body {
   cursor: pointer;
 }
 
+.rb-text-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .rb-hotkey-btn {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 13px;
@@ -217,6 +223,8 @@ body.rb-settings-body {
   gap: 10px;
   color: var(--rb-text);
   box-sizing: border-box;
+  min-height: 440px;
+  height: 100%;
 }
 
 .rb-root *,
@@ -513,6 +521,213 @@ body.rb-settings-body {
 
 .rb-result:empty {
   display: none;
+}
+
+.rb-columns {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  min-height: 0;
+  flex: 1;
+}
+
+.rb-left,
+.rb-right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.rb-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.rb-right {
+  width: 300px;
+  flex: 0 0 300px;
+}
+
+.rb-divider {
+  width: 1px;
+  background: var(--rb-border);
+  align-self: stretch;
+  flex: 0 0 1px;
+}
+
+.rb-mode-scroll {
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
+  padding-right: 2px;
+}
+
+.rb-field-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rb-assist-hint {
+  font-size: 11px;
+  color: var(--rb-secondary);
+}
+
+.rb-ghost-editor {
+  position: relative;
+  flex: 1;
+  min-height: 100px;
+}
+
+.rb-ghost-editor--notes {
+  min-height: 72px;
+  flex: 0 0 auto;
+}
+
+.rb-ghost-layer,
+.rb-ghost-editor textarea {
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.45;
+  letter-spacing: 0;
+  padding: 10px;
+  border: 2px solid var(--rb-border);
+  border-radius: 8px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.rb-ghost-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  color: transparent;
+  background: var(--rb-input-bg);
+}
+
+.rb-ghost-suffix {
+  color: var(--rb-secondary);
+  opacity: 0.72;
+}
+
+.rb-ghost-editor textarea {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  min-height: 100px;
+  resize: none;
+  margin: 0;
+  color: var(--rb-text);
+}
+
+.rb-ghost-editor--notes textarea {
+  min-height: 72px;
+}
+
+.rb-assist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rb-assist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rb-issues {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rb-issue {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 6px;
+  border-radius: 6px;
+  background: var(--rb-result-bg);
+}
+
+.rb-issue-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.rb-issue-kind {
+  font-size: 11px;
+  font-weight: 600;
+  color: #c47b17;
+  text-transform: capitalize;
+}
+
+.rb-issue-message {
+  font-size: 12px;
+  color: var(--rb-secondary);
+}
+
+.rb-issue-swap {
+  font-size: 12px;
+  color: var(--rb-text);
+}
+
+.rb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.rb-actions .rb-primary-btn,
+.rb-actions .rb-copy-btn,
+.rb-actions .rb-paste-btn {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.rb-paste-btn {
+  padding: 8px 12px;
+  border: 1px solid var(--rb-border);
+  border-radius: 6px;
+  background: var(--rb-chip-bg);
+  color: var(--rb-text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.rb-paste-btn[hidden],
+.rb-issues[hidden],
+.rb-notes-field[hidden] {
+  display: none !important;
+}
+
+.rb-status {
+  font-size: 13px;
+  color: var(--rb-secondary);
+  min-height: 0;
+}
+
+.rb-status.is-error {
+  color: #c0392b;
+}
+
+.rb-result-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  flex: 1;
 }
 
 /* Options page fallbacks (options.html also has its own styles) */

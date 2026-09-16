@@ -9,7 +9,7 @@ Rewrite Better has no account and no server of its own. There is no Rewrite Bett
 
 ## What is sent to AI providers
 
-When you rewrite, format, or draft a reply, the selected text and the options you chose are sent **directly** to the AI provider whose key you configured:
+When you rewrite, format, draft a reply, or use writing assist, the text and the options you chose are sent **directly** to the AI provider whose key you configured:
 
 - Google (Gemini)
 - Groq
@@ -29,7 +29,7 @@ It does not record your screen or keystrokes.
 
 ## Windows capture
 
-The Windows app captures selected text with a `Ctrl+C` probe, then restores the previous clipboard. It does not require a separate Accessibility toggle. Apps running elevated (as Administrator) may not be readable unless Rewrite Better is also elevated.
+The Windows app captures selected text with a `Ctrl+C` probe, then restores the previous clipboard. After rewriting, **Replace** / **Paste** hides the panel and synthesizes `Ctrl+V` into the previous app. It does not require a separate Accessibility toggle. Apps running elevated (as Administrator) may not be readable unless Rewrite Better is also elevated.
 
 ## What we do not collect
 

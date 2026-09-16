@@ -23,7 +23,14 @@
     const eventApi = window.__TAURI__ && window.__TAURI__.event;
     if (eventApi && eventApi.listen) {
       await eventApi.listen('panel-open', (event) => {
-        panel.setInput(event.payload || '');
+        const payload = event.payload;
+        const text = typeof payload === 'string' ? payload : (payload && payload.text) || '';
+        const hadSelection =
+          typeof payload === 'object' && payload
+            ? !!payload.hadSelection || !!payload.had_selection
+            : !!String(text).trim();
+        panel.setInput(text);
+        panel.setPasteBack({ hadSelection, canPaste: true });
         panel.refreshApiStatus();
         panel.refreshPrefs();
       });

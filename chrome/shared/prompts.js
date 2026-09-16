@@ -6,30 +6,61 @@
     return (RB.LANGUAGE_NAMES && RB.LANGUAGE_NAMES[code]) || code;
   }
 
-  RB.buildRewritePrompt = function (input, tone, translation) {
+  function appendExtraInstructions(extraInstructions, prompt) {
+    const extra = String(extraInstructions || '').trim();
+    if (!extra) return prompt;
+    return `${prompt}
+
+--- Extra instructions ---
+${extra}
+Follow the extra instructions, but still return only the final output — no explanations or meta commentary.`;
+  }
+
+  function withUserContent(input, extraInstructions, instruction) {
+    const withExtra = appendExtraInstructions(extraInstructions, instruction);
+    if (!String(extraInstructions || '').trim()) {
+      return `${withExtra}\n\n${input}`;
+    }
+    return `${withExtra}
+
+--- Text ---
+${input}`;
+  }
+
+  RB.buildRewritePrompt = function (input, tone, translation, extraInstructions) {
+    let instruction;
     if (translation && translation.enabled) {
       const toLangName = langName(translation.toLanguage);
       if (translation.fromLanguage === 'auto') {
-        return `First, translate the following text to ${toLangName}, then rewrite it in a ${tone} tone. The output should be in ${toLangName} and maintain a ${tone} style. Return only the final rewritten text without any explanations:\n\n${input}`;
+        instruction = `First, translate the following text to ${toLangName}, then rewrite it in a ${tone} tone. The output should be in ${toLangName} and maintain a ${tone} style. Return only the final rewritten text without any explanations:`;
+      } else {
+        const fromLangName = langName(translation.fromLanguage);
+        instruction = `First, translate the following text from ${fromLangName} to ${toLangName}, then rewrite it in a ${tone} tone. The output should be in ${toLangName} and maintain a ${tone} style. Return only the final rewritten text without any explanations:`;
       }
-      const fromLangName = langName(translation.fromLanguage);
-      return `First, translate the following text from ${fromLangName} to ${toLangName}, then rewrite it in a ${tone} tone. The output should be in ${toLangName} and maintain a ${tone} style. Return only the final rewritten text without any explanations:\n\n${input}`;
+    } else {
+      instruction = `Rewrite the following text in a ${tone} tone. Return only the rewritten text without any additional comments or explanations:`;
     }
-    return `Rewrite the following text in a ${tone} tone. Return only the rewritten text without any additional comments or explanations:\n\n${input}`;
+    return withUserContent(input, extraInstructions, instruction);
   };
 
-  RB.buildFormatPrompt = function (formatType, input) {
+  RB.buildFormatPrompt = function (formatType, input, extraInstructions) {
     const formatPrompts = {
-      markdown: `Convert the following text to well-structured Markdown format with appropriate headers, lists, emphasis, and formatting. Return only the formatted Markdown:\n\n${input}`,
-      html: `Convert the following text to clean, semantic HTML with appropriate tags, headings, paragraphs, and lists. Return only the HTML code:\n\n${input}`,
-      'bullet-points': `Convert the following text into clear, concise bullet points. Organize the information hierarchically with main points and sub-points where appropriate. Return only the bullet points:\n\n${input}`,
-      'numbered-list': `Convert the following text into a well-organized numbered list. Use hierarchical numbering (1, 2, 3, then a, b, c, etc.) where appropriate. Return only the numbered list:\n\n${input}`,
-      table: `Convert the following text into a well-formatted table. Identify the key information and organize it into appropriate columns and rows. Use markdown table format. Return only the table:\n\n${input}`,
-      outline: `Convert the following text into a detailed outline format with main topics, subtopics, and supporting details. Use standard outline formatting (I, A, 1, a, etc.). Return only the outline:\n\n${input}`,
-      summary: `Convert the following text into a professional executive summary with key points, main findings, and actionable insights. Keep it concise but comprehensive. Return only the summary:\n\n${input}`,
-      faq: `Convert the following text into a FAQ (Frequently Asked Questions) format. Extract key information and present it as questions and answers. Return only the FAQ:\n\n${input}`
+      markdown:
+        'Convert the following text to well-structured Markdown format with appropriate headers, lists, emphasis, and formatting. Return only the formatted Markdown:',
+      html: 'Convert the following text to clean, semantic HTML with appropriate tags, headings, paragraphs, and lists. Return only the HTML code:',
+      'bullet-points':
+        'Convert the following text into clear, concise bullet points. Organize the information hierarchically with main points and sub-points where appropriate. Return only the bullet points:',
+      'numbered-list':
+        'Convert the following text into a well-organized numbered list. Use hierarchical numbering (1, 2, 3, then a, b, c, etc.) where appropriate. Return only the numbered list:',
+      table: 'Convert the following text into a well-formatted table. Identify the key information and organize it into appropriate columns and rows. Use markdown table format. Return only the table:',
+      outline:
+        'Convert the following text into a detailed outline format with main topics, subtopics, and supporting details. Use standard outline formatting (I, A, 1, a, etc.). Return only the outline:',
+      summary:
+        'Convert the following text into a professional executive summary with key points, main findings, and actionable insights. Keep it concise but comprehensive. Return only the summary:',
+      faq: 'Convert the following text into a FAQ (Frequently Asked Questions) format. Extract key information and present it as questions and answers. Return only the FAQ:'
     };
-    return formatPrompts[formatType] || formatPrompts['bullet-points'];
+    const instruction = formatPrompts[formatType] || formatPrompts['bullet-points'];
+    return withUserContent(input, extraInstructions, instruction);
   };
 
   RB.buildReplyPrompt = function (options) {
@@ -40,7 +71,8 @@
       length,
       outputLanguage,
       incomingText,
-      notes
+      notes,
+      extraInstructions
     } = options;
 
     const outLang = langName(outputLanguage);
@@ -87,6 +119,8 @@ Length: ${lengthDesc}
 Write the entire output in ${outLang}.
 Return only the final ${isEmail ? 'email (subject + body)' : 'message'} — no explanations or meta commentary.`;
 
+    prompt = appendExtraInstructions(extraInstructions, prompt);
+
     if (hasIncoming) {
       prompt += `\n\n--- Received message ---\n${incomingText.trim()}`;
     }
@@ -95,4 +129,4 @@ Return only the final ${isEmail ? 'email (subject + body)' : 'message'} — no e
     }
     return prompt;
   };
-})(typeof window !== 'undefined' ? window : self);
+})(typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : globalThis);

@@ -42,6 +42,14 @@ pub fn capture_selected_text() -> String {
 }
 
 fn send_copy() -> Result<(), String> {
+    send_shortcut('c')
+}
+
+pub fn send_paste() -> Result<(), String> {
+    send_shortcut('v')
+}
+
+fn send_shortcut(letter: char) -> Result<(), String> {
     let mut enigo = Enigo::new(&Settings::default()).map_err(|e| e.to_string())?;
     let modifier = if cfg!(target_os = "macos") {
         Key::Meta
@@ -49,7 +57,7 @@ fn send_copy() -> Result<(), String> {
         Key::Control
     };
     enigo.key(modifier, Press).map_err(|e| e.to_string())?;
-    enigo.key(Key::Unicode('c'), Click).map_err(|e| e.to_string())?;
+    enigo.key(Key::Unicode(letter), Click).map_err(|e| e.to_string())?;
     enigo.key(modifier, Release).map_err(|e| e.to_string())?;
     Ok(())
 }

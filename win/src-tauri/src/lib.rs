@@ -4,6 +4,7 @@ mod store;
 
 use std::collections::HashMap;
 
+use serde::Serialize;
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Emitter, Manager};
@@ -37,8 +38,13 @@ fn save_prefs(app: AppHandle, prefs: Prefs) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn copy_text(text: String) -> Result<(), String> {
-    capture::copy_text(&text)
+fn paste_back(app: AppHandle, text: String) -> Result<(), String> {
+    capture::copy_text(&text)?;
+    if let Some(win) = app.get_webview_window("panel") {
+        win.hide().map_err(|e| e.to_string())?;
+    }
+    std::thread::sleep(std::time::Duration::from_millis(120));
+    capture::send_paste()
 }
 
 #[tauri::command]
@@ -101,17 +107,31 @@ fn show_settings(app: &AppHandle) {
     }
 }
 
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+struct PanelOpenPayload {
+    text: String,
+    had_selection: bool,
+}
+
 fn open_panel(app: &AppHandle, empty: bool) {
     let text = if empty {
         String::new()
     } else {
         capture::capture_selected_text()
     };
+    let had_selection = !empty && !text.trim().is_empty();
     if let Some(win) = app.get_webview_window("panel") {
         let _ = win.show();
         let _ = win.unminimize();
         let _ = win.set_focus();
-        let _ = win.emit("panel-open", text);
+        let _ = win.emit(
+            "panel-open",
+            PanelOpenPayload {
+                text,
+                had_selection,
+            },
+        );
     }
 }
 
@@ -177,6 +197,7 @@ pub fn run() {
             get_prefs,
             save_prefs,
             copy_text,
+            paste_back,
             hide_panel,
             open_settings,
             chat_completion,

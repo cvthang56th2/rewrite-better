@@ -6,7 +6,7 @@ final class WritingAssistController: ObservableObject {
     @Published var issues: [WritingIssue] = []
     @Published var isSuggesting = false
     @Published var isChecking = false
-    @Published var assistEnabled = true
+    @Published var assistEnabled = false
 
     private var suggestTask: Task<Void, Never>?
     private var checkTask: Task<Void, Never>?

@@ -87,9 +87,10 @@
     th: 'Thai'
   };
 
-  RB.MODE_BUTTON_LABELS = {
-    rewrite: 'Rewrite with Groq AI',
-    format: 'Format Document',
-    reply: 'Generate Reply'
-  };
-})(typeof window !== 'undefined' ? window : self);
+  RB.PROVIDERS = [
+    { value: 'gemini', displayName: 'Gemini', prefix: 'AIza', helpURL: 'https://aistudio.google.com/apikey' },
+    { value: 'groq', displayName: 'Groq', prefix: 'gsk_', helpURL: 'https://console.groq.com/keys' },
+    { value: 'cerebras', displayName: 'Cerebras', prefix: 'csk_', helpURL: 'https://cloud.cerebras.ai' },
+    { value: 'openai', displayName: 'OpenAI', prefix: 'sk-', helpURL: 'https://platform.openai.com/api-keys' }
+  ];
+})(typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : globalThis);

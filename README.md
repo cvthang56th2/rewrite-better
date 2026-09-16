@@ -1,6 +1,6 @@
 # Rewrite Better
 
-A Chrome extension that rewrites, formats, translates, and drafts message/email replies using [Groq AI](https://groq.com) — **free to use** with a Groq account. Works on any webpage via a context menu, keyboard shortcut, or toolbar popup.
+A Chrome extension that rewrites, formats, translates, and drafts message/email replies using Gemini, Groq, Cerebras, or OpenAI. Works on any webpage via a context menu, keyboard shortcut, or toolbar popup.
 
 Also available as a **native macOS menu bar app** (English / Tiếng Việt) — see [`mac/README.md`](mac/README.md) — and a **Windows tray app** — see [`win/README.md`](win/README.md).
 
@@ -8,16 +8,18 @@ Public download site: [`web/`](web/) (deploy to Vercel).
 
 ## Features
 
-- **Shared panel** — Toolbar popup and inline popup use the same UI and options
-- **Inline popup** — Select text on any page, right-click, and choose **Rewrite with Rewrite Better**
+- **Shared panel** — Toolbar popup and inline popup use the same two-column UI as the macOS app
+- **Writing assist** — Tab autocomplete plus Check writing suggestions
+- **Inline popup** — Select text on any page, right-click, and choose **Rewrite with Rewrite Better**. **Replace** puts the result back into the field
 - **Keyboard shortcut** — `Ctrl+Shift+E` (Windows/Linux) or `Cmd+Shift+E` (Mac)
 - **Toolbar popup** — Click the extension icon for the full panel
 - **Rewrite** — Tone control + optional translation (visible chip selectors)
 - **Format Document** — Markdown, HTML, bullets, tables, outlines, FAQ, and more
 - **Reply / Compose** — Draft a chat message or email reply from a received message and/or your notes (intent, length, language)
-- **Copy to clipboard** — One-click copy of output
+- **Copy / Replace** — Copy the output, or replace the selection on the page
+- **Multi-provider failover** — Gemini → Groq → Cerebras → OpenAI, with extra instructions per mode
 
-Powered by Groq's `openai/gpt-oss-20b` model. Groq currently offers free API access — no paid plan required to get started.
+Powered by Gemini, Groq, Cerebras, and OpenAI with quota failover. You need at least one API key.
 
 ## Installation
 
@@ -31,15 +33,15 @@ If you previously loaded the extension from the repo root, remove it and load `c
 
 ## Setup
 
-You need a Groq API key before rewriting text. Groq is free — sign up and create a key at no cost.
+You need at least one API key before rewriting text (Gemini, Groq, Cerebras, or OpenAI).
 
-1. Sign up at [console.groq.com](https://console.groq.com) and create a free API key (starts with `gsk_`)
+1. Create a key at [Google AI Studio](https://aistudio.google.com/apikey), [Groq](https://console.groq.com/keys), [Cerebras](https://cloud.cerebras.ai), or [OpenAI](https://platform.openai.com/api-keys)
 2. Open the extension options:
    - Click the extension icon → ⚙️ **Settings**, or
    - Right-click the extension icon → **Options**
-3. Paste your API key and save
+3. Paste at least one API key and save
 
-The toolbar popup shows whether your key is configured and valid.
+The toolbar popup shows whether a key is configured. Keys are tried in order: Gemini → Groq → Cerebras → OpenAI.
 
 ## Usage
 
@@ -77,9 +79,12 @@ rewrite-better/
 │   ├── options.html/js
 │   ├── styles.css
 │   ├── shared/
-│   │   ├── options.js      # Tone, format, intent, languages…
+│   │   ├── options.js      # Tone, format, intent, languages, providers
 │   │   ├── prompts.js      # Prompt builders
-│   │   ├── api.js          # Groq API helpers
+│   │   ├── llm-providers.js
+│   │   ├── daily-skip.js
+│   │   ├── api.js          # Multi-provider complete()
+│   │   ├── writing-assist.js
 │   │   └── panel.js        # Shared panel UI
 │   └── icon.png
 ├── mac/                    # Native macOS menu bar app
@@ -116,7 +121,7 @@ python3 -m http.server 4173 --directory web
 See [PRIVACY.md](PRIVACY.md). Short version:
 
 - **We never see or store your API key.** There is no Rewrite Better backend
-- macOS: keys stay in Keychain. Chrome: keys stay in `chrome.storage.sync`
+- **Chrome:** keys stay in `chrome.storage.sync`. macOS: keys stay in Keychain. Windows: local app storage
 - Text is sent directly from your device to the AI provider you configured
 - The macOS app uses Accessibility only to read selected text and to Replace it back
 

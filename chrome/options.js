@@ -1,102 +1,142 @@
 document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('optionsForm');
-  const apiKeyInput = document.getElementById('apiKey');
-  const successMessage = document.getElementById('successMessage');
-  const languageSelect = document.getElementById('uiLanguage');
-
-  applyI18n();
-  loadSavedSettings();
-
-  languageSelect.addEventListener('change', function () {
-    const lang = RewriteBetter.setLanguage(languageSelect.value);
-    chrome.storage.sync.set({ uiLanguage: lang }, function () {
-      applyI18n();
-    });
-  });
-
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    saveSettings();
-  });
+  const RB = window.RewriteBetter;
+  const els = {
+    language: document.getElementById('uiLanguage'),
+    providers: document.getElementById('providerFields'),
+    extraRewrite: document.getElementById('extraRewrite'),
+    extraFormat: document.getElementById('extraFormat'),
+    extraReply: document.getElementById('extraReply'),
+    save: document.getElementById('saveBtn'),
+    test: document.getElementById('testBtn'),
+    message: document.getElementById('message'),
+    results: document.getElementById('testResults')
+  };
+  const keyInputs = {};
 
   function applyI18n() {
-    document.documentElement.lang = RewriteBetter.uiLanguage;
-    document.title = RewriteBetter.t('options.title');
-    document.querySelectorAll('[data-i18n]').forEach((el) => {
-      el.textContent = RewriteBetter.t(el.dataset.i18n);
+    document.documentElement.lang = RB.uiLanguage;
+    document.title = RB.t('settings.windowTitle');
+    document.querySelectorAll('[data-i18n]').forEach((node) => {
+      node.textContent = RB.t(node.getAttribute('data-i18n'));
+    });
+    els.extraRewrite.placeholder = RB.t('settings.extraRewritePlaceholder');
+    els.extraFormat.placeholder = RB.t('settings.extraFormatPlaceholder');
+    els.extraReply.placeholder = RB.t('settings.extraReplyPlaceholder');
+    RB.PROVIDERS.forEach((provider) => {
+      const input = keyInputs[provider.value];
+      if (!input) return;
+      input.placeholder = RB.t('settings.placeholder.' + provider.value);
+      const summary = input.closest('.rb-provider').querySelector('.rb-provider-summary');
+      if (summary) summary.textContent = RB.t('provider.' + provider.value + '.summary');
+      const label = input.closest('.rb-provider').querySelector('.rb-provider-name');
+      if (label) label.textContent = provider.displayName;
     });
   }
 
-  function showSuccessMessage() {
-    successMessage.style.display = 'block';
-    setTimeout(() => {
-      successMessage.style.display = 'none';
-    }, 3000);
+  function renderProviders() {
+    els.providers.innerHTML = RB.PROVIDERS.map((provider) => {
+      return `<div class="rb-provider">
+        <div class="rb-provider-head">
+          <span class="rb-provider-name">${provider.displayName}</span>
+          <a href="${provider.helpURL}" target="_blank" rel="noreferrer">${provider.helpURL.replace(/^https?:\/\//, '')}</a>
+        </div>
+        <p class="rb-hint rb-provider-summary">${RB.t('provider.' + provider.value + '.summary')}</p>
+        <textarea data-provider="${provider.value}" rows="2" spellcheck="false"></textarea>
+      </div>`;
+    }).join('');
+    RB.PROVIDERS.forEach((provider) => {
+      keyInputs[provider.value] = els.providers.querySelector(`[data-provider="${provider.value}"]`);
+    });
+  }
+
+  function setMessage(text) {
+    els.message.textContent = text || '';
   }
 
   function chromeUnavailable() {
     return typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.sync;
   }
 
-  function loadSavedSettings() {
+  async function load() {
     if (chromeUnavailable()) {
-      alert(RewriteBetter.t('options.chromeMissing'));
+      setMessage(RB.t('options.chromeMissing'));
       return;
     }
+    const [keys, prefs] = await Promise.all([RB.getKeysByProvider(), RB.getPrefs()]);
+    RB.setLanguage(prefs.uiLanguage);
+    els.language.value = RB.uiLanguage;
+    RB.PROVIDERS.forEach((provider) => {
+      keyInputs[provider.value].value = keys[provider.value] || '';
+    });
+    const extra = prefs.extraInstructions || {};
+    els.extraRewrite.value = extra.rewrite || '';
+    els.extraFormat.value = extra.format || '';
+    els.extraReply.value = extra.reply || '';
+    applyI18n();
+  }
 
-    chrome.storage.sync.get(['groqApiKey', 'uiLanguage'], function (result) {
-      if (chrome.runtime.lastError) {
-        console.error('Error loading settings:', chrome.runtime.lastError);
+  async function save() {
+    const keys = {};
+    RB.PROVIDERS.forEach((provider) => {
+      keys[provider.value] = keyInputs[provider.value].value;
+    });
+    await RB.saveKeysAndPrefs(keys, {
+      uiLanguage: els.language.value,
+      extraInstructions: {
+        rewrite: els.extraRewrite.value,
+        format: els.extraFormat.value,
+        reply: els.extraReply.value
+      }
+    });
+    RB.dailySkip.clearAll();
+    applyI18n();
+    setMessage(RB.t('settings.saved'));
+  }
+
+  renderProviders();
+
+  els.language.addEventListener('change', () => {
+    RB.setLanguage(els.language.value);
+    applyI18n();
+  });
+
+  els.save.addEventListener('click', () => {
+    save().catch((err) => setMessage(RB.t('options.saveError', err.message || err)));
+  });
+
+  els.test.addEventListener('click', async () => {
+    els.test.disabled = true;
+    setMessage(RB.t('settings.testing'));
+    els.results.innerHTML = '';
+    try {
+      await save();
+      const results = await RB.testAllKeys();
+      if (!results.length) {
+        setMessage(RB.t('error.missingKey'));
         return;
       }
-      if (result.groqApiKey) {
-        apiKeyInput.value = result.groqApiKey;
-      }
-      languageSelect.value = RewriteBetter.setLanguage(result.uiLanguage);
-      applyI18n();
-    });
-  }
-
-  function saveSettings() {
-    const apiKey = apiKeyInput.value.trim();
-
-    if (!apiKey) {
-      alert(RewriteBetter.t('options.needKey'));
-      return;
+      const ok = results.filter((r) => r.ok).length;
+      const fail = results.length - ok;
+      if (fail === 0) setMessage(RB.t('settings.allKeysOk', String(ok)));
+      else if (ok === 0) setMessage(RB.t('settings.allKeysFailed', String(fail)));
+      else setMessage(RB.t('settings.keysPartial', String(ok), String(fail)));
+      els.results.innerHTML = results
+        .map((r) => {
+          const name = (RB.PROVIDERS.find((p) => p.value === r.provider) || {}).displayName || r.provider;
+          return `<div class="rb-test-row">${r.ok ? '✅' : '❌'} ${name} ${r.id} (${r.keyHint})${
+            r.ok ? '' : `<div class="rb-hint">${r.detail}</div>`
+          }</div>`;
+        })
+        .join('');
+    } catch (err) {
+      setMessage(RB.formatCompleteError(err));
+    } finally {
+      els.test.disabled = false;
     }
+  });
 
-    if (!apiKey.startsWith('gsk_')) {
-      alert(RewriteBetter.t('options.invalidKey'));
-      return;
-    }
-
-    if (chromeUnavailable()) {
-      alert(RewriteBetter.t('options.storageMissing'));
-      return;
-    }
-
-    chrome.storage.sync.set(
-      {
-        groqApiKey: apiKey,
-        uiLanguage: RewriteBetter.setLanguage(languageSelect.value)
-      },
-      function () {
-        if (chrome.runtime.lastError) {
-          alert(RewriteBetter.t('options.saveError', chrome.runtime.lastError.message));
-        } else {
-          applyI18n();
-          showSuccessMessage();
-        }
-      }
-    );
-  }
-
-  apiKeyInput.addEventListener('input', function () {
-    const value = this.value.trim();
-    if (value && !value.startsWith('gsk_')) {
-      this.style.borderColor = '#e74c3c';
-    } else {
-      this.style.borderColor = '#e0e6ed';
-    }
+  load().catch((err) => {
+    setMessage(RB.t('panel.settingsError'));
+    console.error(err);
   });
 });

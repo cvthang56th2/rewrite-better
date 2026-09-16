@@ -1,6 +1,6 @@
 # Rewrite Better for Chrome
 
-Chrome extension. Load this folder as an unpacked extension.
+Chrome extension with the same Rewrite / Format / Reply panel as the macOS app: two-column layout, writing assist, extra instructions, and multi-provider failover (Gemini → Groq → Cerebras → OpenAI).
 
 ## Install
 
@@ -13,8 +13,10 @@ If the extension was previously loaded from the repo root, remove it and load th
 
 ## Setup
 
-1. Create a free Groq API key at [console.groq.com](https://console.groq.com)
+1. Add at least one API key: [Gemini](https://aistudio.google.com/apikey), [Groq](https://console.groq.com/keys), [Cerebras](https://cloud.cerebras.ai), or [OpenAI](https://platform.openai.com/api-keys)
 2. Open extension options (toolbar icon → ⚙️ Settings, or right-click the icon → Options)
-3. Paste the API key and save
+3. Paste key(s) and save. Multiple keys per provider: separate with comma or newline
 
-Privacy: keys stay in Chrome storage; text is sent only to Groq. See [PRIVACY.md](../PRIVACY.md).
+Quota / auth failures rest that key until tomorrow and continue with the next. A previous Groq-only key is migrated automatically.
+
+Privacy: keys stay in Chrome storage; text is sent only to the provider you configured. See [PRIVACY.md](../PRIVACY.md).

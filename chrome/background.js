@@ -1,4 +1,10 @@
-importScripts('shared/i18n.js');
+importScripts(
+  'shared/i18n.js',
+  'shared/options.js',
+  'shared/llm-providers.js',
+  'shared/daily-skip.js',
+  'shared/api.js'
+);
 
 function syncContextMenu(language) {
   RewriteBetter.setLanguage(language);
@@ -26,6 +32,29 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'sync' && changes.uiLanguage) {
     syncContextMenu(changes.uiLanguage.newValue);
   }
+});
+
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (!message || (message.type !== 'rb-complete' && message.type !== 'rb-test-keys')) {
+    return undefined;
+  }
+  const work =
+    message.type === 'rb-complete'
+      ? RewriteBetter.complete(message.prompt, message.options)
+      : RewriteBetter.testAllKeys();
+  work
+    .then((value) => sendResponse({ ok: true, value }))
+    .catch((error) =>
+      sendResponse({
+        ok: false,
+        error: {
+          message: error && error.message,
+          status: error && error.status,
+          code: error && error.code
+        }
+      })
+    );
+  return true;
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {

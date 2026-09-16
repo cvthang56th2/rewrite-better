@@ -24,6 +24,10 @@
     return invoke('copy_text', { text });
   };
 
+  RB.pasteBack = function (text) {
+    return invoke('paste_back', { text });
+  };
+
   function localSkipStore() {
     return RB.createDailySkipStore({
       load() {
@@ -64,7 +68,8 @@
     return RB.t('panel.error', RB.t('error.unknown'));
   };
 
-  async function completeOnce(prompt, backend) {
+  async function completeOnce(prompt, backend, options) {
+    const opts = options || {};
     try {
       return await invoke('chat_completion', {
         request: {
@@ -72,7 +77,8 @@
           apiKey: backend.apiKey,
           model: backend.model,
           prompt,
-          maxTokens: backend.defaultMaxTokens,
+          maxTokens: opts.maxTokens || backend.defaultMaxTokens,
+          temperature: opts.temperature == null ? 0.7 : opts.temperature,
           extras: RB.chatCompletionExtras(backend.provider, backend.model)
         }
       });
@@ -85,13 +91,13 @@
     }
   }
 
-  RB.complete = async function (prompt) {
+  RB.complete = async function (prompt, options) {
     const keys = await RB.getKeysByProvider();
     const backends = RB.resolveChatBackends(keys);
     const skipped = RB.dailySkip.activeSkipIds();
     try {
       const text = await RB.callWithQuotaFallback(backends, skipped, (backend) =>
-        completeOnce(prompt, backend)
+        completeOnce(prompt, backend, options)
       );
       RB.dailySkip.markSkipped(skipped);
       return text;
@@ -114,7 +120,7 @@
         await completeOnce('Reply with exactly: OK', {
           ...backend,
           defaultMaxTokens: 512
-        });
+        }, { maxTokens: 512 });
         results.push({
           id: backend.id,
           provider: backend.provider,
