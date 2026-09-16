@@ -6,12 +6,15 @@
   <title>Rewrite Better</title>
   <meta name="description" content="Rewrite, format, reply, and writing assist from Chrome, macOS, or Windows. Voice profile, variants, and Replace. Uses your own API key." />
   <link rel="icon" href="icon.png" />
+  <link rel="preload" href="fonts/outfit-700.woff2" as="font" type="font/woff2" crossorigin />
   <meta property="og:title" content="Rewrite Better" />
   <meta property="og:description" content="Rewrite without leaving the page. Chrome, macOS, and Windows." />
   <meta property="og:image" content="icon.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
+
   <div class="nav-shell">
     <nav class="nav" aria-label="Primary">
       <a class="brand" href="./">
@@ -19,222 +22,284 @@
         <span>Rewrite Better</span>
       </a>
       <div class="nav-links">
-        <a href="#download" data-i18n="nav.download">Download</a>
+        <a class="nav-cta" href="#download" data-i18n="nav.download">Download</a>
         <a href="privacy.html" data-i18n="nav.privacy">Privacy</a>
+        <a href="#feedback" data-i18n="nav.feedback">Feedback</a>
         <a href="https://github.com/cvthang56th2/rewrite-better">GitHub</a>
-        <button type="button" class="lang-btn" data-lang="en" aria-pressed="true">EN</button>
-        <button type="button" class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+        <button type="button" class="lang-btn" data-lang="en" aria-pressed="true" aria-label="English">EN</button>
+        <button type="button" class="lang-btn" data-lang="vi" aria-pressed="false" aria-label="Tiếng Việt">VI</button>
       </div>
     </nav>
   </div>
 
-  <header class="hero wrap">
-    <div class="hero-copy">
-      <p class="kicker">Chrome · macOS 13+ · Windows 10+</p>
-      <h1 data-i18n="hero.title">Rewrite without leaving the page.</h1>
-      <p class="hero-sub" data-i18n="hero.sub">A panel on Chrome, Mac, and Windows. Rewrite, format, reply, and writing assist, using your own API key.</p>
-      <div class="cta-row" id="heroCtas">
-        <a class="btn btn-primary" id="macDownload" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
-          <span data-i18n="cta.mac">Download for Mac</span>
-          <span class="btn-icon" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
-          </span>
-        </a>
-        <a class="btn btn-secondary" id="winDownload" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
-          <span data-i18n="cta.win">Download for Windows</span>
-          <span class="btn-icon" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
-          </span>
-        </a>
-        <a class="btn btn-secondary" href="#chrome">
-          <span data-i18n="cta.chrome">Get the Chrome zip</span>
-          <span class="btn-icon" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg>
-          </span>
-        </a>
-      </div>
-    </div>
-
-    <!-- Drop demo.mp4 (and optional demo-poster.jpg) in web/. The placeholder hides automatically. -->
-    <figure class="video-stage" data-video-stage>
-      <div class="video-shell">
-        <div class="video-frame">
-          <img class="video-poster" src="images/hero-poster.jpg" alt="" width="1920" height="1080" fetchpriority="high" />
-          <video data-product-video playsinline preload="none" poster="images/hero-poster.jpg" hidden>
-            <source type="video/mp4" />
-          </video>
-          <div class="video-overlay" data-video-overlay>
-            <button type="button" class="play-btn" data-video-play disabled data-i18n-aria="video.play" aria-label="Play demo">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M228.24,145.96,88.24,221.8A16,16,0,0,1,64,207.8V48.2A16,16,0,0,1,88.24,34.2l140,75.84a15.81,15.81,0,0,1,0,35.92Z"/></svg>
-            </button>
-            <p class="video-soon" data-video-soon data-i18n="video.soon">Demo video coming soon</p>
-          </div>
-        </div>
-      </div>
-      <figcaption data-i18n="video.caption">See the panel on Chrome, Mac, and Windows.</figcaption>
-    </figure>
-  </header>
-
-  <section class="pitch wrap">
-    <p>
-      <span data-i18n="story.a">You finish a draft, you're not sure, so you paste it into ChatGPT and type rewrite better. Don't. Select the text, press</span>
-      <span class="kbd" data-shortcut>Cmd Shift E</span><span data-i18n="story.b">, pick a style and language, then Rewrite Better. Then you get a better version. Beautiful!</span>
-    </p>
-  </section>
-
-  <section class="section wrap" id="try">
-    <div class="try-grid">
-      <div>
-        <h2 data-i18n="try.title">Try a sample rewrite.</h2>
-        <p class="lede" data-i18n="try.lede">Same panel as Chrome, Mac, and Windows. No API call on this page.</p>
-      </div>
-      <div class="hero-aside">
-        <div class="bezel">
-          <div class="panel" data-demo>
-            <div class="panel-head">
-              <h2>Rewrite Better</h2>
-              <span class="kbd">Cmd Shift E</span>
-            </div>
-            <p class="sample-in"><s data-i18n="demo.in">pls send the file asap thx</s></p>
-            <div class="modes" role="tablist">
-              <button type="button" class="mode is-active" data-demo-mode="rewrite" data-i18n="mode.rewrite">Rewrite</button>
-              <button type="button" class="mode" data-demo-mode="format" data-i18n="mode.format">Format</button>
-              <button type="button" class="mode" data-demo-mode="reply" data-i18n="mode.reply">Reply</button>
-            </div>
-            <div class="chips" data-demo-chips></div>
-            <div class="assist-row">
-              <span data-i18n="demo.assist">Writing assist</span>
-              <span class="assist-tab" data-i18n="demo.tab">Tab to accept</span>
-            </div>
-            <button type="button" class="panel-run" data-demo-run data-i18n="demo.run">Rewrite with Groq AI</button>
-            <div class="demo-variants" data-demo-variants hidden></div>
-            <p class="sample-out is-empty" data-demo-out data-i18n="demo.hint">Sample result. No API call here.</p>
-            <p class="demo-diff" data-demo-diff hidden></p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section wrap" id="download">
-    <h2 data-i18n="dl.title">Install on the device you write on.</h2>
-    <p class="lede" data-i18n="dl.lede">Native apps for Mac and Windows, plus a Chrome zip until the extension is on the Chrome Web Store.</p>
-
-    <div class="download-grid">
-      <article class="platform reveal">
-        <div class="platform-inner">
-          <img class="platform-photo" src="images/shot-mac.jpg" alt="" width="1200" height="900" loading="lazy" />
-          <div class="platform-body">
-          <h3 data-i18n="mac.title">macOS menu bar</h3>
-          <p data-i18n="mac.body">Select text in Mail, Slack, or a browser, press the shortcut, then Replace or copy the result back.</p>
-          <a class="btn btn-primary" id="macDownload2" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
+  <main id="main">
+    <header class="hero wrap">
+      <div class="hero-copy">
+        <p class="kicker">Chrome · macOS 13+ · Windows 10+</p>
+        <h1 data-i18n="hero.title">Rewrite without leaving the&nbsp;page</h1>
+        <p class="hero-sub" data-i18n="hero.sub">A panel on Chrome, Mac, and Windows. Rewrite, format, reply, and writing assist, using your own API key.</p>
+        <div class="cta-row" id="heroCtas">
+          <a class="btn btn-primary" id="macDownload" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
             <span data-i18n="cta.mac">Download for Mac</span>
             <span class="btn-icon" aria-hidden="true">
               <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
             </span>
           </a>
-          <p class="warn" data-i18n="mac.warn">macOS 13 or later. Grant Accessibility when asked. If Gatekeeper blocks the first open, right-click the app and choose Open.</p>
-          </div>
-        </div>
-      </article>
-
-      <article class="platform reveal" id="windows">
-        <div class="platform-inner">
-          <img class="platform-photo" src="images/shot-desk.jpg" alt="" width="1200" height="900" loading="lazy" />
-          <div class="platform-body">
-          <h3 data-i18n="win.title">Windows tray</h3>
-          <p data-i18n="win.body">Select text in any app, press Ctrl Shift E, then Replace to put the result back, or copy from the tray panel.</p>
-          <a class="btn btn-primary" id="winDownload2" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
+          <a class="btn btn-secondary" id="winDownload" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
             <span data-i18n="cta.win">Download for Windows</span>
             <span class="btn-icon" aria-hidden="true">
               <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
             </span>
           </a>
-          <p class="warn" data-i18n="win.warn">Windows 10 or later. SmartScreen may warn on unsigned builds: More info, then Run anyway.</p>
-          </div>
-        </div>
-      </article>
-
-      <article class="platform reveal" id="chrome">
-        <div class="platform-inner">
-          <img class="platform-photo" src="images/shot-browser.jpg" alt="" width="1200" height="900" loading="lazy" />
-          <div class="platform-body">
-          <h3 data-i18n="chrome.title">Chrome extension</h3>
-          <p data-i18n="chrome.body">Works on any site from the toolbar, the context menu, or Ctrl/Cmd Shift E. Replace puts the result back into the field.</p>
-          <a class="btn btn-secondary" href="downloads/rewrite-better-chrome.zip">
-            <span data-i18n="cta.zip">Download zip</span>
+          <a class="btn btn-secondary" href="#chrome">
+            <span data-i18n="cta.chrome">Get the Chrome zip</span>
             <span class="btn-icon" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
+              <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg>
             </span>
           </a>
-          <ol class="steps">
-            <li><span class="step-n">01</span><span data-i18n="chrome.s1">Unzip the file.</span></li>
-            <li><span class="step-n">02</span><span data-i18n="chrome.s2">Open chrome://extensions and turn on Developer mode.</span></li>
-            <li><span class="step-n">03</span><span data-i18n="chrome.s3">Load unpacked and select the unzipped folder (the one with manifest.json).</span></li>
-          </ol>
+        </div>
+      </div>
+
+      <!-- Drop demo.mp4 (and optional demo-poster.jpg) in web/. The placeholder hides automatically. -->
+      <figure class="video-stage" data-video-stage>
+        <div class="video-shell">
+          <div class="video-frame">
+            <img class="video-poster" src="images/hero-poster.jpg" alt="Laptop with a paragraph selected, ready to rewrite in place." width="1920" height="1080" fetchpriority="high" />
+            <video data-product-video playsinline preload="none" poster="images/hero-poster.jpg" hidden>
+              <source type="video/mp4" />
+            </video>
+            <div class="video-overlay" data-video-overlay>
+              <button type="button" class="play-btn" data-video-play disabled data-i18n-aria="video.play" aria-label="Play demo">
+                <svg width="22" height="22" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M228.24,145.96,88.24,221.8A16,16,0,0,1,64,207.8V48.2A16,16,0,0,1,88.24,34.2l140,75.84a15.81,15.81,0,0,1,0,35.92Z"/></svg>
+              </button>
+              <p class="video-soon" data-video-soon data-i18n="video.soon">Demo video coming soon</p>
+            </div>
           </div>
         </div>
-      </article>
-    </div>
-  </section>
+        <figcaption data-i18n="video.caption">See the panel on Chrome, Mac, and Windows.</figcaption>
+      </figure>
+    </header>
 
-  <section class="section wrap" id="modes">
-    <h2 data-i18n="modes.title">The same panel on every device.</h2>
-    <figure class="modes-visual">
-      <img src="images/shot-select.jpg" alt="" width="1400" height="788" loading="lazy" />
-    </figure>
-    <div class="mode-story">
-      <article class="mode-row">
-        <h3 data-i18n="mode.rewrite">Rewrite</h3>
-        <p data-i18n="modes.rewrite">Change tone, tighten a draft, or translate. Three variants plus a word-level diff of what changed.</p>
-      </article>
-      <article class="mode-row">
-        <h3 data-i18n="mode.format">Format</h3>
-        <p data-i18n="modes.format">Turn notes into Markdown, HTML, bullets, a table, an outline, a summary, or an FAQ.</p>
-      </article>
-      <article class="mode-row">
-        <h3 data-i18n="mode.reply">Reply</h3>
-        <p data-i18n="modes.reply">Paste a received message, add a few notes, and draft a chat or email reply in the length and language you want.</p>
-      </article>
-      <article class="mode-row">
-        <h3 data-i18n="mode.assist">Writing assist</h3>
-        <p data-i18n="modes.assist">Tab autocomplete as you type, plus Check writing for grammar and wording.</p>
-      </article>
-      <article class="mode-row">
-        <h3 data-i18n="mode.voice">Voice profile</h3>
-        <p data-i18n="modes.voice">Paste a few samples of how you write. Rewrite, Reply, and writing assist match that voice. Stays on the device.</p>
-      </article>
-      <article class="mode-row">
-        <h3 data-i18n="mode.replace">Replace</h3>
-        <p data-i18n="modes.replace">Copy the result, or Replace to put it back into the field or app you came from.</p>
-      </article>
-    </div>
-  </section>
+    <section class="trust-bar wrap" data-i18n-aria="trust.label" aria-label="Trust notes">
+      <ul>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"/></svg>
+          <span data-i18n="trust.account">No Rewrite Better account</span>
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208Z"/></svg>
+          <span data-i18n="trust.key">API key stays on your device</span>
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M69.66,90.34a8,8,0,0,1,0-11.32l24-24a8,8,0,0,1,11.32,11.32L86.63,84.69,105,103a8,8,0,0,1-11.32,11.32Zm116.68,0L162.34,66.34a8,8,0,0,1,11.32-11.32l24,24a8,8,0,0,1-11.32,11.32ZM151,153a8,8,0,0,1,11.32,0l24,24a8,8,0,0,1-11.32,11.32l-24-24A8,8,0,0,1,151,153ZM105,153,86.63,171.31,105,189.66a8,8,0,0,1-11.32,11.32l-24-24a8,8,0,0,1,11.32-11.32L93.66,153A8,8,0,0,1,105,153Z"/></svg>
+          <span data-i18n="trust.mit">Open source, MIT</span>
+        </li>
+      </ul>
+    </section>
 
-  <section class="section wrap">
-    <div class="setup">
-      <div>
-        <h2 data-i18n="setup.title">Bring your own API key.</h2>
-        <p class="lede" data-i18n="setup.body">There is no Rewrite Better account. Paste a Gemini, Groq, Cerebras, or OpenAI key in Settings. Keys are tried in that order when one hits quota. Requests go from your device to the provider.</p>
+    <section class="pitch wrap">
+      <p>
+        <span data-i18n="story.a">You finish a draft, you're not sure, so you paste it into ChatGPT and type rewrite better. Don't. Select the text, press</span>
+        <span class="kbd" data-shortcut>Cmd Shift E</span><span data-i18n="story.b">, pick a style and language, then Rewrite Better. Then you get a better version. Beautiful!</span>
+      </p>
+    </section>
+
+    <section class="section wrap" id="try">
+      <div class="try-grid">
+        <div>
+          <h2 data-i18n="try.title">Try a sample rewrite.</h2>
+          <p class="lede" data-i18n="try.lede">Same panel as Chrome, Mac, and Windows. No API call on this page.</p>
+        </div>
+        <div class="hero-aside">
+          <div class="bezel">
+            <div class="panel" data-demo>
+              <div class="panel-head">
+                <p class="panel-title">Rewrite Better</p>
+                <span class="kbd">Cmd Shift E</span>
+              </div>
+              <p class="sample-in"><s data-i18n="demo.in">pls send the file asap thx</s></p>
+              <div class="modes" role="tablist" data-i18n-aria="demo.modes" aria-label="Demo modes">
+                <button type="button" class="mode is-active" role="tab" aria-selected="true" data-demo-mode="rewrite" data-i18n="mode.rewrite">Rewrite</button>
+                <button type="button" class="mode" role="tab" aria-selected="false" data-demo-mode="format" data-i18n="mode.format">Format</button>
+                <button type="button" class="mode" role="tab" aria-selected="false" data-demo-mode="reply" data-i18n="mode.reply">Reply</button>
+              </div>
+              <div class="chips" data-demo-chips></div>
+              <div class="assist-row">
+                <span data-i18n="demo.assist">Writing assist</span>
+                <span class="assist-tab" data-i18n="demo.tab">Tab to accept</span>
+              </div>
+              <button type="button" class="panel-run" data-demo-run data-i18n="demo.run">Rewrite with Groq AI</button>
+              <div class="demo-variants" data-demo-variants hidden></div>
+              <p class="sample-out is-empty" data-demo-out aria-live="polite" data-i18n="demo.hint">Sample result. No API call here.</p>
+              <p class="demo-diff" data-demo-diff hidden></p>
+            </div>
+          </div>
+        </div>
       </div>
-      <p><a href="https://console.groq.com" data-i18n="setup.link">Open Groq console</a></p>
-    </div>
-    <aside class="privacy-card">
-      <h2 data-i18n="privacy.title">Your key stays on your device.</h2>
-      <p data-i18n="privacy.body">This site does not receive your text or API key. The apps talk to your AI provider directly. Read the full note on the privacy page.</p>
-      <p><a href="privacy.html" data-i18n="privacy.link">Privacy</a></p>
-    </aside>
-  </section>
+    </section>
+
+    <section class="section wrap" id="download">
+      <h2 data-i18n="dl.title">Install on the device you write on.</h2>
+      <p class="lede" data-i18n="dl.lede">Native apps for Mac and Windows, plus a Chrome zip until the extension is on the Chrome Web Store.</p>
+
+      <div class="download-grid">
+        <article class="platform reveal">
+          <div class="platform-inner">
+            <img class="platform-photo" src="images/shot-mac.jpg" alt="MacBook keyboard and notebook on a desk." width="1200" height="900" loading="lazy" />
+            <div class="platform-body">
+            <h3 data-i18n="mac.title">macOS menu bar</h3>
+            <p data-i18n="mac.body">Select text in Mail, Slack, or a browser, press the shortcut, then Replace or copy the result back.</p>
+            <a class="btn btn-primary" id="macDownload2" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
+              <span data-i18n="cta.mac">Download for Mac</span>
+              <span class="btn-icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
+              </span>
+            </a>
+            <p class="warn" data-i18n="mac.warn">macOS 13 or later. Grant Accessibility when asked. If Gatekeeper blocks the first open, right-click the app and choose Open.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="platform reveal" id="windows">
+          <div class="platform-inner">
+            <img class="platform-photo" src="images/shot-desk.jpg" alt="Desk with a keyboard and writing tools." width="1200" height="900" loading="lazy" />
+            <div class="platform-body">
+            <h3 data-i18n="win.title">Windows tray</h3>
+            <p data-i18n="win.body">Select text in any app, press Ctrl Shift E, then Replace to put the result back, or copy from the tray panel.</p>
+            <a class="btn btn-primary" id="winDownload2" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
+              <span data-i18n="cta.win">Download for Windows</span>
+              <span class="btn-icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
+              </span>
+            </a>
+            <p class="warn" data-i18n="win.warn">Windows 10 or later. SmartScreen may warn on unsigned builds: More info, then Run anyway.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="platform reveal platform--wide" id="chrome">
+          <div class="platform-inner">
+            <img class="platform-photo" src="images/shot-browser.jpg" alt="Browser window on a laptop, where the Chrome extension runs." width="1200" height="900" loading="lazy" />
+            <div class="platform-body">
+            <h3 data-i18n="chrome.title">Chrome extension</h3>
+            <p data-i18n="chrome.body">Works on any site from the toolbar, the context menu, or Ctrl/Cmd Shift E. Replace puts the result back into the field.</p>
+            <a class="btn btn-secondary" href="downloads/rewrite-better-chrome.zip">
+              <span data-i18n="cta.zip">Download zip</span>
+              <span class="btn-icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
+              </span>
+            </a>
+            <ol class="steps">
+              <li><span class="step-n">1</span><span data-i18n="chrome.s1">Unzip the file.</span></li>
+              <li><span class="step-n">2</span><span data-i18n="chrome.s2">Open chrome://extensions and turn on Developer mode.</span></li>
+              <li><span class="step-n">3</span><span data-i18n="chrome.s3">Load unpacked and select the unzipped folder (the one with manifest.json).</span></li>
+            </ol>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section wrap" id="modes">
+      <h2 data-i18n="modes.title">The same panel on every device.</h2>
+      <figure class="modes-visual">
+        <img src="images/shot-select.jpg" alt="Selected text in a document, the starting point for Rewrite Better." width="1400" height="788" loading="lazy" />
+      </figure>
+      <div class="mode-story">
+        <article class="mode-card">
+          <h3 data-i18n="mode.rewrite">Rewrite</h3>
+          <p data-i18n="modes.rewrite">Change tone, tighten a draft, or translate. Three variants plus a word-level diff of what changed.</p>
+        </article>
+        <article class="mode-card">
+          <h3 data-i18n="mode.format">Format</h3>
+          <p data-i18n="modes.format">Turn notes into Markdown, HTML, bullets, a table, an outline, a summary, or an FAQ.</p>
+        </article>
+        <article class="mode-card">
+          <h3 data-i18n="mode.reply">Reply</h3>
+          <p data-i18n="modes.reply">Paste a received message, add a few notes, and draft a chat or email reply in the length and language you want.</p>
+        </article>
+        <article class="mode-card">
+          <h3 data-i18n="mode.assist">Writing assist</h3>
+          <p data-i18n="modes.assist">Tab autocomplete as you type, plus Check writing for grammar and wording.</p>
+        </article>
+        <article class="mode-card">
+          <h3 data-i18n="mode.voice">Voice profile</h3>
+          <p data-i18n="modes.voice">Paste a few samples of how you write. Rewrite, Reply, and writing assist match that voice. Stays on the device.</p>
+        </article>
+        <article class="mode-card">
+          <h3 data-i18n="mode.replace">Replace</h3>
+          <p data-i18n="modes.replace">Copy the result, or Replace to put it back into the field or app you came from.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section wrap" id="setup">
+      <div class="trust-pair">
+        <article class="info-card">
+          <h2 data-i18n="setup.title">Bring your own API key.</h2>
+          <p class="lede" data-i18n="setup.body">There is no Rewrite Better account. Paste a Gemini, Groq, Cerebras, or OpenAI key in Settings. Keys are tried in that order when one hits quota. Requests go from your device to the provider.</p>
+          <p class="info-link"><a href="https://console.groq.com" data-i18n="setup.link">Open Groq console</a></p>
+        </article>
+        <article class="info-card">
+          <h2 data-i18n="privacy.title">Your key stays on your device.</h2>
+          <p class="lede" data-i18n="privacy.body">This site does not receive your text or API key. The apps talk to your AI provider directly. Read the full note on the privacy page.</p>
+          <p class="info-link"><a href="privacy.html" data-i18n="privacy.link">Privacy</a></p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section wrap" id="feedback">
+      <div class="help-card">
+        <h2 data-i18n="help.title">Feedback</h2>
+        <p class="lede" data-i18n="help.lede">Email me, or open a GitHub issue for a bug, a feature idea, or a question.</p>
+        <p class="help-mail">
+          <a href="mailto:cvthang56th2@gmail.com">cvthang56th2@gmail.com</a>
+        </p>
+        <div class="help-actions">
+          <a class="btn btn-primary" href="mailto:cvthang56th2@gmail.com">
+            <span data-i18n="help.email">Email</span>
+            <span class="btn-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48ZM216,192H40V74.19l82.42,82.41a8,8,0,0,0,11.16,0L216,74.19Zm0-137.53-83.31,83.31L49.31,54.47Z"/></svg>
+            </span>
+          </a>
+          <a class="btn btn-secondary" href="https://github.com/cvthang56th2/rewrite-better/issues/new?labels=bug">
+            <span data-i18n="help.bug">Report a bug</span>
+            <span class="btn-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg>
+            </span>
+          </a>
+          <a class="btn btn-secondary" href="https://github.com/cvthang56th2/rewrite-better/issues/new?labels=enhancement">
+            <span data-i18n="help.idea">Request a feature</span>
+            <span class="btn-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg>
+            </span>
+          </a>
+          <a class="btn btn-secondary" href="https://github.com/cvthang56th2/rewrite-better/issues/new?labels=question">
+            <span data-i18n="help.ask">Ask a question</span>
+            <span class="btn-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg>
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <footer class="foot wrap">
     <div class="foot-row">
-      <span>Rewrite Better · MIT</span>
+      <a class="foot-brand" href="./">
+        <img src="icon.png" width="22" height="22" alt="" />
+        Rewrite Better
+      </a>
       <span>
+        <a href="#download" data-i18n="nav.download">Download</a>
         <a href="privacy.html" data-i18n="nav.privacy">Privacy</a>
-        ·
+        <a href="#feedback" data-i18n="nav.feedback">Feedback</a>
+        <a href="mailto:cvthang56th2@gmail.com" data-i18n="help.email">Email</a>
         <a href="https://github.com/cvthang56th2/rewrite-better">GitHub</a>
       </span>
     </div>
+    <p class="foot-note" data-i18n="foot.note">MIT license. No account. Keys stay on your device.</p>
   </footer>
 
   <script src="release-assets.js"></script>
