@@ -30,19 +30,22 @@
     <p data-i18n="p.updated">Last updated 15 September 2026.</p>
 
     <h2 data-i18n="p.s1">No Rewrite Better servers</h2>
-    <p data-i18n="p.s1b">The Chrome extension and macOS app have no account system and no backend of ours. We do not receive, store, or log the text you rewrite.</p>
+    <p data-i18n="p.s1b">The Chrome extension, macOS app, and Windows app have no account system and no backend of ours. We do not receive, store, or log the text you rewrite.</p>
 
     <h2 data-i18n="p.s2">API keys</h2>
-    <p data-i18n="p.s2b">Your Groq API key stays on your device. In Chrome it is saved with chrome.storage.sync. On Mac it is stored in Keychain. This website never asks for a key.</p>
+    <p data-i18n="p.s2b">Your API key stays on your device. Chrome uses chrome.storage.sync. Mac uses Keychain. Windows keeps keys in local app storage. This website never asks for a key.</p>
 
     <h2 data-i18n="p.s3">Where text goes</h2>
-    <p data-i18n="p.s3b">When you run Rewrite, Format, or Reply, the selected text and your options are sent from your device to Groq’s API (api.groq.com). Groq’s own privacy policy applies to that request.</p>
+    <p data-i18n="p.s3b">When you run Rewrite, Format, or Reply, the selected text and your options are sent from your device to the AI provider whose key you configured (for example Groq at api.groq.com). That provider’s privacy policy applies.</p>
 
     <h2 data-i18n="p.s4">Chrome permissions</h2>
-    <p data-i18n="p.s4b">The extension can run on any site so the inline panel and keyboard shortcut work wherever you write. It also needs storage (for the key), contextMenus, activeTab, and scripting. Host access includes api.groq.com.</p>
+    <p data-i18n="p.s4b">The extension can run on any site so the inline panel and keyboard shortcut work wherever you write. It also needs storage (for the key), contextMenus, activeTab, and scripting. Host access includes the provider APIs you use.</p>
 
     <h2 data-i18n="p.s5">macOS permissions</h2>
-    <p data-i18n="p.s5b">The Mac app asks for Accessibility so it can read the current text selection. You can deny that permission; the panel still opens, but it will not capture selected text automatically.</p>
+    <p data-i18n="p.s5b">The Mac app asks for Accessibility so it can read the current text selection and put a result back. You can deny that permission; the panel still opens, but it will not capture selected text automatically.</p>
+
+    <h2 data-i18n="p.s5w">Windows behavior</h2>
+    <p data-i18n="p.s5wb">The Windows app captures selected text with a Ctrl+C probe, then restores the previous clipboard. It does not require a special Accessibility toggle. Elevated windows may not be readable unless Rewrite Better is also elevated.</p>
 
     <h2 data-i18n="p.s6">This website</h2>
     <p data-i18n="p.s6b">The download site is static files on Vercel. Language preference is stored in your browser (localStorage). We do not run analytics on this page unless Vercel’s platform logs apply to HTTP requests.</p>

@@ -43,4 +43,10 @@ npm run build
 
 Installer: `src-tauri/target/release/bundle/nsis/Rewrite Better_1.0.0_x64-setup.exe`
 
+For the public site / GitHub Release, rename (or upload) that file as:
+
+`RewriteBetter-1.0.0-x64-setup.exe`
+
+Or copy it to `web/downloads/RewriteBetter-setup.exe` before a Vercel deploy.
+
 SmartScreen may warn on unsigned builds — choose **More info → Run anyway**.

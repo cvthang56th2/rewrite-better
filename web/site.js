@@ -3,8 +3,9 @@ const COPY = {
     "nav.download": "Download",
     "nav.privacy": "Privacy",
     "hero.title": "Rewrite without leaving the page.",
-    "hero.sub": "A panel for Chrome and the Mac menu bar. Tone, format, and replies, using your own Groq key.",
+    "hero.sub": "A panel for Chrome, the Mac menu bar, and the Windows tray. Tone, format, and replies, using your own API key.",
     "cta.mac": "Download for Mac",
+    "cta.win": "Download for Windows",
     "cta.chrome": "Get the Chrome zip",
     "cta.zip": "Download zip",
     "demo.in": "pls send the file asap thx",
@@ -14,10 +15,13 @@ const COPY = {
     "mode.format": "Format",
     "mode.reply": "Reply",
     "dl.title": "Install on the device you write on.",
-    "dl.lede": "The Mac app is a menu bar panel. The Chrome build is an unpacked zip until it is on the Chrome Web Store.",
+    "dl.lede": "Native apps for Mac and Windows, plus a Chrome zip until the extension is on the Chrome Web Store.",
     "mac.title": "macOS menu bar",
     "mac.body": "Select text in Mail, Slack, or a browser, press the shortcut, then copy or paste the result back.",
     "mac.warn": "macOS 13 or later. Grant Accessibility when asked. If Gatekeeper blocks the first open, right-click the app and choose Open.",
+    "win.title": "Windows tray",
+    "win.body": "Select text in any app, press Ctrl Shift E, then copy the result from the tray panel.",
+    "win.warn": "Windows 10 or later. SmartScreen may warn on unsigned builds: More info, then Run anyway.",
     "chrome.title": "Chrome extension",
     "chrome.body": "Works on any site from the toolbar, the context menu, or Ctrl/Cmd Shift E.",
     "chrome.s1": "Unzip the file.",
@@ -27,24 +31,26 @@ const COPY = {
     "modes.rewrite": "Change tone, tighten a draft, or translate. Friendly, professional, concise, persuasive, or casual.",
     "modes.format": "Turn notes into Markdown, HTML, bullets, a table, an outline, a summary, or an FAQ.",
     "modes.reply": "Paste a received message, add a few notes, and draft a chat or email reply in the length and language you want.",
-    "setup.title": "Bring your own Groq key.",
-    "setup.body": "There is no Rewrite Better account. Create a free key at console.groq.com, paste it in Settings, and requests go from your device to Groq.",
+    "setup.title": "Bring your own API key.",
+    "setup.body": "There is no Rewrite Better account. Create a free Groq key at console.groq.com (or use Gemini, Cerebras, or OpenAI), paste it in Settings, and requests go from your device to the provider.",
     "setup.link": "Open Groq console",
     "privacy.title": "Your key stays on your device.",
-    "privacy.body": "This site does not receive your text or API key. The apps talk to Groq directly. Read the full note on the privacy page.",
+    "privacy.body": "This site does not receive your text or API key. The apps talk to your AI provider directly. Read the full note on the privacy page.",
     "privacy.link": "Privacy",
     "p.h1": "Privacy",
-    "p.updated": "Last updated 15 September 2026.",
+    "p.updated": "Last updated 16 September 2026.",
     "p.s1": "No Rewrite Better servers",
-    "p.s1b": "The Chrome extension and macOS app have no account system and no backend of ours. We do not receive, store, or log the text you rewrite.",
+    "p.s1b": "The Chrome extension, macOS app, and Windows app have no account system and no backend of ours. We do not receive, store, or log the text you rewrite.",
     "p.s2": "API keys",
-    "p.s2b": "Your Groq API key stays on your device. In Chrome it is saved with chrome.storage.sync. On Mac it is stored in Keychain. This website never asks for a key.",
+    "p.s2b": "Your API key stays on your device. Chrome uses chrome.storage.sync. Mac uses Keychain. Windows keeps keys in local app storage. This website never asks for a key.",
     "p.s3": "Where text goes",
-    "p.s3b": "When you run Rewrite, Format, or Reply, the selected text and your options are sent from your device to Groq’s API (api.groq.com). Groq’s own privacy policy applies to that request.",
+    "p.s3b": "When you run Rewrite, Format, or Reply, the selected text and your options are sent from your device to the AI provider whose key you configured (for example Groq at api.groq.com). That provider’s privacy policy applies.",
     "p.s4": "Chrome permissions",
-    "p.s4b": "The extension can run on any site so the inline panel and keyboard shortcut work wherever you write. It also needs storage (for the key), contextMenus, activeTab, and scripting. Host access includes api.groq.com.",
+    "p.s4b": "The extension can run on any site so the inline panel and keyboard shortcut work wherever you write. It also needs storage (for the key), contextMenus, activeTab, and scripting. Host access includes the provider APIs you use.",
     "p.s5": "macOS permissions",
-    "p.s5b": "The Mac app asks for Accessibility so it can read the current text selection. You can deny that permission; the panel still opens, but it will not capture selected text automatically.",
+    "p.s5b": "The Mac app asks for Accessibility so it can read the current text selection and put a result back. You can deny that permission; the panel still opens, but it will not capture selected text automatically.",
+    "p.s5w": "Windows behavior",
+    "p.s5wb": "The Windows app captures selected text with a Ctrl+C probe, then restores the previous clipboard. It does not require a special Accessibility toggle. Elevated windows may not be readable unless Rewrite Better is also elevated.",
     "p.s6": "This website",
     "p.s6b": "The download site is static files on Vercel. Language preference is stored in your browser (localStorage). We do not run analytics on this page unless Vercel’s platform logs apply to HTTP requests.",
     "p.s7": "Contact",
@@ -55,8 +61,9 @@ const COPY = {
     "nav.download": "Tải về",
     "nav.privacy": "Quyền riêng tư",
     "hero.title": "Viết lại ngay, không cần rời trang.",
-    "hero.sub": "Panel trên Chrome và thanh menu Mac. Đổi giọng, format, soạn reply, dùng Groq key của bạn.",
+    "hero.sub": "Panel trên Chrome, thanh menu Mac, và khay hệ thống Windows. Đổi giọng, format, soạn reply, dùng API key của bạn.",
     "cta.mac": "Tải cho Mac",
+    "cta.win": "Tải cho Windows",
     "cta.chrome": "Tải bản Chrome",
     "cta.zip": "Tải file zip",
     "demo.in": "gửi file giúp e với, gấp ạ",
@@ -66,10 +73,13 @@ const COPY = {
     "mode.format": "Format",
     "mode.reply": "Reply",
     "dl.title": "Cài trên máy bạn đang viết.",
-    "dl.lede": "Bản Mac nằm trên thanh menu. Bản Chrome là zip Load unpacked cho đến khi lên Chrome Web Store.",
+    "dl.lede": "App native cho Mac và Windows, cùng bản Chrome zip cho đến khi lên Chrome Web Store.",
     "mac.title": "Thanh menu macOS",
     "mac.body": "Bôi text trong Mail, Slack, hoặc trình duyệt, bấm phím tắt, rồi copy hoặc dán kết quả lại.",
     "mac.warn": "macOS 13 trở lên. Cấp Accessibility khi hệ thống hỏi. Nếu Gatekeeper chặn lần đầu, chuột phải app rồi chọn Open.",
+    "win.title": "Khay hệ thống Windows",
+    "win.body": "Bôi text trong app bất kỳ, bấm Ctrl Shift E, rồi copy kết quả từ panel trên khay.",
+    "win.warn": "Windows 10 trở lên. SmartScreen có thể cảnh báo bản chưa ký: More info, rồi Run anyway.",
     "chrome.title": "Tiện ích Chrome",
     "chrome.body": "Dùng trên mọi trang từ thanh công cụ, menu chuột phải, hoặc Ctrl/Cmd Shift E.",
     "chrome.s1": "Giải nén file zip.",
@@ -79,24 +89,26 @@ const COPY = {
     "modes.rewrite": "Đổi giọng, rút gọn bản nháp, hoặc dịch. Friendly, professional, concise, persuasive, hoặc casual.",
     "modes.format": "Đổi ghi chú thành Markdown, HTML, bullet, bảng, dàn ý, tóm tắt, hoặc FAQ.",
     "modes.reply": "Dán tin nhắn nhận được, thêm vài ý, rồi soạn reply chat hoặc email đúng độ dài và ngôn ngữ bạn muốn.",
-    "setup.title": "Dùng Groq key của bạn.",
-    "setup.body": "Không có tài khoản Rewrite Better. Tạo key miễn phí tại console.groq.com, dán vào Settings, request đi thẳng từ máy bạn tới Groq.",
+    "setup.title": "Dùng API key của bạn.",
+    "setup.body": "Không có tài khoản Rewrite Better. Tạo key Groq miễn phí tại console.groq.com (hoặc dùng Gemini, Cerebras, OpenAI), dán vào Settings, request đi thẳng từ máy bạn tới nhà cung cấp.",
     "setup.link": "Mở Groq console",
     "privacy.title": "Key ở lại trên máy bạn.",
-    "privacy.body": "Site này không nhận text hay API key. App gọi Groq trực tiếp. Chi tiết nằm ở trang quyền riêng tư.",
+    "privacy.body": "Site này không nhận text hay API key. App gọi trực tiếp nhà cung cấp AI của bạn. Chi tiết nằm ở trang quyền riêng tư.",
     "privacy.link": "Quyền riêng tư",
     "p.h1": "Quyền riêng tư",
-    "p.updated": "Cập nhật 15 tháng 9 2026.",
+    "p.updated": "Cập nhật 16 tháng 9 2026.",
     "p.s1": "Không có server của Rewrite Better",
-    "p.s1b": "Tiện ích Chrome và app macOS không có tài khoản, không có backend của chúng tôi. Chúng tôi không nhận, lưu, hay log đoạn text bạn viết lại.",
+    "p.s1b": "Tiện ích Chrome, app macOS, và app Windows không có tài khoản, không có backend của chúng tôi. Chúng tôi không nhận, lưu, hay log đoạn text bạn viết lại.",
     "p.s2": "API key",
-    "p.s2b": "Groq API key nằm trên máy bạn. Chrome lưu bằng chrome.storage.sync. Mac lưu trong Keychain. Website này không hỏi key.",
+    "p.s2b": "API key nằm trên máy bạn. Chrome dùng chrome.storage.sync. Mac dùng Keychain. Windows lưu local trong app. Website này không hỏi key.",
     "p.s3": "Text đi đâu",
-    "p.s3b": "Khi chạy Rewrite, Format, hoặc Reply, đoạn text và tùy chọn được gửi từ máy bạn tới API của Groq (api.groq.com). Chính sách của Groq áp dụng cho request đó.",
+    "p.s3b": "Khi chạy Rewrite, Format, hoặc Reply, đoạn text và tùy chọn được gửi từ máy bạn tới nhà cung cấp AI bạn đã cấu hình (ví dụ Groq tại api.groq.com). Chính sách của nhà cung cấp đó áp dụng.",
     "p.s4": "Quyền Chrome",
-    "p.s4b": "Tiện ích chạy được trên mọi site để panel và phím tắt hoạt động chỗ bạn đang viết. Cần thêm storage (cho key), contextMenus, activeTab, và scripting. Host gồm api.groq.com.",
+    "p.s4b": "Tiện ích chạy được trên mọi site để panel và phím tắt hoạt động chỗ bạn đang viết. Cần thêm storage (cho key), contextMenus, activeTab, và scripting. Host gồm API của nhà cung cấp bạn dùng.",
     "p.s5": "Quyền macOS",
-    "p.s5b": "App Mac xin Accessibility để đọc text đang chọn. Bạn có thể từ chối; panel vẫn mở, nhưng không tự lấy đoạn đang bôi.",
+    "p.s5b": "App Mac xin Accessibility để đọc text đang chọn và dán kết quả lại. Bạn có thể từ chối; panel vẫn mở, nhưng không tự lấy đoạn đang bôi.",
+    "p.s5w": "Cách Windows hoạt động",
+    "p.s5wb": "App Windows lấy text đang chọn bằng Ctrl+C probe, rồi khôi phục clipboard trước đó. Không cần bật Accessibility riêng. Cửa sổ chạy elevated có thể không đọc được nếu Rewrite Better không elevated.",
     "p.s6": "Website này",
     "p.s6b": "Trang tải về là file tĩnh trên Vercel. Ngôn ngữ giao diện lưu trong trình duyệt (localStorage). Chúng tôi không gắn analytics, trừ log HTTP của Vercel nếu có.",
     "p.s7": "Liên hệ",
@@ -144,10 +156,24 @@ const DEMO = {
   },
 };
 
+const RELEASE = {
+  macLocal: "downloads/RewriteBetter.dmg",
+  macRemote: "https://github.com/cvthang56th2/rewrite-better/releases/latest/download/RewriteBetter-1.0.dmg",
+  winLocal: "downloads/RewriteBetter-setup.exe",
+  winRemote: "https://github.com/cvthang56th2/rewrite-better/releases/latest/download/RewriteBetter-1.0.0-x64-setup.exe",
+};
+
 function detectLang() {
   const saved = localStorage.getItem("rb-lang");
   if (saved === "en" || saved === "vi") return saved;
   return navigator.language.toLowerCase().startsWith("vi") ? "vi" : "en";
+}
+
+function detectOs() {
+  const ua = navigator.userAgent || "";
+  if (/Windows/i.test(ua)) return "win";
+  if (/Mac OS X|Macintosh/i.test(ua)) return "mac";
+  return "other";
 }
 
 function applyLang(lang) {
@@ -177,15 +203,37 @@ function renderChips(mode, lang) {
   if (run) run.textContent = spec.run[lang];
 }
 
-async function resolveMacUrl() {
-  const local = "downloads/RewriteBetter.dmg";
+async function resolveAssetUrl(localPath, remoteUrl) {
   try {
-    const res = await fetch(local, { method: "HEAD" });
-    if (res.ok) return local;
+    const res = await fetch(localPath, { method: "HEAD" });
+    if (res.ok) return localPath;
   } catch {
-    /* use GitHub */
+    /* use remote */
   }
-  return "https://github.com/cvthang56th2/rewrite-better/releases/latest/download/RewriteBetter-1.0.dmg";
+  return remoteUrl;
+}
+
+function styleHeroCtas(os) {
+  const mac = document.getElementById("macDownload");
+  const win = document.getElementById("winDownload");
+  if (!mac || !win) return;
+  if (os === "win") {
+    win.classList.add("btn-primary");
+    win.classList.remove("btn-secondary");
+    mac.classList.add("btn-secondary");
+    mac.classList.remove("btn-primary");
+  } else {
+    mac.classList.add("btn-primary");
+    mac.classList.remove("btn-secondary");
+    win.classList.add("btn-secondary");
+    win.classList.remove("btn-primary");
+  }
+}
+
+function setDemoShortcut(os) {
+  const kbd = document.querySelector("[data-demo] .kbd");
+  if (!kbd) return;
+  kbd.textContent = os === "mac" ? "Cmd Shift E" : "Ctrl Shift E";
 }
 
 function initDemo() {
@@ -219,10 +267,20 @@ document.querySelectorAll(".lang-btn").forEach((btn) => {
   });
 });
 
+const os = detectOs();
 applyLang(detectLang());
+styleHeroCtas(os);
+setDemoShortcut(os);
 initDemo();
-resolveMacUrl().then((url) => {
+
+Promise.all([
+  resolveAssetUrl(RELEASE.macLocal, RELEASE.macRemote),
+  resolveAssetUrl(RELEASE.winLocal, RELEASE.winRemote),
+]).then(([macUrl, winUrl]) => {
   document.querySelectorAll("#macDownload, #macDownload2").forEach((a) => {
-    a.href = url;
+    a.href = macUrl;
+  });
+  document.querySelectorAll("#winDownload, #winDownload2").forEach((a) => {
+    a.href = winUrl;
   });
 });

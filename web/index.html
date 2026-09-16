@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Rewrite Better</title>
-  <meta name="description" content="Rewrite, format, and draft replies on any page or from the Mac menu bar. Uses your own Groq API key. Free to start." />
+  <meta name="description" content="Rewrite, format, and draft replies from Chrome, the Mac menu bar, or the Windows tray. Uses your own API key. Free to start." />
   <link rel="icon" href="icon.png" />
   <meta property="og:title" content="Rewrite Better" />
-  <meta property="og:description" content="Rewrite without leaving the page. Chrome extension and macOS menu bar app." />
+  <meta property="og:description" content="Rewrite without leaving the page. Chrome, macOS, and Windows." />
   <meta property="og:image" content="icon.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -31,12 +31,18 @@
   <header class="hero wrap">
     <div class="hero-grid">
       <div>
-        <p class="kicker">Chrome · macOS 13+</p>
+        <p class="kicker">Chrome · macOS 13+ · Windows 10+</p>
         <h1 data-i18n="hero.title">Rewrite without leaving the page.</h1>
-        <p class="hero-sub" data-i18n="hero.sub">A panel for Chrome and the Mac menu bar. Tone, format, and replies, using your own Groq key.</p>
-        <div class="cta-row">
+        <p class="hero-sub" data-i18n="hero.sub">A panel for Chrome, the Mac menu bar, and the Windows tray. Tone, format, and replies, using your own API key.</p>
+        <div class="cta-row" id="heroCtas">
           <a class="btn btn-primary" id="macDownload" href="https://github.com/cvthang56th2/rewrite-better/releases/latest/download/RewriteBetter-1.0.dmg">
             <span data-i18n="cta.mac">Download for Mac</span>
+            <span class="btn-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
+            </span>
+          </a>
+          <a class="btn btn-secondary" id="winDownload" href="https://github.com/cvthang56th2/rewrite-better/releases/latest/download/RewriteBetter-1.0.0-x64-setup.exe">
+            <span data-i18n="cta.win">Download for Windows</span>
             <span class="btn-icon" aria-hidden="true">
               <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
             </span>
@@ -74,7 +80,7 @@
 
   <section class="section wrap" id="download">
     <h2 data-i18n="dl.title">Install on the device you write on.</h2>
-    <p class="lede" data-i18n="dl.lede">The Mac app is a menu bar panel. The Chrome build is an unpacked zip until it is on the Chrome Web Store.</p>
+    <p class="lede" data-i18n="dl.lede">Native apps for Mac and Windows, plus a Chrome zip until the extension is on the Chrome Web Store.</p>
 
     <div class="download-grid">
       <article class="platform">
@@ -88,6 +94,20 @@
             </span>
           </a>
           <p class="warn" data-i18n="mac.warn">macOS 13 or later. Grant Accessibility when asked. If Gatekeeper blocks the first open, right-click the app and choose Open.</p>
+        </div>
+      </article>
+
+      <article class="platform" id="windows">
+        <div class="platform-inner">
+          <h3 data-i18n="win.title">Windows tray</h3>
+          <p data-i18n="win.body">Select text in any app, press Ctrl Shift E, then copy the result from the tray panel.</p>
+          <a class="btn btn-primary" id="winDownload2" href="https://github.com/cvthang56th2/rewrite-better/releases/latest/download/RewriteBetter-1.0.0-x64-setup.exe" style="margin-top:18px">
+            <span data-i18n="cta.win">Download for Windows</span>
+            <span class="btn-icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
+            </span>
+          </a>
+          <p class="warn" data-i18n="win.warn">Windows 10 or later. SmartScreen may warn on unsigned builds: More info, then Run anyway.</p>
         </div>
       </article>
 
@@ -132,8 +152,8 @@
   <section class="section wrap">
     <div class="setup">
       <div>
-        <h2 data-i18n="setup.title">Bring your own Groq key.</h2>
-        <p class="lede" data-i18n="setup.body">There is no Rewrite Better account. Create a free key at console.groq.com, paste it in Settings, and requests go from your device to Groq.</p>
+        <h2 data-i18n="setup.title">Bring your own API key.</h2>
+        <p class="lede" data-i18n="setup.body">There is no Rewrite Better account. Create a free Groq key at console.groq.com (or use Gemini, Cerebras, or OpenAI), paste it in Settings, and requests go from your device to the provider.</p>
       </div>
       <p><a href="https://console.groq.com" data-i18n="setup.link">Open Groq console</a></p>
     </div>

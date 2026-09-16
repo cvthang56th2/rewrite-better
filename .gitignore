@@ -5,6 +5,7 @@ xcuserdata/
 .DS_Store
 web/downloads/*.zip
 web/downloads/*.dmg
+web/downloads/*.exe
 .vercel/
 win/node_modules/
 win/src-tauri/target/

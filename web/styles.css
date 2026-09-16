@@ -240,7 +240,6 @@ a:hover {
 }
 
 .hero {
-  min-height: calc(100dvh - 72px);
   display: grid;
   align-items: center;
   padding: 40px 0 64px;
@@ -541,7 +540,7 @@ a:hover {
 
 .download-grid {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   margin-top: 36px;
 }
@@ -642,22 +641,21 @@ a:hover {
   padding: 28px;
   border-radius: var(--radius);
   background: var(--ink);
-  color: #e8eef5;
+  color: var(--paper);
 }
 
 .privacy-card h2,
-.privacy-card p,
-.privacy-card a {
+.privacy-card p {
   color: inherit;
 }
 
 .privacy-card p {
   max-width: 60ch;
-  opacity: 0.84;
+  opacity: 0.88;
 }
 
 .privacy-card a {
-  color: #8ec5f0;
+  color: var(--accent);
 }
 
 .page {
@@ -708,14 +706,23 @@ a:hover {
   color: var(--ink);
 }
 
+@media (max-width: 1100px) {
+  .download-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 767px) {
   .hero {
     padding: 20px 0 48px;
     min-height: unset;
   }
 
+  .download-grid {
+    grid-template-columns: 1fr;
+  }
+
   .hero-grid,
-  .download-grid,
   .mode-row,
   .setup {
     grid-template-columns: 1fr;

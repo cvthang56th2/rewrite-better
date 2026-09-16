@@ -96,10 +96,13 @@ The download landing lives in `web/`. From the repo root:
 2. Leave the Root Directory empty (the root `vercel.json` already points at `web/`)
 3. Deploy
 
-Each deploy zips `chrome/` into `web/downloads/rewrite-better-chrome.zip`. The Mac DMG is not built on Vercel. Either:
+Each deploy zips `chrome/` into `web/downloads/rewrite-better-chrome.zip`. Desktop installers are not built on Vercel. Either:
 
-- Run `./scripts/package-mac-dmg.sh` locally, then `npx vercel --prod` so `web/downloads/RewriteBetter.dmg` uploads, or
-- Attach `RewriteBetter-1.0.dmg` to a GitHub Release. The site uses that URL when the local DMG is missing.
+- Copy built binaries into `web/downloads/` (`RewriteBetter.dmg`, `RewriteBetter-setup.exe`) then deploy, or
+- Attach release assets named `RewriteBetter-1.0.dmg` and `RewriteBetter-1.0.0-x64-setup.exe`. The site falls back to those GitHub Release URLs when local files are missing.
+
+Mac packaging: `./scripts/package-mac-dmg.sh`  
+Windows packaging (on a Windows machine): `cd win && npm run build`, then rename/copy the NSIS installer to `web/downloads/RewriteBetter-setup.exe` or upload it as the release asset above.
 
 Preview the site locally:
 
