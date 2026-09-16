@@ -11,6 +11,8 @@ const COPY = {
     "video.play": "Play demo",
     "video.soon": "Demo video coming soon",
     "video.caption": "See the panel on Chrome, Mac, and Windows.",
+    "story.a": "You finish a draft, you're not sure, so you paste it into ChatGPT and type rewrite better. Don't. Select the text, press",
+    "story.b": ", pick a style and language, then Rewrite Better. Then you get a better version. Beautiful!",
     "try.title": "Try a sample rewrite.",
     "try.lede": "Same panel as Chrome, Mac, and Windows. No API call on this page.",
     "demo.in": "pls send the file asap thx",
@@ -84,6 +86,8 @@ const COPY = {
     "video.play": "Phát video",
     "video.soon": "Video demo sắp có",
     "video.caption": "Xem panel trên Chrome, Mac, và Windows.",
+    "story.a": "Viết xong một đoạn, chưa tự tin, bạn mở ChatGPT rồi gõ rewrite better. Đừng. Bôi đen, bấm",
+    "story.b": ", chọn phong cách và ngôn ngữ, rồi Rewrite Better. Xong, bạn có bản hay hơn. Beautiful!",
     "try.title": "Thử một lần viết lại.",
     "try.lede": "Cùng panel như Chrome, Mac, và Windows. Trang này không gọi API.",
     "demo.in": "gửi file giúp e với, gấp ạ",
@@ -368,9 +372,10 @@ function styleHeroCtas(os) {
 }
 
 function setDemoShortcut(os) {
-  const kbd = document.querySelector("[data-demo] .kbd");
-  if (!kbd) return;
-  kbd.textContent = os === "mac" ? "Cmd Shift E" : "Ctrl Shift E";
+  const label = os === "mac" ? "Cmd Shift E" : "Ctrl Shift E";
+  document.querySelectorAll("[data-shortcut], [data-demo] .kbd").forEach((el) => {
+    el.textContent = label;
+  });
 }
 
 function initDemo() {

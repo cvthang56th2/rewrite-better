@@ -268,6 +268,8 @@ a:hover {
   width: 100%;
   max-width: 40rem;
   min-width: 0;
+  margin-inline: auto;
+  text-align: center;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -301,7 +303,7 @@ a:hover {
 }
 
 .hero h1 {
-  margin: 0;
+  margin: 0 auto;
   font-size: clamp(2rem, 4.2vw, 3.35rem);
   line-height: 1.1;
   letter-spacing: -0.045em;
@@ -312,7 +314,7 @@ a:hover {
 }
 
 .hero-sub {
-  margin: 18px 0 0;
+  margin: 18px auto 0;
   max-width: 42ch;
   color: var(--ink-soft);
   font-size: 1.05rem;
@@ -322,6 +324,7 @@ a:hover {
 .cta-row {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
   margin-top: 28px;
 }
@@ -503,6 +506,7 @@ a:hover {
   margin: 14px 4px 0;
   color: var(--ink-soft);
   font-size: 14px;
+  text-align: center;
 }
 
 .hero-aside {
@@ -711,8 +715,29 @@ a:hover {
   align-items: center;
 }
 
+.pitch {
+  padding: 36px 0 0;
+  text-align: center;
+}
+
+.pitch p {
+  margin: 0 auto;
+  max-width: 48ch;
+  font-size: 1.12rem;
+  line-height: 1.6;
+}
+
+.pitch .kbd {
+  margin-inline: 0.35em 0.1em;
+  vertical-align: 0.08em;
+}
+
 .section {
   padding: 88px 0;
+}
+
+#try {
+  padding-top: 56px;
 }
 
 .reveal {
@@ -1020,6 +1045,10 @@ a:hover {
 
   .section {
     padding: 64px 0;
+  }
+
+  #try {
+    padding-top: 40px;
   }
 
   .cta-row .btn {
