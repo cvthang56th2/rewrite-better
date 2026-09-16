@@ -3,8 +3,13 @@ let mousePosition = { x: 0, y: 0 };
 let panelApi = null;
 let capturedTarget = null;
 let unbindPanelGuard = null;
+let unbindPopupFit = null;
 
 function closePopup() {
+  if (unbindPopupFit) {
+    unbindPopupFit();
+    unbindPopupFit = null;
+  }
   if (unbindPanelGuard) {
     unbindPanelGuard();
     unbindPanelGuard = null;
@@ -89,10 +94,70 @@ async function copyFallback(text) {
   }
 }
 
-document.addEventListener('contextmenu', (e) => {
-  mousePosition.x = e.pageX;
-  mousePosition.y = e.pageY;
-});
+function rememberPointer(event) {
+  if (typeof event.clientX !== 'number' || typeof event.clientY !== 'number') return;
+  mousePosition.x = event.clientX;
+  mousePosition.y = event.clientY;
+}
+
+document.addEventListener('pointerdown', rememberPointer, true);
+document.addEventListener('contextmenu', rememberPointer, true);
+
+function selectionAnchor() {
+  const sel = window.getSelection && window.getSelection();
+  if (sel && sel.rangeCount) {
+    const range = sel.getRangeAt(0);
+    const rect = range && range.getBoundingClientRect && range.getBoundingClientRect();
+    if (rect && (rect.width || rect.height)) {
+      return { x: rect.left, y: rect.bottom };
+    }
+  }
+  return { x: mousePosition.x, y: mousePosition.y };
+}
+
+function fitPopupToViewport(popup, anchor) {
+  if (!popup || !RewriteBetter.fitFixedPopup) return;
+  const rect = popup.getBoundingClientRect();
+  const next = RewriteBetter.fitFixedPopup({
+    width: rect.width || 720,
+    height: Math.max(popup.scrollHeight, rect.height),
+    left: rect.left,
+    anchorX: anchor.x,
+    anchorY: anchor.y,
+    viewport: { width: window.innerWidth, height: window.innerHeight }
+  });
+  const left = `${Math.round(next.left)}px`;
+  const top = `${Math.round(next.top)}px`;
+  const maxHeight = `${Math.round(next.maxHeight)}px`;
+  const height = next.constrain ? `${Math.round(next.height)}px` : '';
+  if (
+    popup.style.left === left &&
+    popup.style.top === top &&
+    popup.style.maxHeight === maxHeight &&
+    popup.style.height === height
+  ) {
+    return;
+  }
+  popup.style.left = left;
+  popup.style.top = top;
+  popup.style.maxHeight = maxHeight;
+  popup.style.height = height;
+}
+
+function bindPopupFit(popup, anchor) {
+  const fit = () => {
+    if (currentPopup !== popup) return;
+    fitPopupToViewport(popup, anchor);
+  };
+  fit();
+  const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(fit) : null;
+  if (ro) ro.observe(popup);
+  window.addEventListener('resize', fit);
+  return function unbind() {
+    if (ro) ro.disconnect();
+    window.removeEventListener('resize', fit);
+  };
+}
 
 window.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'REWRITE_BETTER_SHOW_POPUP') {
@@ -132,14 +197,18 @@ function showInlinePopup(selectedText) {
   closePopup();
   ensureInlineStyles();
 
+  const anchor = selectionAnchor();
   const popup = document.createElement('div');
   popup.id = 'rewrite-better-popup';
   popup.className = 'rb-inline-shell';
-  popup.style.top = `${mousePosition.y + 10}px`;
-  popup.style.left = `${mousePosition.x}px`;
+  popup.style.position = 'fixed';
+  popup.style.zIndex = '2147483646';
+  popup.style.top = `${anchor.y + 10}px`;
+  popup.style.left = `${anchor.x}px`;
 
   document.body.appendChild(popup);
   currentPopup = popup;
+  unbindPopupFit = bindPopupFit(popup, anchor);
   unbindPanelGuard = RewriteBetter.guardPanelInteractions(popup, closePopup);
 
   RewriteBetter.loadUiLanguage().then(() => {
@@ -163,12 +232,6 @@ function showInlinePopup(selectedText) {
       }
     });
 
-    const rect = popup.getBoundingClientRect();
-    if (rect.right > window.innerWidth) {
-      popup.style.left = `${Math.max(8, mousePosition.x - rect.width)}px`;
-    }
-    if (rect.bottom > window.innerHeight) {
-      popup.style.top = `${Math.max(8, mousePosition.y - rect.height - 10)}px`;
-    }
+    fitPopupToViewport(popup, anchor);
   });
 }

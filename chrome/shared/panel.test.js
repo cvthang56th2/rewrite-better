@@ -142,9 +142,11 @@ unbind();
 assert.strictEqual((host.listeners.get('pointerdown') || []).length, 0);
 
 let focused = null;
+let focusOpts = null;
 const fallback = {
-  focus() {
+  focus(opts) {
     focused = 'fallback';
+    focusOpts = opts;
   }
 };
 const panelRoot = {
@@ -157,5 +159,44 @@ assert.strictEqual(RB.retainFocusIn(panelRoot, fallback), false);
 panelRoot.ownerDocument = { activeElement: detachedButton };
 assert.strictEqual(RB.retainFocusIn(panelRoot, fallback), true);
 assert.strictEqual(focused, 'fallback');
+assert.strictEqual(focusOpts && focusOpts.preventScroll, true);
+
+const clamped = RB.clampFixedPosition(
+  { left: 80, top: 2400, width: 720, height: 720 },
+  { width: 1280, height: 800 }
+);
+assert.strictEqual(clamped.left, 80);
+assert.ok(clamped.top + 720 <= 800, 'tall panel must stay inside the viewport');
+assert.ok(clamped.top >= 8);
+
+const leftClamped = RB.clampFixedPosition(
+  { left: 2000, top: 40, width: 720, height: 480 },
+  { width: 1280, height: 800 }
+);
+assert.ok(leftClamped.left + 720 <= 1280);
+
+const bottomFit = RB.fitFixedPopup({
+  width: 720,
+  height: 560,
+  left: 200,
+  anchorX: 200,
+  anchorY: 740,
+  viewport: { width: 1440, height: 800 }
+});
+assert.ok(bottomFit.top >= 8, 'panel near page bottom must move up');
+assert.ok(bottomFit.top + bottomFit.height <= 792, 'panel must stay in the viewport');
+assert.ok(bottomFit.maxHeight >= 400, 'enough height to show result and changes');
+
+const tallFit = RB.fitFixedPopup({
+  width: 720,
+  height: 900,
+  left: 80,
+  anchorX: 80,
+  anchorY: 760,
+  viewport: { width: 1280, height: 800 }
+});
+assert.ok(tallFit.constrain, 'oversized content must constrain height so the panel can scroll');
+assert.ok(tallFit.top + tallFit.maxHeight <= 792);
+assert.ok(tallFit.top >= 8);
 
 console.log('ok — panel interactions stay inside; only outside pointerdown dismisses');

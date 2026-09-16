@@ -66,17 +66,91 @@
     };
   };
 
+  RB.focusWithoutScroll = function (el) {
+    if (!el || typeof el.focus !== 'function') return false;
+    try {
+      el.focus({ preventScroll: true });
+    } catch (err) {
+      el.focus();
+    }
+    return true;
+  };
+
+  RB.clampFixedPosition = function (box, viewport, pad) {
+    const inset = pad == null ? 8 : pad;
+    const vw = viewport && viewport.width ? viewport.width : 0;
+    const vh = viewport && viewport.height ? viewport.height : 0;
+    const width = box && box.width ? box.width : 0;
+    const height = box && box.height ? box.height : 0;
+    let left = box && typeof box.left === 'number' ? box.left : inset;
+    let top = box && typeof box.top === 'number' ? box.top : inset;
+    if (left + width > vw - inset) left = Math.max(inset, vw - width - inset);
+    if (top + height > vh - inset) top = Math.max(inset, vh - height - inset);
+    if (left < inset) left = inset;
+    if (top < inset) top = inset;
+    return { left: left, top: top };
+  };
+
+  RB.fitFixedPopup = function (opts) {
+    const o = opts || {};
+    const pad = o.pad == null ? 8 : Number(o.pad);
+    const gap = o.gap == null ? 10 : Number(o.gap);
+    const cap = o.maxHeight == null ? 720 : Number(o.maxHeight);
+    const vw = Number(o.viewport && o.viewport.width) || 0;
+    const vh = Number(o.viewport && o.viewport.height) || 0;
+    const width = Number(o.width) || 0;
+    const contentHeight = Math.max(0, Number(o.height) || 0);
+    const anchorX = Number(o.anchorX);
+    const anchorY = Number(o.anchorY);
+    const maxPanel = Math.max(0, Math.min(cap, vh - pad * 2));
+    const spaceBelow = vh - pad - (anchorY + gap);
+    const spaceAbove = anchorY - gap - pad;
+    const placeAbove = contentHeight > spaceBelow && spaceAbove > spaceBelow;
+
+    let top;
+    let maxH;
+    if (placeAbove) {
+      maxH = Math.min(maxPanel, Math.max(0, spaceAbove));
+      const used = Math.min(contentHeight || maxH, maxH);
+      top = anchorY - gap - used;
+      if (top < pad) {
+        top = pad;
+        maxH = Math.min(maxPanel, Math.max(0, anchorY - gap - pad));
+      }
+    } else {
+      top = Math.max(pad, (Number.isFinite(anchorY) ? anchorY : pad) + gap);
+      maxH = Math.min(maxPanel, Math.max(0, vh - pad - top));
+      if (contentHeight > maxH && spaceAbove > maxH) {
+        maxH = Math.min(maxPanel, Math.max(0, spaceAbove));
+        const used = Math.min(contentHeight || maxH, maxH);
+        top = Math.max(pad, anchorY - gap - used);
+        maxH = Math.min(maxPanel, Math.max(0, vh - pad - top));
+      }
+    }
+
+    let left = o.left != null ? Number(o.left) : anchorX;
+    if (!Number.isFinite(left)) left = pad;
+    if (left + width > vw - pad) left = Math.max(pad, vw - width - pad);
+    if (left < pad) left = pad;
+    if (!Number.isFinite(top)) top = pad;
+
+    const height = Math.min(contentHeight || maxH, maxH);
+    return {
+      left: left,
+      top: top,
+      maxHeight: maxH,
+      height: height,
+      constrain: contentHeight > maxH + 1
+    };
+  };
+
   RB.retainFocusIn = function (root, fallback) {
     if (!root) return false;
     const doc = root.ownerDocument || (typeof document !== 'undefined' ? document : null);
     const active = doc && doc.activeElement;
     if (active && typeof root.contains === 'function' && root.contains(active)) return false;
     const target = fallback && typeof fallback.focus === 'function' ? fallback : root;
-    if (target && typeof target.focus === 'function') {
-      target.focus();
-      return true;
-    }
-    return false;
+    return RB.focusWithoutScroll(target);
   };
 
   function chipGroupHtml(name, options, selectedValue, label) {
@@ -347,6 +421,7 @@
       resultEl.textContent = text;
       resultHint.hidden = !!text.trim();
       copyBtn.hidden = !text.trim();
+      root.classList.toggle('has-result', !!text.trim());
       renderVariantChips();
       renderDiff();
       refreshPasteButton();
@@ -747,7 +822,7 @@
     refreshPasteButton();
 
     setTimeout(() => {
-      inputEl.focus();
+      RB.focusWithoutScroll(inputEl);
       const len = inputEl.value.length;
       inputEl.setSelectionRange(len, len);
       inputEl.scrollTop = inputEl.scrollHeight;
@@ -767,7 +842,7 @@
         inputAssist.dismissGhost();
         notesAssist.dismissGhost();
         setTimeout(() => {
-          inputEl.focus();
+          RB.focusWithoutScroll(inputEl);
           const len = inputEl.value.length;
           inputEl.setSelectionRange(len, len);
         }, 30);
