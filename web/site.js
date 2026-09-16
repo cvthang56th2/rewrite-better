@@ -4,6 +4,7 @@ const COPY = {
     "nav.privacy": "Privacy",
     "nav.feedback": "Feedback",
     "nav.skip": "Skip to content",
+    "nav.shots": "Screenshots",
     "hero.title": "Rewrite without leaving the\u00a0page",
     "hero.sub": "A panel on Chrome, Mac, and Windows. Rewrite, format, reply, and writing assist, using your own API key.",
     "cta.mac": "Download for Mac",
@@ -17,6 +18,35 @@ const COPY = {
     "story.b": ", pick a style and language, then Rewrite Better. Then you get a better version. Beautiful!",
     "try.title": "Try a sample rewrite.",
     "try.lede": "Same panel as Chrome, Mac, and Windows. No API call on this page.",
+    "shots.title": "The panel on Chrome, Mac, and Windows.",
+    "shots.lede": "Screenshots from the live apps. Same rewrite flow on every device.",
+    "shots.platforms": "Platforms",
+    "shots.chrome": "Chrome",
+    "shots.mac": "Mac",
+    "shots.win": "Windows",
+    "shots.chromeCap": "Chrome panel, on the page you are writing.",
+    "shots.macCap": "Mac menu bar app, over the desktop.",
+    "shots.winCap": "Windows tray app, over the desktop.",
+    "shots.chromeAlt": "Rewrite Better Chrome panel over the page you are writing.",
+    "shots.macAlt": "Rewrite Better Mac menu bar app over the desktop.",
+    "shots.winAlt": "Rewrite Better Windows tray app over the desktop.",
+    "shots.settings": "Settings",
+    "shots.welcome": "Welcome",
+    "shots.privacyWin": "Privacy",
+    "shots.settingsCap": "Settings on Mac. API keys stay in Keychain.",
+    "shots.welcomeCap": "Welcome on Mac. Accessibility, API key, then the shortcut.",
+    "shots.privacyCap": "Privacy on Mac. No account, no Rewrite Better server.",
+    "shots.settingsAlt": "Rewrite Better Settings on Mac, with API keys and the panel shortcut.",
+    "shots.welcomeAlt": "Rewrite Better Welcome window on Mac.",
+    "shots.privacyAlt": "Rewrite Better Privacy window on Mac.",
+    "shots.settingsOpen": "View Settings",
+    "shots.welcomeOpen": "View Welcome",
+    "shots.privacyOpen": "View Privacy",
+    "shots.expand": "View larger",
+    "shots.close": "Close",
+    "shots.prev": "Previous screenshot",
+    "shots.next": "Next screenshot",
+    "shots.macWindows": "Mac windows",
     "demo.in": "pls send the file asap thx",
     "demo.run": "Rewrite with Groq AI",
     "demo.working": "Rewriting…",
@@ -97,6 +127,7 @@ const COPY = {
     "nav.privacy": "Quyền riêng tư",
     "nav.feedback": "Góp ý",
     "nav.skip": "Bỏ qua đến nội dung",
+    "nav.shots": "Ảnh chụp",
     "hero.title": "Viết lại ngay, không cần rời\u00a0trang",
     "hero.sub": "Panel trên Chrome, Mac, và Windows. Viết lại, format, soạn reply, và hỗ trợ viết, dùng API key của bạn.",
     "cta.mac": "Tải cho Mac",
@@ -110,6 +141,35 @@ const COPY = {
     "story.b": ", chọn phong cách và ngôn ngữ, rồi Rewrite Better. Xong, bạn có bản hay hơn. Beautiful!",
     "try.title": "Thử một lần viết lại.",
     "try.lede": "Cùng panel như Chrome, Mac, và Windows. Trang này không gọi API.",
+    "shots.title": "Panel trên Chrome, Mac, và Windows.",
+    "shots.lede": "Ảnh chụp từ app đang chạy. Cùng một luồng viết lại trên mọi máy.",
+    "shots.platforms": "Nền tảng",
+    "shots.chrome": "Chrome",
+    "shots.mac": "Mac",
+    "shots.win": "Windows",
+    "shots.chromeCap": "Panel Chrome, ngay trên trang bạn đang viết.",
+    "shots.macCap": "App thanh menu Mac, trên desktop.",
+    "shots.winCap": "App khay hệ thống Windows, trên desktop.",
+    "shots.chromeAlt": "Panel Rewrite Better trên Chrome, đè lên trang đang viết.",
+    "shots.macAlt": "App menu bar Rewrite Better trên Mac.",
+    "shots.winAlt": "App khay hệ thống Rewrite Better trên Windows.",
+    "shots.settings": "Settings",
+    "shots.welcome": "Welcome",
+    "shots.privacyWin": "Privacy",
+    "shots.settingsCap": "Settings trên Mac. API key nằm trong Keychain.",
+    "shots.welcomeCap": "Welcome trên Mac. Accessibility, API key, rồi phím tắt.",
+    "shots.privacyCap": "Privacy trên Mac. Không tài khoản, không server của Rewrite Better.",
+    "shots.settingsAlt": "Cửa sổ Settings trên Mac, với API key và phím tắt.",
+    "shots.welcomeAlt": "Cửa sổ Welcome trên Mac.",
+    "shots.privacyAlt": "Cửa sổ Privacy trên Mac.",
+    "shots.settingsOpen": "Xem Settings",
+    "shots.welcomeOpen": "Xem Welcome",
+    "shots.privacyOpen": "Xem Privacy",
+    "shots.expand": "Xem ảnh lớn",
+    "shots.close": "Đóng",
+    "shots.prev": "Ảnh trước",
+    "shots.next": "Ảnh sau",
+    "shots.macWindows": "Cửa sổ trên Mac",
     "demo.in": "gửi file giúp e với, gấp ạ",
     "demo.run": "Viết lại với Groq AI",
     "demo.working": "Đang viết lại…",
@@ -274,6 +334,10 @@ function applyLang(lang) {
     const key = el.getAttribute("data-i18n-aria");
     if (dict[key]) el.setAttribute("aria-label", dict[key]);
   });
+  document.querySelectorAll("[data-i18n-alt]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-alt");
+    if (dict[key]) el.setAttribute("alt", dict[key]);
+  });
   document.querySelectorAll(".lang-btn").forEach((btn) => {
     const on = btn.dataset.lang === lang;
     btn.classList.toggle("is-active", on);
@@ -287,6 +351,7 @@ function applyLang(lang) {
       showDemoResult(mode, Number(demo.dataset.variantIndex) || 0);
     }
   }
+  refreshShotCopy(lang);
 }
 
 function renderChips(mode, lang) {
@@ -532,6 +597,189 @@ function initVideoStage() {
   });
 }
 
+const SHOTS = {
+  chrome: {
+    src: "images/app-chrome.jpg",
+    width: 1024,
+    height: 809,
+    tab: "shotTabChrome",
+    cap: "shots.chromeCap",
+    alt: "shots.chromeAlt",
+  },
+  mac: {
+    src: "images/app-mac.jpg",
+    width: 1024,
+    height: 596,
+    tab: "shotTabMac",
+    cap: "shots.macCap",
+    alt: "shots.macAlt",
+  },
+  win: {
+    src: "images/app-win.jpg",
+    width: 1024,
+    height: 580,
+    tab: "shotTabWin",
+    cap: "shots.winCap",
+    alt: "shots.winAlt",
+  },
+  settings: {
+    src: "images/app-settings.jpg",
+    width: 546,
+    height: 1024,
+    cap: "shots.settingsCap",
+    alt: "shots.settingsAlt",
+  },
+  welcome: {
+    src: "images/app-welcome.jpg",
+    width: 566,
+    height: 504,
+    cap: "shots.welcomeCap",
+    alt: "shots.welcomeAlt",
+  },
+  privacy: {
+    src: "images/app-privacy.jpg",
+    width: 584,
+    height: 484,
+    cap: "shots.privacyCap",
+    alt: "shots.privacyAlt",
+  },
+};
+
+const SHOT_ORDER = ["chrome", "mac", "win", "settings", "welcome", "privacy"];
+const SHOT_TABS = ["chrome", "mac", "win"];
+
+function shotLang() {
+  return document.documentElement.lang || "en";
+}
+
+function shotCopy(key) {
+  const dict = COPY[shotLang()] || COPY.en;
+  return dict[key] || COPY.en[key] || "";
+}
+
+function currentShotId() {
+  const root = document.querySelector("[data-shots]");
+  return root?.dataset.current || "chrome";
+}
+
+function selectShot(id) {
+  if (!SHOT_TABS.includes(id)) return;
+  const root = document.querySelector("[data-shots]");
+  const stage = document.getElementById("shotStage");
+  const hero = document.querySelector("[data-shot-hero]");
+  const cap = document.querySelector("[data-shot-cap]");
+  const open = document.querySelector(".shot-open");
+  const shot = SHOTS[id];
+  if (!root || !stage || !hero || !shot) return;
+  root.dataset.current = id;
+  stage.classList.remove("is-chrome", "is-mac", "is-win");
+  stage.classList.add(`is-${id}`);
+  stage.setAttribute("aria-labelledby", shot.tab);
+  hero.src = shot.src;
+  hero.width = shot.width;
+  hero.height = shot.height;
+  hero.alt = shotCopy(shot.alt);
+  hero.setAttribute("data-i18n-alt", shot.alt);
+  if (cap) cap.textContent = shotCopy(shot.cap);
+  if (open) open.setAttribute("data-shot-open", id);
+  root.querySelectorAll(".shot-tab").forEach((tab) => {
+    const on = tab.dataset.shot === id;
+    tab.classList.toggle("is-active", on);
+    tab.setAttribute("aria-selected", String(on));
+    tab.tabIndex = on ? 0 : -1;
+  });
+}
+
+function refreshShotCopy(lang) {
+  const dict = COPY[lang] || COPY.en;
+  const id = currentShotId();
+  const shot = SHOTS[id];
+  const cap = document.querySelector("[data-shot-cap]");
+  const hero = document.querySelector("[data-shot-hero]");
+  if (shot && cap) cap.textContent = dict[shot.cap] || shotCopy(shot.cap);
+  if (shot && hero) hero.alt = dict[shot.alt] || shotCopy(shot.alt);
+  const dialog = document.querySelector("[data-shot-dialog]");
+  if (dialog?.open) renderShotDialog(dialog.dataset.shotId || id);
+}
+
+function renderShotDialog(id) {
+  const shot = SHOTS[id];
+  const dialog = document.querySelector("[data-shot-dialog]");
+  const img = document.querySelector("[data-shot-dialog-img]");
+  const cap = document.querySelector("[data-shot-dialog-cap]");
+  if (!shot || !dialog || !img) return;
+  dialog.dataset.shotId = id;
+  img.src = shot.src;
+  img.width = shot.width;
+  img.height = shot.height;
+  img.alt = shotCopy(shot.alt);
+  if (cap) cap.textContent = shotCopy(shot.cap);
+}
+
+function openShotDialog(id) {
+  const dialog = document.querySelector("[data-shot-dialog]");
+  if (!dialog || !SHOTS[id]) return;
+  renderShotDialog(id);
+  if (typeof dialog.showModal === "function") dialog.showModal();
+}
+
+function shiftShotDialog(step) {
+  const dialog = document.querySelector("[data-shot-dialog]");
+  const current = dialog?.dataset.shotId || currentShotId();
+  const index = SHOT_ORDER.indexOf(current);
+  const next = SHOT_ORDER[(index + step + SHOT_ORDER.length) % SHOT_ORDER.length];
+  renderShotDialog(next);
+}
+
+function initShots() {
+  const root = document.querySelector("[data-shots]");
+  const dialog = document.querySelector("[data-shot-dialog]");
+  if (!root) return;
+
+  root.querySelectorAll(".shot-tab").forEach((tab) => {
+    tab.addEventListener("click", () => selectShot(tab.dataset.shot));
+  });
+
+  root.addEventListener("keydown", (event) => {
+    const tab = event.target.closest(".shot-tab");
+    if (!tab || !root.contains(tab)) return;
+    const index = SHOT_TABS.indexOf(tab.dataset.shot);
+    if (index < 0) return;
+    if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      const next = event.key === "ArrowRight"
+        ? SHOT_TABS[(index + 1) % SHOT_TABS.length]
+        : SHOT_TABS[(index - 1 + SHOT_TABS.length) % SHOT_TABS.length];
+      selectShot(next);
+      root.querySelector(`.shot-tab[data-shot="${next}"]`)?.focus();
+    }
+  });
+
+  root.addEventListener("click", (event) => {
+    const opener = event.target.closest("[data-shot-open]");
+    if (!opener || !root.contains(opener)) return;
+    openShotDialog(opener.getAttribute("data-shot-open") || currentShotId());
+  });
+
+  if (dialog) {
+    dialog.querySelector("[data-shot-prev]")?.addEventListener("click", () => shiftShotDialog(-1));
+    dialog.querySelector("[data-shot-next]")?.addEventListener("click", () => shiftShotDialog(1));
+    dialog.addEventListener("keydown", (event) => {
+      if (!dialog.open) return;
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        shiftShotDialog(1);
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        shiftShotDialog(-1);
+      }
+    });
+  }
+
+  const start = detectOs() === "win" ? "win" : detectOs() === "mac" ? "mac" : "chrome";
+  selectShot(start);
+}
+
 function initReveals() {
   const nodes = document.querySelectorAll(".reveal");
   if (!nodes.length) return;
@@ -558,6 +806,7 @@ styleHeroCtas(os);
 setDemoShortcut(os);
 initDemo();
 initVideoStage();
+initShots();
 initReveals();
 
 if (window.RewriteBetterWeb && document.getElementById("macDownload")) {

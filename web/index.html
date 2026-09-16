@@ -137,6 +137,53 @@
       </div>
     </section>
 
+    <section class="section wrap" id="shots">
+      <h2 data-i18n="shots.title">The panel on Chrome, Mac, and Windows.</h2>
+      <p class="lede" data-i18n="shots.lede">Screenshots from the live apps. Same rewrite flow on every device.</p>
+
+      <div class="shots" data-shots>
+        <div class="shot-tabs" role="tablist" data-i18n-aria="shots.platforms" aria-label="Platforms">
+          <button type="button" class="shot-tab is-active" role="tab" id="shotTabChrome" aria-selected="true" aria-controls="shotStage" data-shot="chrome" data-i18n="shots.chrome">Chrome</button>
+          <button type="button" class="shot-tab" role="tab" id="shotTabMac" aria-selected="false" aria-controls="shotStage" data-shot="mac" data-i18n="shots.mac">Mac</button>
+          <button type="button" class="shot-tab" role="tab" id="shotTabWin" aria-selected="false" aria-controls="shotStage" data-shot="win" data-i18n="shots.win">Windows</button>
+        </div>
+
+        <figure class="shot-stage is-chrome" id="shotStage" role="tabpanel" aria-labelledby="shotTabChrome">
+          <button type="button" class="shot-open" data-shot-open="chrome" data-i18n-aria="shots.expand" aria-label="View larger">
+            <img data-shot-hero src="images/app-chrome.jpg" width="1024" height="809" alt="Rewrite Better Chrome panel over the page you are writing." data-i18n-alt="shots.chromeAlt" loading="lazy" decoding="async" />
+          </button>
+          <figcaption data-shot-cap>Chrome panel, on the page you are writing.</figcaption>
+        </figure>
+
+        <ul class="shot-windows" data-i18n-aria="shots.macWindows" aria-label="Mac windows">
+          <li>
+            <button type="button" class="shot-tile" data-shot-open="settings" data-i18n-aria="shots.settingsOpen" aria-label="View Settings">
+              <span class="shot-tile-frame shot-tile-frame--tall">
+                <img src="images/app-settings.jpg" width="546" height="1024" alt="Rewrite Better Settings on Mac, with API keys and the panel shortcut." data-i18n-alt="shots.settingsAlt" loading="lazy" decoding="async" />
+              </span>
+              <span data-i18n="shots.settings">Settings</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="shot-tile" data-shot-open="welcome" data-i18n-aria="shots.welcomeOpen" aria-label="View Welcome">
+              <span class="shot-tile-frame">
+                <img src="images/app-welcome.jpg" width="566" height="504" alt="Rewrite Better Welcome window on Mac." data-i18n-alt="shots.welcomeAlt" loading="lazy" decoding="async" />
+              </span>
+              <span data-i18n="shots.welcome">Welcome</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="shot-tile" data-shot-open="privacy" data-i18n-aria="shots.privacyOpen" aria-label="View Privacy">
+              <span class="shot-tile-frame">
+                <img src="images/app-privacy.jpg" width="584" height="484" alt="Rewrite Better Privacy window on Mac." data-i18n-alt="shots.privacyAlt" loading="lazy" decoding="async" />
+              </span>
+              <span data-i18n="shots.privacyWin">Privacy</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </section>
+
     <section class="section wrap" id="download">
       <h2 data-i18n="dl.title">Install on the device you write on.</h2>
       <p class="lede" data-i18n="dl.lede">Native apps for Mac and Windows, plus a Chrome zip until the extension is on the Chrome Web Store.</p>
@@ -292,6 +339,7 @@
       </a>
       <span>
         <a href="#download" data-i18n="nav.download">Download</a>
+        <a href="#shots" data-i18n="nav.shots">Screenshots</a>
         <a href="privacy.html" data-i18n="nav.privacy">Privacy</a>
         <a href="#feedback" data-i18n="nav.feedback">Feedback</a>
         <a href="mailto:cvthang56th2@gmail.com" data-i18n="help.email">Email</a>
@@ -300,6 +348,24 @@
     </div>
     <p class="foot-note" data-i18n="foot.note">MIT license. No account. Keys stay on your device.</p>
   </footer>
+
+  <dialog class="shot-dialog" data-shot-dialog aria-labelledby="shotDialogCap">
+    <form class="shot-dialog-bar" method="dialog">
+      <p class="shot-dialog-cap" id="shotDialogCap" data-shot-dialog-cap></p>
+      <button type="submit" class="shot-dialog-x" data-i18n-aria="shots.close" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg>
+      </button>
+    </form>
+    <div class="shot-dialog-view">
+      <button type="button" class="shot-dialog-nav shot-dialog-nav--prev" data-shot-prev data-i18n-aria="shots.prev" aria-label="Previous screenshot">
+        <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"/></svg>
+      </button>
+      <img data-shot-dialog-img alt="" />
+      <button type="button" class="shot-dialog-nav shot-dialog-nav--next" data-shot-next data-i18n-aria="shots.next" aria-label="Next screenshot">
+        <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg>
+      </button>
+    </div>
+  </dialog>
 
   <script src="release-assets.js"></script>
   <script src="site.js"></script>

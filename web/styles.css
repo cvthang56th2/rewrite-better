@@ -189,6 +189,7 @@ a:hover {
 }
 
 #try,
+#shots,
 #download,
 #chrome,
 #modes,
@@ -989,6 +990,266 @@ a:hover {
   color: var(--ink-soft);
 }
 
+.shots {
+  margin-top: 36px;
+}
+
+.shot-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+
+.shot-tab {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 999px;
+  min-height: 40px;
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background 0.35s var(--ease), color 0.35s var(--ease), transform 0.35s var(--ease);
+}
+
+.shot-windows li {
+  min-width: 0;
+}
+
+.shot-tab:hover {
+  background: color-mix(in srgb, var(--paper-deep) 70%, var(--surface));
+}
+
+.shot-tab.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.shot-tab:active {
+  transform: scale(0.98);
+}
+
+.shot-stage {
+  margin: 0;
+  padding: 8px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.shot-open {
+  appearance: none;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #121820;
+  cursor: zoom-in;
+  color: inherit;
+}
+
+.shot-open img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  object-fit: cover;
+  display: block;
+}
+
+.shot-stage.is-chrome img {
+  object-position: 50% 68%;
+}
+
+.shot-stage.is-mac img {
+  object-position: 16% 46%;
+}
+
+.shot-stage.is-win img {
+  object-position: 20% 40%;
+}
+
+.shot-stage figcaption {
+  margin: 12px 8px 6px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.shot-windows {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr) minmax(0, 1.15fr);
+  gap: 12px;
+}
+
+.shot-tile {
+  appearance: none;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: zoom-in;
+  touch-action: manipulation;
+}
+
+.shot-tile:hover {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
+
+.shot-tile:active {
+  transform: scale(0.99);
+}
+
+.shot-tile-frame {
+  display: grid;
+  place-items: center;
+  height: 220px;
+  border-radius: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 58%),
+    #121820;
+}
+
+.shot-tile-frame img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.shot-tile-frame--tall img {
+  height: 100%;
+  width: auto;
+}
+
+.shot-tile > span:last-child {
+  display: block;
+  margin-top: 10px;
+  padding: 0 6px 4px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.shot-dialog {
+  width: min(1080px, calc(100vw - 28px));
+  max-height: calc(100dvh - 28px);
+  margin: auto;
+  padding: 14px 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.shot-dialog::backdrop {
+  background: rgb(8 12 18 / 0.72);
+}
+
+.shot-dialog-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+.shot-dialog-cap {
+  margin: 0;
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.shot-dialog-x {
+  appearance: none;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 999px;
+  background: var(--paper-deep);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.shot-dialog-x:hover {
+  background: var(--line);
+}
+
+.shot-dialog-view {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #121820;
+}
+
+.shot-dialog-view img {
+  display: block;
+  width: 100%;
+  max-height: min(78dvh, 860px);
+  object-fit: contain;
+}
+
+.shot-dialog-nav {
+  appearance: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: 999px;
+  background: rgb(18 24 32 / 0.55);
+  color: #f7fbff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.shot-dialog-nav--prev {
+  left: 10px;
+}
+
+.shot-dialog-nav--next {
+  right: 10px;
+}
+
+.shot-dialog-nav:hover {
+  background: rgb(18 24 32 / 0.78);
+}
+
+.shot-dialog-nav:active {
+  transform: translateY(-50%) scale(0.98);
+}
+
+.shot-dialog-x:active {
+  transform: scale(0.98);
+}
+
 .modes-visual {
   margin: 28px 0 0;
   padding: 8px;
@@ -1211,6 +1472,20 @@ a:hover {
   .privacy-facts {
     grid-template-columns: 1fr;
   }
+
+  .shot-windows {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .shot-windows li {
+    flex: 0 0 min(78%, 280px);
+    scroll-snap-align: start;
+  }
 }
 
 @media (max-width: 1100px) {
@@ -1241,8 +1516,13 @@ a:hover {
     gap: 20px;
   }
 
-  .modes-visual img {
+  .modes-visual img,
+  .shot-open img {
     aspect-ratio: 16 / 9;
+  }
+
+  .shot-tile-frame {
+    height: 200px;
   }
 
   .hero h1 {
@@ -1369,7 +1649,10 @@ a:hover {
   .btn-icon,
   .play-btn,
   .video-overlay,
-  .panel-run {
+  .panel-run,
+  .shot-tab,
+  .shot-tile,
+  .shot-dialog-nav {
     transition: none;
   }
 
