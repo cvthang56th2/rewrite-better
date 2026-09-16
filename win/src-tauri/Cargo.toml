@@ -19,7 +19,9 @@ tauri-plugin-global-shortcut = "2"
 tauri-plugin-autostart = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-keyring = "3"
+# keyring 3 has no default stores — without windows-native, it uses a mock
+# that does not persist (save then get returns empty → "API key is not configured").
+keyring = { version = "3", features = ["windows-native"] }
 arboard = "3"
 enigo = "0.3"
 reqwest = { version = "0.12", features = ["json"] }

@@ -11,7 +11,7 @@ use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 
-use crate::chat::{ChatError, ChatRequest};
+use crate::chat::{ChatError, ChatRequest, ProbeRequest};
 use crate::store::Prefs;
 
 #[tauri::command]
@@ -36,6 +36,11 @@ fn save_prefs(app: AppHandle, prefs: Prefs) -> Result<(), String> {
     current.extra_instructions = prefs.extra_instructions;
     current.voice_samples = prefs.voice_samples;
     store::save_prefs(&app, &current)
+}
+
+#[tauri::command]
+fn copy_text(text: String) -> Result<(), String> {
+    capture::copy_text(&text)
 }
 
 #[tauri::command]
@@ -64,6 +69,11 @@ fn open_settings(app: AppHandle) {
 #[tauri::command]
 async fn chat_completion(request: ChatRequest) -> Result<String, ChatError> {
     chat::chat_completion(request).await
+}
+
+#[tauri::command]
+async fn probe_api_key(request: ProbeRequest) -> Result<(), ChatError> {
+    chat::probe_api_key(request).await
 }
 
 #[tauri::command]
@@ -202,6 +212,7 @@ pub fn run() {
             hide_panel,
             open_settings,
             chat_completion,
+            probe_api_key,
             get_autostart,
             set_autostart,
             set_hotkey

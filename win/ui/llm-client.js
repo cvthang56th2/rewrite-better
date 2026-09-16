@@ -57,16 +57,34 @@
     const code = error && error.code;
     if (code === 'missingKey') return RB.t('error.missingKey');
     if (code === 'allKeysResting') return RB.t('error.allKeysResting');
+    if (code === 'emptyResponse') return RB.t('error.emptyResponse');
     const status = error && error.status;
     if (status === 401) return RB.t('error.401');
     if (status === 403) return RB.t('error.403');
-    if (status === 429) return RB.t('error.429');
+    if (status === 429 || status === 413) return RB.t('error.429');
     if (status === 402) return RB.t('error.402');
     if (status === 500 || status === 502 || status === 503) return RB.t('error.5xx');
     if (status) return RB.t('error.http', String(status), error.message || RB.t('error.unknown'));
     if (error && error.message) return RB.t('error.network', error.message);
     return RB.t('panel.error', RB.t('error.unknown'));
   };
+
+  function parseInvokeError(raw) {
+    let payload = raw;
+    if (typeof raw === 'string') {
+      try {
+        payload = JSON.parse(raw);
+      } catch (e) {
+        payload = { message: raw };
+      }
+    } else if (!raw || typeof raw !== 'object') {
+      payload = { message: String(raw) };
+    }
+    const err = new Error(payload.message || RB.t('error.unknown'));
+    err.status = payload.status;
+    err.code = payload.code;
+    return err;
+  }
 
   async function completeOnce(prompt, backend, options) {
     const opts = options || {};
@@ -83,11 +101,20 @@
         }
       });
     } catch (raw) {
-      const payload = raw && typeof raw === 'object' ? raw : { message: String(raw) };
-      const err = new Error(payload.message || RB.t('error.unknown'));
-      err.status = payload.status;
-      err.code = payload.code;
-      throw err;
+      throw parseInvokeError(raw);
+    }
+  }
+
+  async function probeOnce(backend) {
+    try {
+      await invoke('probe_api_key', {
+        request: {
+          baseUrl: backend.baseURL,
+          apiKey: backend.apiKey
+        }
+      });
+    } catch (raw) {
+      throw parseInvokeError(raw);
     }
   }
 
@@ -117,10 +144,8 @@
           ? `${backend.apiKey.slice(0, 4)}…${backend.apiKey.slice(-4)}`
           : '••••';
       try {
-        await completeOnce('Reply with exactly: OK', {
-          ...backend,
-          defaultMaxTokens: 512
-        }, { maxTokens: 512 });
+        // Auth-only probe — avoids model/token quirks that made valid keys look broken.
+        await probeOnce(backend);
         results.push({
           id: backend.id,
           provider: backend.provider,
@@ -129,12 +154,16 @@
           detail: 'OK'
         });
       } catch (error) {
+        const formatted = RB.formatCompleteError(error);
+        const raw = error && error.message ? String(error.message) : '';
+        const detail =
+          raw && formatted.indexOf(raw) === -1 ? `${formatted} (${raw})` : formatted;
         results.push({
           id: backend.id,
           provider: backend.provider,
           keyHint: hint,
           ok: false,
-          detail: RB.formatCompleteError(error)
+          detail
         });
       }
     }

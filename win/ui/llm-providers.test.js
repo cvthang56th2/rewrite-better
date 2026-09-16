@@ -60,6 +60,7 @@ assert.deepStrictEqual(
 
 assert.strictEqual(RB.isQuotaError({ status: 429, message: 'slow down' }), true);
 assert.strictEqual(RB.isQuotaError({ status: 402, message: 'pay' }), true);
+assert.strictEqual(RB.isQuotaError({ status: 413, message: 'tokens per minute' }), true);
 assert.strictEqual(RB.isQuotaError({ status: 500, message: 'resource exhausted' }), true);
 assert.strictEqual(RB.isQuotaError({ status: 401, message: 'bad key' }), false);
 

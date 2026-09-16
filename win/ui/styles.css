@@ -48,13 +48,13 @@ html,
 body.rb-desktop {
   width: 100%;
   height: 100%;
-  overflow: hidden;
 }
 
 body.rb-desktop {
   width: auto;
   padding: 14px 16px 16px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 body.rb-desktop .rb-root {
@@ -75,11 +75,20 @@ body.rb-desktop .rb-header {
   user-select: none;
 }
 
+html:has(body.rb-settings-body) {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 body.rb-settings-body {
   font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   margin: 0;
   background: var(--rb-bg);
   color: var(--rb-text);
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 100%;
+  box-sizing: border-box;
 }
 
 .rb-settings {

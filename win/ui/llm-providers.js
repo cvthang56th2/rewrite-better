@@ -10,8 +10,9 @@
     },
     groq: {
       baseURL: 'https://api.groq.com/openai/v1',
+      // Keep under typical free-tier TPM (declared max_tokens counts against the budget).
       defaultModel: 'openai/gpt-oss-20b',
-      defaultMaxTokens: 4096
+      defaultMaxTokens: 2048
     },
     cerebras: {
       baseURL: 'https://api.cerebras.ai/v1',
@@ -86,7 +87,8 @@
 
   RB.isQuotaError = function (error) {
     const status = error && error.status;
-    if (status === 429 || status === 402) return true;
+    // Groq free-tier TPM often returns 413 when declared max_tokens is too high.
+    if (status === 429 || status === 402 || status === 413) return true;
     return matchesQuotaText(error && error.message);
   };
 
