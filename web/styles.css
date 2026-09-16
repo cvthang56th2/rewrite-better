@@ -425,14 +425,27 @@ a:hover {
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14);
 }
 
-.video-frame video {
+.video-frame video,
+.video-poster {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.video-poster {
+  z-index: 0;
+}
+
+.video-frame video {
+  z-index: 0;
   background: #121820;
+}
+
+.video-stage.is-playing .video-poster {
+  opacity: 0;
 }
 
 .video-overlay {
@@ -443,12 +456,7 @@ a:hover {
   place-content: center;
   justify-items: center;
   gap: 16px;
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      transparent 0 31px,
-      rgb(255 255 255 / 0.035) 31px 32px
-    );
+  background: linear-gradient(180deg, rgb(8 12 18 / 0.12), rgb(8 12 18 / 0.5));
   transition: opacity 0.45s var(--ease);
 }
 
@@ -795,9 +803,31 @@ a:hover {
 
 .platform-inner {
   min-height: 100%;
-  padding: 28px;
+  padding: 12px 12px 0;
   border-radius: 16px;
   background: var(--surface);
+  display: flex;
+  flex-direction: column;
+}
+
+.platform-photo {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+
+.platform-body {
+  padding: 18px 16px 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.platform-body .btn {
+  margin-top: 18px;
+  align-self: flex-start;
 }
 
 .platform h3 {
@@ -840,8 +870,24 @@ a:hover {
   color: var(--ink-soft);
 }
 
+.modes-visual {
+  margin: 28px 0 0;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--ink);
+}
+
+.modes-visual img {
+  width: 100%;
+  aspect-ratio: 2.2 / 1;
+  object-fit: cover;
+  object-position: 50% 48%;
+  display: block;
+}
+
 .mode-story {
-  margin-top: 36px;
+  margin-top: 28px;
   display: grid;
   gap: 14px;
 }
@@ -975,6 +1021,10 @@ a:hover {
   .setup {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+
+  .modes-visual img {
+    aspect-ratio: 16 / 9;
   }
 
   .hero h1 {

@@ -59,7 +59,8 @@
     <figure class="video-stage" data-video-stage>
       <div class="video-shell">
         <div class="video-frame">
-          <video data-product-video playsinline preload="none" hidden>
+          <img class="video-poster" src="images/hero-poster.jpg" alt="" width="1920" height="1080" fetchpriority="high" />
+          <video data-product-video playsinline preload="none" poster="images/hero-poster.jpg" hidden>
             <source type="video/mp4" />
           </video>
           <div class="video-overlay" data-video-overlay>
@@ -122,37 +123,45 @@
     <div class="download-grid">
       <article class="platform reveal">
         <div class="platform-inner">
+          <img class="platform-photo" src="images/shot-mac.jpg" alt="" width="1200" height="900" loading="lazy" />
+          <div class="platform-body">
           <h3 data-i18n="mac.title">macOS menu bar</h3>
           <p data-i18n="mac.body">Select text in Mail, Slack, or a browser, press the shortcut, then Replace or copy the result back.</p>
-          <a class="btn btn-primary" id="macDownload2" href="https://github.com/cvthang56th2/rewrite-better/releases/latest" style="margin-top:18px">
+          <a class="btn btn-primary" id="macDownload2" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
             <span data-i18n="cta.mac">Download for Mac</span>
             <span class="btn-icon" aria-hidden="true">
               <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
             </span>
           </a>
           <p class="warn" data-i18n="mac.warn">macOS 13 or later. Grant Accessibility when asked. If Gatekeeper blocks the first open, right-click the app and choose Open.</p>
+          </div>
         </div>
       </article>
 
       <article class="platform reveal" id="windows">
         <div class="platform-inner">
+          <img class="platform-photo" src="images/shot-desk.jpg" alt="" width="1200" height="900" loading="lazy" />
+          <div class="platform-body">
           <h3 data-i18n="win.title">Windows tray</h3>
           <p data-i18n="win.body">Select text in any app, press Ctrl Shift E, then Replace to put the result back, or copy from the tray panel.</p>
-          <a class="btn btn-primary" id="winDownload2" href="https://github.com/cvthang56th2/rewrite-better/releases/latest" style="margin-top:18px">
+          <a class="btn btn-primary" id="winDownload2" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
             <span data-i18n="cta.win">Download for Windows</span>
             <span class="btn-icon" aria-hidden="true">
               <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
             </span>
           </a>
           <p class="warn" data-i18n="win.warn">Windows 10 or later. SmartScreen may warn on unsigned builds: More info, then Run anyway.</p>
+          </div>
         </div>
       </article>
 
       <article class="platform reveal" id="chrome">
         <div class="platform-inner">
+          <img class="platform-photo" src="images/shot-browser.jpg" alt="" width="1200" height="900" loading="lazy" />
+          <div class="platform-body">
           <h3 data-i18n="chrome.title">Chrome extension</h3>
           <p data-i18n="chrome.body">Works on any site from the toolbar, the context menu, or Ctrl/Cmd Shift E. Replace puts the result back into the field.</p>
-          <a class="btn btn-secondary" href="downloads/rewrite-better-chrome.zip" style="margin-top:18px">
+          <a class="btn btn-secondary" href="downloads/rewrite-better-chrome.zip">
             <span data-i18n="cta.zip">Download zip</span>
             <span class="btn-icon" aria-hidden="true">
               <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
@@ -163,6 +172,7 @@
             <li><span class="step-n">02</span><span data-i18n="chrome.s2">Open chrome://extensions and turn on Developer mode.</span></li>
             <li><span class="step-n">03</span><span data-i18n="chrome.s3">Load unpacked and select the unzipped folder (the one with manifest.json).</span></li>
           </ol>
+          </div>
         </div>
       </article>
     </div>
@@ -170,6 +180,9 @@
 
   <section class="section wrap" id="modes">
     <h2 data-i18n="modes.title">The same panel on every device.</h2>
+    <figure class="modes-visual">
+      <img src="images/shot-select.jpg" alt="" width="1400" height="788" loading="lazy" />
+    </figure>
     <div class="mode-story">
       <article class="mode-row">
         <h3 data-i18n="mode.rewrite">Rewrite</h3>
