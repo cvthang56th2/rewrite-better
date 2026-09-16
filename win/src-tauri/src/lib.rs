@@ -39,6 +39,11 @@ fn save_prefs(app: AppHandle, prefs: Prefs) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn copy_text(text: String) -> Result<(), String> {
+    capture::copy_text(&text)
+}
+
+#[tauri::command]
 fn paste_back(app: AppHandle, text: String) -> Result<(), String> {
     capture::copy_text(&text)?;
     if let Some(win) = app.get_webview_window("panel") {
