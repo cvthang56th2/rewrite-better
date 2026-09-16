@@ -29,33 +29,57 @@
   </div>
 
   <header class="hero wrap">
-    <div class="hero-grid">
-      <div>
-        <p class="kicker">Chrome · macOS 13+ · Windows 10+</p>
-        <h1 data-i18n="hero.title">Rewrite without leaving the page.</h1>
-        <p class="hero-sub" data-i18n="hero.sub">A panel on Chrome, Mac, and Windows. Rewrite, format, reply, and writing assist, using your own API key.</p>
-        <div class="cta-row" id="heroCtas">
-          <a class="btn btn-primary" id="macDownload" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
-            <span data-i18n="cta.mac">Download for Mac</span>
-            <span class="btn-icon" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
-            </span>
-          </a>
-          <a class="btn btn-secondary" id="winDownload" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
-            <span data-i18n="cta.win">Download for Windows</span>
-            <span class="btn-icon" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
-            </span>
-          </a>
-          <a class="btn btn-secondary" href="#chrome">
-            <span data-i18n="cta.chrome">Get the Chrome zip</span>
-            <span class="btn-icon" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg>
-            </span>
-          </a>
+    <div class="hero-copy">
+      <p class="kicker">Chrome · macOS 13+ · Windows 10+</p>
+      <h1 data-i18n="hero.title">Rewrite without leaving the page.</h1>
+      <p class="hero-sub" data-i18n="hero.sub">A panel on Chrome, Mac, and Windows. Rewrite, format, reply, and writing assist, using your own API key.</p>
+      <div class="cta-row" id="heroCtas">
+        <a class="btn btn-primary" id="macDownload" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
+          <span data-i18n="cta.mac">Download for Mac</span>
+          <span class="btn-icon" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
+          </span>
+        </a>
+        <a class="btn btn-secondary" id="winDownload" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
+          <span data-i18n="cta.win">Download for Windows</span>
+          <span class="btn-icon" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
+          </span>
+        </a>
+        <a class="btn btn-secondary" href="#chrome">
+          <span data-i18n="cta.chrome">Get the Chrome zip</span>
+          <span class="btn-icon" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg>
+          </span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Drop demo.mp4 (and optional demo-poster.jpg) in web/. The placeholder hides automatically. -->
+    <figure class="video-stage" data-video-stage>
+      <div class="video-shell">
+        <div class="video-frame">
+          <video data-product-video playsinline preload="none" hidden>
+            <source type="video/mp4" />
+          </video>
+          <div class="video-overlay" data-video-overlay>
+            <button type="button" class="play-btn" data-video-play disabled data-i18n-aria="video.play" aria-label="Play demo">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M228.24,145.96,88.24,221.8A16,16,0,0,1,64,207.8V48.2A16,16,0,0,1,88.24,34.2l140,75.84a15.81,15.81,0,0,1,0,35.92Z"/></svg>
+            </button>
+            <p class="video-soon" data-video-soon data-i18n="video.soon">Demo video coming soon</p>
+          </div>
         </div>
       </div>
+      <figcaption data-i18n="video.caption">See the panel on Chrome, Mac, and Windows.</figcaption>
+    </figure>
+  </header>
 
+  <section class="section wrap" id="try">
+    <div class="try-grid">
+      <div>
+        <h2 data-i18n="try.title">Try a sample rewrite.</h2>
+        <p class="lede" data-i18n="try.lede">Same panel as Chrome, Mac, and Windows. No API call on this page.</p>
+      </div>
       <div class="hero-aside">
         <div class="bezel">
           <div class="panel" data-demo>
@@ -82,14 +106,14 @@
         </div>
       </div>
     </div>
-  </header>
+  </section>
 
   <section class="section wrap" id="download">
     <h2 data-i18n="dl.title">Install on the device you write on.</h2>
     <p class="lede" data-i18n="dl.lede">Native apps for Mac and Windows, plus a Chrome zip until the extension is on the Chrome Web Store.</p>
 
     <div class="download-grid">
-      <article class="platform">
+      <article class="platform reveal">
         <div class="platform-inner">
           <h3 data-i18n="mac.title">macOS menu bar</h3>
           <p data-i18n="mac.body">Select text in Mail, Slack, or a browser, press the shortcut, then Replace or copy the result back.</p>
@@ -103,7 +127,7 @@
         </div>
       </article>
 
-      <article class="platform" id="windows">
+      <article class="platform reveal" id="windows">
         <div class="platform-inner">
           <h3 data-i18n="win.title">Windows tray</h3>
           <p data-i18n="win.body">Select text in any app, press Ctrl Shift E, then Replace to put the result back, or copy from the tray panel.</p>
@@ -117,7 +141,7 @@
         </div>
       </article>
 
-      <article class="platform" id="chrome">
+      <article class="platform reveal" id="chrome">
         <div class="platform-inner">
           <h3 data-i18n="chrome.title">Chrome extension</h3>
           <p data-i18n="chrome.body">Works on any site from the toolbar, the context menu, or Ctrl/Cmd Shift E. Replace puts the result back into the field.</p>

@@ -8,6 +8,11 @@ const COPY = {
     "cta.win": "Download for Windows",
     "cta.chrome": "Get the Chrome zip",
     "cta.zip": "Download zip",
+    "video.play": "Play demo",
+    "video.soon": "Demo video coming soon",
+    "video.caption": "See the panel on Chrome, Mac, and Windows.",
+    "try.title": "Try a sample rewrite.",
+    "try.lede": "Same panel as Chrome, Mac, and Windows. No API call on this page.",
     "demo.in": "pls send the file asap thx",
     "demo.run": "Rewrite with Groq AI",
     "demo.hint": "Sample result. No API call here.",
@@ -76,6 +81,11 @@ const COPY = {
     "cta.win": "Tải cho Windows",
     "cta.chrome": "Tải bản Chrome",
     "cta.zip": "Tải file zip",
+    "video.play": "Phát video",
+    "video.soon": "Video demo sắp có",
+    "video.caption": "Xem panel trên Chrome, Mac, và Windows.",
+    "try.title": "Thử một lần viết lại.",
+    "try.lede": "Cùng panel như Chrome, Mac, và Windows. Trang này không gọi API.",
     "demo.in": "gửi file giúp e với, gấp ạ",
     "demo.run": "Viết lại với Groq AI",
     "demo.hint": "Kết quả mẫu. Trang này không gọi API.",
@@ -219,6 +229,10 @@ function applyLang(lang) {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
     if (dict[key]) el.textContent = dict[key];
+  });
+  document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-aria");
+    if (dict[key]) el.setAttribute("aria-label", dict[key]);
   });
   document.querySelectorAll(".lang-btn").forEach((btn) => {
     const on = btn.dataset.lang === lang;
@@ -392,11 +406,78 @@ document.querySelectorAll(".lang-btn").forEach((btn) => {
   });
 });
 
+const MEDIA = {
+  video: "demo.mp4",
+  poster: "demo-poster.jpg",
+};
+
+function initVideoStage() {
+  const stage = document.querySelector("[data-video-stage]");
+  const video = document.querySelector("[data-product-video]");
+  const play = document.querySelector("[data-video-play]");
+  const soon = document.querySelector("[data-video-soon]");
+  if (!stage || !video || !play) return;
+
+  const showOverlay = () => stage.classList.remove("is-playing");
+  const hideOverlay = () => stage.classList.add("is-playing");
+
+  play.addEventListener("click", () => {
+    if (video.hidden) return;
+    video.controls = true;
+    video.play();
+    hideOverlay();
+  });
+
+  video.addEventListener("play", hideOverlay);
+  video.addEventListener("pause", () => {
+    if (!video.ended) showOverlay();
+  });
+  video.addEventListener("ended", () => {
+    video.currentTime = 0;
+    showOverlay();
+  });
+
+  Promise.all([existingLocalUrl(MEDIA.video), existingLocalUrl(MEDIA.poster)]).then(([src, poster]) => {
+    if (poster) video.poster = poster;
+    if (!src) return;
+    const source = video.querySelector("source");
+    if (source) source.src = src;
+    else video.src = src;
+    video.load();
+    video.hidden = false;
+    play.disabled = false;
+    stage.classList.add("is-ready");
+    if (soon) soon.hidden = true;
+  });
+}
+
+function initReveals() {
+  const nodes = document.querySelectorAll(".reveal");
+  if (!nodes.length) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    nodes.forEach((node) => node.classList.add("is-in"));
+    return;
+  }
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-in");
+        io.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.18, rootMargin: "0px 0px -6% 0px" },
+  );
+  nodes.forEach((node) => io.observe(node));
+}
+
 const os = detectOs();
 applyLang(detectLang());
 styleHeroCtas(os);
 setDemoShortcut(os);
 initDemo();
+initVideoStage();
+initReveals();
 
 if (window.RewriteBetterWeb && document.getElementById("macDownload")) {
   Promise.all([

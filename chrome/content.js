@@ -2,8 +2,13 @@ let currentPopup = null;
 let mousePosition = { x: 0, y: 0 };
 let panelApi = null;
 let capturedTarget = null;
+let unbindPanelGuard = null;
 
 function closePopup() {
+  if (unbindPanelGuard) {
+    unbindPanelGuard();
+    unbindPanelGuard = null;
+  }
   if (panelApi) {
     panelApi.destroy();
     panelApi = null;
@@ -135,6 +140,7 @@ function showInlinePopup(selectedText) {
 
   document.body.appendChild(popup);
   currentPopup = popup;
+  unbindPanelGuard = RewriteBetter.guardPanelInteractions(popup, closePopup);
 
   RewriteBetter.loadUiLanguage().then(() => {
     if (currentPopup !== popup) return;
@@ -165,14 +171,4 @@ function showInlinePopup(selectedText) {
       popup.style.top = `${Math.max(8, mousePosition.y - rect.height - 10)}px`;
     }
   });
-
-  setTimeout(() => {
-    const closeOnClickOutside = (e) => {
-      if (currentPopup && !currentPopup.contains(e.target)) {
-        closePopup();
-        document.removeEventListener('click', closeOnClickOutside);
-      }
-    };
-    document.addEventListener('click', closeOnClickOutside);
-  }, 100);
 }

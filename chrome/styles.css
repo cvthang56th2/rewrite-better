@@ -72,6 +72,10 @@ body.rb-popup-body {
   height: 100%;
 }
 
+.rb-root:focus {
+  outline: none;
+}
+
 .rb-root *,
 .rb-root *::before,
 .rb-root *::after {

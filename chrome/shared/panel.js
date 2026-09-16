@@ -10,6 +10,75 @@
       .replace(/"/g, '&quot;');
   }
 
+  RB.selectExistingVariantChip = function (container, count, activeIndex) {
+    if (!container || count < 2) return false;
+    const chips = container.querySelectorAll('[data-variant]');
+    if (chips.length !== count) return false;
+    const index = Number(activeIndex) || 0;
+    chips.forEach((chip, i) => {
+      chip.classList.toggle('is-active', i === index);
+    });
+    return true;
+  };
+
+  RB.isEventInside = function (container, event) {
+    if (!container || !event) return false;
+    if (event.target && typeof container.contains === 'function' && container.contains(event.target)) {
+      return true;
+    }
+    const path = typeof event.composedPath === 'function' ? event.composedPath() : [];
+    return path.indexOf(container) !== -1;
+  };
+
+  const PANEL_POINTER_EVENTS = [
+    'pointerdown',
+    'pointerup',
+    'mousedown',
+    'mouseup',
+    'click',
+    'dblclick',
+    'touchstart',
+    'touchend',
+    'contextmenu',
+    'wheel'
+  ];
+
+  RB.guardPanelInteractions = function (container, onOutside, options) {
+    const opts = options || {};
+    const host = opts.eventTarget || (typeof document !== 'undefined' ? document : null);
+    if (!container || typeof onOutside !== 'function' || !host || !host.addEventListener) {
+      return function () {};
+    }
+
+    function stopInside(event) {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
+    PANEL_POINTER_EVENTS.forEach((type) => container.addEventListener(type, stopInside));
+
+    function onPointerDown(event) {
+      if (!RB.isEventInside(container, event)) onOutside();
+    }
+    host.addEventListener('pointerdown', onPointerDown, true);
+
+    return function unbind() {
+      PANEL_POINTER_EVENTS.forEach((type) => container.removeEventListener(type, stopInside));
+      host.removeEventListener('pointerdown', onPointerDown, true);
+    };
+  };
+
+  RB.retainFocusIn = function (root, fallback) {
+    if (!root) return false;
+    const doc = root.ownerDocument || (typeof document !== 'undefined' ? document : null);
+    const active = doc && doc.activeElement;
+    if (active && typeof root.contains === 'function' && root.contains(active)) return false;
+    const target = fallback && typeof fallback.focus === 'function' ? fallback : root;
+    if (target && typeof target.focus === 'function') {
+      target.focus();
+      return true;
+    }
+    return false;
+  };
+
   function chipGroupHtml(name, options, selectedValue, label) {
     const chips = options
       .map((opt) => {
@@ -102,6 +171,7 @@
 
     const root = document.createElement('div');
     root.className = 'rb-root' + (options.compact ? ' rb-root--compact' : '');
+    root.tabIndex = -1;
 
     const headerHtml = showHeader
       ? `<div class="rb-header" data-tauri-drag-region>
@@ -276,6 +346,7 @@
       renderVariantChips();
       renderDiff();
       refreshPasteButton();
+      RB.retainFocusIn(root, inputEl);
     }
 
     function renderVariantChips() {
@@ -286,6 +357,7 @@
         return;
       }
       variantsEl.hidden = false;
+      if (RB.selectExistingVariantChip(variantsEl, variants.length, variantIndex)) return;
       variantsEl.innerHTML =
         `<div class="rb-field-label">${escapeHtml(RB.t('panel.variants'))}</div>` +
         `<div class="rb-chip-group" role="tablist">` +
@@ -344,6 +416,7 @@
       if (!list.length) {
         issuesEl.hidden = true;
         issuesEl.innerHTML = '';
+        RB.retainFocusIn(root, textEl || inputEl);
         return;
       }
       issuesEl.hidden = false;
@@ -358,6 +431,7 @@
           textEl.dispatchEvent(new Event('input', { bubbles: true }));
         });
       });
+      RB.retainFocusIn(root, textEl || inputEl);
     }
 
     function completeFn(prompt, completeOpts) {
