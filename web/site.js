@@ -3,7 +3,7 @@ const COPY = {
     "nav.download": "Download",
     "nav.privacy": "Privacy",
     "hero.title": "Rewrite without leaving the page.",
-    "hero.sub": "A panel for Chrome, the Mac menu bar, and the Windows tray. Tone, format, and replies, using your own API key.",
+    "hero.sub": "A panel on Chrome, Mac, and Windows. Rewrite, format, reply, and writing assist, using your own API key.",
     "cta.mac": "Download for Mac",
     "cta.win": "Download for Windows",
     "cta.chrome": "Get the Chrome zip",
@@ -11,28 +11,38 @@ const COPY = {
     "demo.in": "pls send the file asap thx",
     "demo.run": "Rewrite with Groq AI",
     "demo.hint": "Sample result. No API call here.",
+    "demo.assist": "Writing assist",
+    "demo.tab": "Tab to accept",
+    "demo.variant": "Variant",
+    "demo.changes": "Changes",
     "mode.rewrite": "Rewrite",
     "mode.format": "Format",
     "mode.reply": "Reply",
     "dl.title": "Install on the device you write on.",
     "dl.lede": "Native apps for Mac and Windows, plus a Chrome zip until the extension is on the Chrome Web Store.",
     "mac.title": "macOS menu bar",
-    "mac.body": "Select text in Mail, Slack, or a browser, press the shortcut, then copy or paste the result back.",
+    "mac.body": "Select text in Mail, Slack, or a browser, press the shortcut, then Replace or copy the result back.",
     "mac.warn": "macOS 13 or later. Grant Accessibility when asked. If Gatekeeper blocks the first open, right-click the app and choose Open.",
     "win.title": "Windows tray",
-    "win.body": "Select text in any app, press Ctrl Shift E, then copy the result from the tray panel.",
+    "win.body": "Select text in any app, press Ctrl Shift E, then Replace to put the result back, or copy from the tray panel.",
     "win.warn": "Windows 10 or later. SmartScreen may warn on unsigned builds: More info, then Run anyway.",
     "chrome.title": "Chrome extension",
-    "chrome.body": "Works on any site from the toolbar, the context menu, or Ctrl/Cmd Shift E.",
+    "chrome.body": "Works on any site from the toolbar, the context menu, or Ctrl/Cmd Shift E. Replace puts the result back into the field.",
     "chrome.s1": "Unzip the file.",
     "chrome.s2": "Open chrome://extensions and turn on Developer mode.",
     "chrome.s3": "Load unpacked and select the unzipped folder (the one with manifest.json).",
-    "modes.title": "Three jobs. One panel.",
-    "modes.rewrite": "Change tone, tighten a draft, or translate. Friendly, professional, concise, persuasive, or casual.",
+    "modes.title": "The same panel on every device.",
+    "modes.rewrite": "Change tone, tighten a draft, or translate. Three variants plus a word-level diff of what changed.",
     "modes.format": "Turn notes into Markdown, HTML, bullets, a table, an outline, a summary, or an FAQ.",
     "modes.reply": "Paste a received message, add a few notes, and draft a chat or email reply in the length and language you want.",
+    "mode.assist": "Writing assist",
+    "modes.assist": "Tab autocomplete as you type, plus Check writing for grammar and wording.",
+    "mode.voice": "Voice profile",
+    "modes.voice": "Paste a few samples of how you write. Rewrite, Reply, and writing assist match that voice. Stays on the device.",
+    "mode.replace": "Replace",
+    "modes.replace": "Copy the result, or Replace to put it back into the field or app you came from.",
     "setup.title": "Bring your own API key.",
-    "setup.body": "There is no Rewrite Better account. Create a free Groq key at console.groq.com (or use Gemini, Cerebras, or OpenAI), paste it in Settings, and requests go from your device to the provider.",
+    "setup.body": "There is no Rewrite Better account. Paste a Gemini, Groq, Cerebras, or OpenAI key in Settings. Keys are tried in that order when one hits quota. Requests go from your device to the provider.",
     "setup.link": "Open Groq console",
     "privacy.title": "Your key stays on your device.",
     "privacy.body": "This site does not receive your text or API key. The apps talk to your AI provider directly. Read the full note on the privacy page.",
@@ -44,7 +54,7 @@ const COPY = {
     "p.s2": "API keys",
     "p.s2b": "Your API key stays on your device. Chrome uses chrome.storage.sync. Mac uses Keychain. Windows keeps keys in local app storage. This website never asks for a key.",
     "p.s3": "Where text goes",
-    "p.s3b": "When you run Rewrite, Format, or Reply, the selected text and your options are sent from your device to the AI provider whose key you configured (for example Groq at api.groq.com). That provider’s privacy policy applies.",
+    "p.s3b": "When you run Rewrite, Format, Reply, or writing assist, the selected text and your options are sent from your device to the AI provider whose key you configured (for example Groq at api.groq.com). That provider’s privacy policy applies.",
     "p.s4": "Chrome permissions",
     "p.s4b": "The extension can run on any site so the inline panel and keyboard shortcut work wherever you write. It also needs storage (for the key), contextMenus, activeTab, and scripting. Host access includes the provider APIs you use.",
     "p.s5": "macOS permissions",
@@ -61,7 +71,7 @@ const COPY = {
     "nav.download": "Tải về",
     "nav.privacy": "Quyền riêng tư",
     "hero.title": "Viết lại ngay, không cần rời trang.",
-    "hero.sub": "Panel trên Chrome, thanh menu Mac, và khay hệ thống Windows. Đổi giọng, format, soạn reply, dùng API key của bạn.",
+    "hero.sub": "Panel trên Chrome, Mac, và Windows. Viết lại, format, soạn reply, và hỗ trợ viết, dùng API key của bạn.",
     "cta.mac": "Tải cho Mac",
     "cta.win": "Tải cho Windows",
     "cta.chrome": "Tải bản Chrome",
@@ -69,28 +79,38 @@ const COPY = {
     "demo.in": "gửi file giúp e với, gấp ạ",
     "demo.run": "Viết lại với Groq AI",
     "demo.hint": "Kết quả mẫu. Trang này không gọi API.",
+    "demo.assist": "Hỗ trợ viết",
+    "demo.tab": "Tab để nhận",
+    "demo.variant": "Bản",
+    "demo.changes": "Thay đổi",
     "mode.rewrite": "Rewrite",
     "mode.format": "Format",
     "mode.reply": "Reply",
     "dl.title": "Cài trên máy bạn đang viết.",
     "dl.lede": "App native cho Mac và Windows, cùng bản Chrome zip cho đến khi lên Chrome Web Store.",
     "mac.title": "Thanh menu macOS",
-    "mac.body": "Bôi text trong Mail, Slack, hoặc trình duyệt, bấm phím tắt, rồi copy hoặc dán kết quả lại.",
+    "mac.body": "Bôi text trong Mail, Slack, hoặc trình duyệt, bấm phím tắt, rồi Thay thế hoặc copy kết quả lại.",
     "mac.warn": "macOS 13 trở lên. Cấp Accessibility khi hệ thống hỏi. Nếu Gatekeeper chặn lần đầu, chuột phải app rồi chọn Open.",
     "win.title": "Khay hệ thống Windows",
-    "win.body": "Bôi text trong app bất kỳ, bấm Ctrl Shift E, rồi copy kết quả từ panel trên khay.",
+    "win.body": "Bôi text trong app bất kỳ, bấm Ctrl Shift E, rồi Thay thế để đưa kết quả lại, hoặc copy từ panel trên khay.",
     "win.warn": "Windows 10 trở lên. SmartScreen có thể cảnh báo bản chưa ký: More info, rồi Run anyway.",
     "chrome.title": "Tiện ích Chrome",
-    "chrome.body": "Dùng trên mọi trang từ thanh công cụ, menu chuột phải, hoặc Ctrl/Cmd Shift E.",
+    "chrome.body": "Dùng trên mọi trang từ thanh công cụ, menu chuột phải, hoặc Ctrl/Cmd Shift E. Thay thế đưa kết quả lại vào ô đang viết.",
     "chrome.s1": "Giải nén file zip.",
     "chrome.s2": "Mở chrome://extensions và bật Developer mode.",
     "chrome.s3": "Load unpacked và chọn thư mục vừa giải nén (có file manifest.json).",
-    "modes.title": "Ba việc. Một panel.",
-    "modes.rewrite": "Đổi giọng, rút gọn bản nháp, hoặc dịch. Friendly, professional, concise, persuasive, hoặc casual.",
+    "modes.title": "Cùng một panel trên mọi máy.",
+    "modes.rewrite": "Đổi giọng, rút gọn bản nháp, hoặc dịch. Ba bản khác, kèm diff từng từ những chỗ đã đổi.",
     "modes.format": "Đổi ghi chú thành Markdown, HTML, bullet, bảng, dàn ý, tóm tắt, hoặc FAQ.",
     "modes.reply": "Dán tin nhắn nhận được, thêm vài ý, rồi soạn reply chat hoặc email đúng độ dài và ngôn ngữ bạn muốn.",
+    "mode.assist": "Hỗ trợ viết",
+    "modes.assist": "Gợi ý Tab khi đang gõ, cộng Kiểm tra ngữ pháp và cách diễn đạt.",
+    "mode.voice": "Giọng viết",
+    "modes.voice": "Dán vài đoạn theo cách bạn thường viết. Rewrite, Reply, và hỗ trợ viết bám giọng đó. Chỉ lưu trên máy.",
+    "mode.replace": "Thay thế",
+    "modes.replace": "Copy kết quả, hoặc Thay thế để đưa lại vào ô hoặc app bạn vừa viết.",
     "setup.title": "Dùng API key của bạn.",
-    "setup.body": "Không có tài khoản Rewrite Better. Tạo key Groq miễn phí tại console.groq.com (hoặc dùng Gemini, Cerebras, OpenAI), dán vào Settings, request đi thẳng từ máy bạn tới nhà cung cấp.",
+    "setup.body": "Không có tài khoản Rewrite Better. Dán key Gemini, Groq, Cerebras, hoặc OpenAI vào Settings. Hết quota thì thử key tiếp theo theo thứ tự đó. Request đi thẳng từ máy bạn tới nhà cung cấp.",
     "setup.link": "Mở Groq console",
     "privacy.title": "Key ở lại trên máy bạn.",
     "privacy.body": "Site này không nhận text hay API key. App gọi trực tiếp nhà cung cấp AI của bạn. Chi tiết nằm ở trang quyền riêng tư.",
@@ -102,7 +122,7 @@ const COPY = {
     "p.s2": "API key",
     "p.s2b": "API key nằm trên máy bạn. Chrome dùng chrome.storage.sync. Mac dùng Keychain. Windows lưu local trong app. Website này không hỏi key.",
     "p.s3": "Text đi đâu",
-    "p.s3b": "Khi chạy Rewrite, Format, hoặc Reply, đoạn text và tùy chọn được gửi từ máy bạn tới nhà cung cấp AI bạn đã cấu hình (ví dụ Groq tại api.groq.com). Chính sách của nhà cung cấp đó áp dụng.",
+    "p.s3b": "Khi chạy Rewrite, Format, Reply, hoặc hỗ trợ viết, đoạn text và tùy chọn được gửi từ máy bạn tới nhà cung cấp AI bạn đã cấu hình (ví dụ Groq tại api.groq.com). Chính sách của nhà cung cấp đó áp dụng.",
     "p.s4": "Quyền Chrome",
     "p.s4b": "Tiện ích chạy được trên mọi site để panel và phím tắt hoạt động chỗ bạn đang viết. Cần thêm storage (cho key), contextMenus, activeTab, và scripting. Host gồm API của nhà cung cấp bạn dùng.",
     "p.s5": "Quyền macOS",
@@ -120,14 +140,28 @@ const COPY = {
 const DEMO = {
   rewrite: {
     chips: [
-      { label: { en: "Friendly", vi: "Friendly" }, active: true },
-      { label: { en: "Professional", vi: "Professional" } },
-      { label: { en: "Concise", vi: "Concise" } },
+      { label: { en: "Friendly", vi: "Thân thiện" }, active: true },
+      { label: { en: "Translate", vi: "Dịch" } },
+      { label: { en: "Concise", vi: "Ngắn gọn" } },
     ],
     run: { en: "Rewrite with Groq AI", vi: "Viết lại với Groq AI" },
-    out: {
-      en: "Could you please send the file as soon as you can? Thank you.",
-      vi: "Bạn gửi giúp mình file được không? Mình cần gấp. Cảm ơn bạn.",
+    variants: [
+      {
+        en: "Could you please send the file as soon as you can? Thank you.",
+        vi: "Bạn gửi giúp mình file được không? Mình cần gấp. Cảm ơn bạn.",
+      },
+      {
+        en: "Please send over the file when you can. Thanks.",
+        vi: "Gửi giúp mình file lúc tiện nhé. Cảm ơn bạn.",
+      },
+      {
+        en: "Quick nudge: could you share the file today?",
+        vi: "Nhắc nhẹ: hôm nay gửi được file không?",
+      },
+    ],
+    diff: {
+      en: "asap → as soon as you can · thx → Thank you",
+      vi: "gấp ạ → Mình cần gấp · e → bạn",
     },
   },
   format: {
@@ -137,10 +171,12 @@ const DEMO = {
       { label: { en: "Summary", vi: "Summary" } },
     ],
     run: { en: "Format Document", vi: "Format Document" },
-    out: {
-      en: "- Send the file\n- Needed as soon as possible\n- Thank the recipient",
-      vi: "- Gửi file\n- Cần gấp\n- Cảm ơn người nhận",
-    },
+    variants: [
+      {
+        en: "- Send the file\n- Needed as soon as possible\n- Thank the recipient",
+        vi: "- Gửi file\n- Cần gấp\n- Cảm ơn người nhận",
+      },
+    ],
   },
   reply: {
     chips: [
@@ -149,10 +185,12 @@ const DEMO = {
       { label: { en: "Short", vi: "Short" } },
     ],
     run: { en: "Generate Reply", vi: "Generate Reply" },
-    out: {
-      en: "Hi, just checking in on the file when you have a moment. Thank you.",
-      vi: "Chào bạn, mình hỏi lại file giúp khi bạn rảnh được không? Cảm ơn bạn.",
-    },
+    variants: [
+      {
+        en: "Hi, just checking in on the file when you have a moment. Thank you.",
+        vi: "Chào bạn, mình hỏi lại file giúp khi bạn rảnh được không? Cảm ơn bạn.",
+      },
+    ],
   },
 };
 
@@ -188,7 +226,13 @@ function applyLang(lang) {
     btn.setAttribute("aria-pressed", String(on));
   });
   const demo = document.querySelector("[data-demo]");
-  if (demo) renderChips(demo.dataset.mode || "rewrite", lang);
+  if (demo) {
+    const mode = demo.dataset.mode || "rewrite";
+    renderChips(mode, lang);
+    if (demo.dataset.hasResult === "1") {
+      showDemoResult(mode, Number(demo.dataset.variantIndex) || 0);
+    }
+  }
 }
 
 function renderChips(mode, lang) {
@@ -200,6 +244,72 @@ function renderChips(mode, lang) {
     .map((chip) => `<span class="chip${chip.active ? " is-active" : ""}">${chip.label[lang]}</span>`)
     .join("");
   if (run) run.textContent = spec.run[lang];
+}
+
+function resetDemoResult() {
+  const root = document.querySelector("[data-demo]");
+  const out = document.querySelector("[data-demo-out]");
+  const variants = document.querySelector("[data-demo-variants]");
+  const diff = document.querySelector("[data-demo-diff]");
+  const lang = document.documentElement.lang || "en";
+  if (root) {
+    root.dataset.hasResult = "0";
+    root.dataset.variantIndex = "0";
+  }
+  if (out) {
+    out.classList.add("is-empty");
+    out.textContent = COPY[lang]["demo.hint"];
+  }
+  if (variants) {
+    variants.hidden = true;
+    variants.innerHTML = "";
+  }
+  if (diff) {
+    diff.hidden = true;
+    diff.textContent = "";
+  }
+}
+
+function showDemoResult(mode, variantIndex = 0) {
+  const spec = DEMO[mode];
+  const lang = document.documentElement.lang || "en";
+  const root = document.querySelector("[data-demo]");
+  const out = document.querySelector("[data-demo-out]");
+  const variantsEl = document.querySelector("[data-demo-variants]");
+  const diff = document.querySelector("[data-demo-diff]");
+  const list = spec.variants || [];
+  const index = Math.min(Math.max(variantIndex, 0), Math.max(list.length - 1, 0));
+  if (root) {
+    root.dataset.hasResult = "1";
+    root.dataset.variantIndex = String(index);
+  }
+  if (out && list[index]) {
+    out.classList.remove("is-empty");
+    out.textContent = list[index][lang];
+  }
+  if (variantsEl) {
+    if (list.length < 2) {
+      variantsEl.hidden = true;
+      variantsEl.innerHTML = "";
+    } else {
+      variantsEl.hidden = false;
+      variantsEl.innerHTML = list
+        .map((_, i) => {
+          const active = i === index ? " is-active" : "";
+          return `<button type="button" class="chip${active}" data-demo-variant="${i}">${COPY[lang]["demo.variant"]} ${i + 1}</button>`;
+        })
+        .join("");
+    }
+  }
+  if (diff) {
+    if (mode === "rewrite" && spec.diff) {
+      diff.hidden = false;
+      diff.textContent = `${COPY[lang]["demo.changes"]}: ${spec.diff[lang]}`;
+    } else {
+      diff.hidden = true;
+      diff.textContent = "";
+    }
+  }
 }
 
 async function existingLocalUrl(path) {
@@ -253,7 +363,6 @@ function initDemo() {
   const root = document.querySelector("[data-demo]");
   if (!root) return;
   root.dataset.mode = "rewrite";
-  const out = root.querySelector("[data-demo-out]");
   const lang = () => document.documentElement.lang || "en";
 
   root.querySelectorAll("[data-demo-mode]").forEach((btn) => {
@@ -261,15 +370,18 @@ function initDemo() {
       root.querySelectorAll("[data-demo-mode]").forEach((b) => b.classList.toggle("is-active", b === btn));
       root.dataset.mode = btn.dataset.demoMode;
       renderChips(btn.dataset.demoMode, lang());
-      out.classList.add("is-empty");
-      out.textContent = COPY[lang()]["demo.hint"];
+      resetDemoResult();
     });
   });
 
+  root.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-demo-variant]");
+    if (!chip || !root.contains(chip)) return;
+    showDemoResult(root.dataset.mode || "rewrite", Number(chip.dataset.demoVariant) || 0);
+  });
+
   root.querySelector("[data-demo-run]").addEventListener("click", () => {
-    const mode = root.dataset.mode || "rewrite";
-    out.classList.remove("is-empty");
-    out.textContent = DEMO[mode].out[lang()];
+    showDemoResult(root.dataset.mode || "rewrite", 0);
   });
 }
 

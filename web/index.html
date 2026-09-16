@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Rewrite Better</title>
-  <meta name="description" content="Rewrite, format, and draft replies from Chrome, the Mac menu bar, or the Windows tray. Uses your own API key. Free to start." />
+  <meta name="description" content="Rewrite, format, reply, and writing assist from Chrome, macOS, or Windows. Voice profile, variants, and Replace. Uses your own API key." />
   <link rel="icon" href="icon.png" />
   <meta property="og:title" content="Rewrite Better" />
   <meta property="og:description" content="Rewrite without leaving the page. Chrome, macOS, and Windows." />
@@ -33,7 +33,7 @@
       <div>
         <p class="kicker">Chrome · macOS 13+ · Windows 10+</p>
         <h1 data-i18n="hero.title">Rewrite without leaving the page.</h1>
-        <p class="hero-sub" data-i18n="hero.sub">A panel for Chrome, the Mac menu bar, and the Windows tray. Tone, format, and replies, using your own API key.</p>
+        <p class="hero-sub" data-i18n="hero.sub">A panel on Chrome, Mac, and Windows. Rewrite, format, reply, and writing assist, using your own API key.</p>
         <div class="cta-row" id="heroCtas">
           <a class="btn btn-primary" id="macDownload" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
             <span data-i18n="cta.mac">Download for Mac</span>
@@ -70,8 +70,14 @@
               <button type="button" class="mode" data-demo-mode="reply" data-i18n="mode.reply">Reply</button>
             </div>
             <div class="chips" data-demo-chips></div>
+            <div class="assist-row">
+              <span data-i18n="demo.assist">Writing assist</span>
+              <span class="assist-tab" data-i18n="demo.tab">Tab to accept</span>
+            </div>
             <button type="button" class="panel-run" data-demo-run data-i18n="demo.run">Rewrite with Groq AI</button>
+            <div class="demo-variants" data-demo-variants hidden></div>
             <p class="sample-out is-empty" data-demo-out data-i18n="demo.hint">Sample result. No API call here.</p>
+            <p class="demo-diff" data-demo-diff hidden></p>
           </div>
         </div>
       </div>
@@ -86,7 +92,7 @@
       <article class="platform">
         <div class="platform-inner">
           <h3 data-i18n="mac.title">macOS menu bar</h3>
-          <p data-i18n="mac.body">Select text in Mail, Slack, or a browser, press the shortcut, then copy or paste the result back.</p>
+          <p data-i18n="mac.body">Select text in Mail, Slack, or a browser, press the shortcut, then Replace or copy the result back.</p>
           <a class="btn btn-primary" id="macDownload2" href="https://github.com/cvthang56th2/rewrite-better/releases/latest" style="margin-top:18px">
             <span data-i18n="cta.mac">Download for Mac</span>
             <span class="btn-icon" aria-hidden="true">
@@ -100,7 +106,7 @@
       <article class="platform" id="windows">
         <div class="platform-inner">
           <h3 data-i18n="win.title">Windows tray</h3>
-          <p data-i18n="win.body">Select text in any app, press Ctrl Shift E, then copy the result from the tray panel.</p>
+          <p data-i18n="win.body">Select text in any app, press Ctrl Shift E, then Replace to put the result back, or copy from the tray panel.</p>
           <a class="btn btn-primary" id="winDownload2" href="https://github.com/cvthang56th2/rewrite-better/releases/latest" style="margin-top:18px">
             <span data-i18n="cta.win">Download for Windows</span>
             <span class="btn-icon" aria-hidden="true">
@@ -114,7 +120,7 @@
       <article class="platform" id="chrome">
         <div class="platform-inner">
           <h3 data-i18n="chrome.title">Chrome extension</h3>
-          <p data-i18n="chrome.body">Works on any site from the toolbar, the context menu, or Ctrl/Cmd Shift E.</p>
+          <p data-i18n="chrome.body">Works on any site from the toolbar, the context menu, or Ctrl/Cmd Shift E. Replace puts the result back into the field.</p>
           <a class="btn btn-secondary" href="downloads/rewrite-better-chrome.zip" style="margin-top:18px">
             <span data-i18n="cta.zip">Download zip</span>
             <span class="btn-icon" aria-hidden="true">
@@ -132,11 +138,11 @@
   </section>
 
   <section class="section wrap" id="modes">
-    <h2 data-i18n="modes.title">Three jobs. One panel.</h2>
+    <h2 data-i18n="modes.title">The same panel on every device.</h2>
     <div class="mode-story">
       <article class="mode-row">
         <h3 data-i18n="mode.rewrite">Rewrite</h3>
-        <p data-i18n="modes.rewrite">Change tone, tighten a draft, or translate. Friendly, professional, concise, persuasive, or casual.</p>
+        <p data-i18n="modes.rewrite">Change tone, tighten a draft, or translate. Three variants plus a word-level diff of what changed.</p>
       </article>
       <article class="mode-row">
         <h3 data-i18n="mode.format">Format</h3>
@@ -146,6 +152,18 @@
         <h3 data-i18n="mode.reply">Reply</h3>
         <p data-i18n="modes.reply">Paste a received message, add a few notes, and draft a chat or email reply in the length and language you want.</p>
       </article>
+      <article class="mode-row">
+        <h3 data-i18n="mode.assist">Writing assist</h3>
+        <p data-i18n="modes.assist">Tab autocomplete as you type, plus Check writing for grammar and wording.</p>
+      </article>
+      <article class="mode-row">
+        <h3 data-i18n="mode.voice">Voice profile</h3>
+        <p data-i18n="modes.voice">Paste a few samples of how you write. Rewrite, Reply, and writing assist match that voice. Stays on the device.</p>
+      </article>
+      <article class="mode-row">
+        <h3 data-i18n="mode.replace">Replace</h3>
+        <p data-i18n="modes.replace">Copy the result, or Replace to put it back into the field or app you came from.</p>
+      </article>
     </div>
   </section>
 
@@ -153,13 +171,13 @@
     <div class="setup">
       <div>
         <h2 data-i18n="setup.title">Bring your own API key.</h2>
-        <p class="lede" data-i18n="setup.body">There is no Rewrite Better account. Create a free Groq key at console.groq.com (or use Gemini, Cerebras, or OpenAI), paste it in Settings, and requests go from your device to the provider.</p>
+        <p class="lede" data-i18n="setup.body">There is no Rewrite Better account. Paste a Gemini, Groq, Cerebras, or OpenAI key in Settings. Keys are tried in that order when one hits quota. Requests go from your device to the provider.</p>
       </div>
       <p><a href="https://console.groq.com" data-i18n="setup.link">Open Groq console</a></p>
     </div>
     <aside class="privacy-card">
       <h2 data-i18n="privacy.title">Your key stays on your device.</h2>
-      <p data-i18n="privacy.body">This site does not receive your text or API key. The apps talk to Groq directly. Read the full note on the privacy page.</p>
+      <p data-i18n="privacy.body">This site does not receive your text or API key. The apps talk to your AI provider directly. Read the full note on the privacy page.</p>
       <p><a href="privacy.html" data-i18n="privacy.link">Privacy</a></p>
     </aside>
   </section>
