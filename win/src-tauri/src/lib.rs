@@ -155,7 +155,9 @@ pub fn run() {
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, _shortcut, event| {
-                    if event.state() == ShortcutState::Pressed {
+                    // Capture on Released so Ctrl/Shift from the hotkey are up
+                    // before we synthesize Ctrl+C for the selection probe.
+                    if event.state() == ShortcutState::Released {
                         open_panel(app, false);
                     }
                 })
