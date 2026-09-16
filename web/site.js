@@ -475,10 +475,17 @@ function initVideoStage() {
   const video = document.querySelector("[data-product-video]");
   const play = document.querySelector("[data-video-play]");
   const soon = document.querySelector("[data-video-soon]");
+  const posterImg = stage?.querySelector(".video-poster");
   if (!stage || !video || !play) return;
 
   const showOverlay = () => stage.classList.remove("is-playing");
   const hideOverlay = () => stage.classList.add("is-playing");
+  const ready = () => {
+    video.hidden = false;
+    play.disabled = false;
+    stage.classList.add("is-ready");
+    if (soon) soon.hidden = true;
+  };
 
   play.addEventListener("click", () => {
     if (video.hidden) return;
@@ -495,18 +502,33 @@ function initVideoStage() {
     video.currentTime = 0;
     showOverlay();
   });
+  video.addEventListener("error", () => {
+    video.hidden = true;
+    play.disabled = true;
+    stage.classList.remove("is-ready", "is-playing");
+    if (soon) soon.hidden = false;
+  });
+
+  new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting && !video.paused) video.pause();
+      });
+    },
+    { threshold: 0.2 },
+  ).observe(stage);
 
   Promise.all([existingLocalUrl(MEDIA.video), existingLocalUrl(MEDIA.poster)]).then(([src, poster]) => {
-    if (poster) video.poster = poster;
+    if (poster) {
+      video.poster = poster;
+      if (posterImg) posterImg.src = poster;
+    }
     if (!src) return;
     const source = video.querySelector("source");
     if (source) source.src = src;
     else video.src = src;
     video.load();
-    video.hidden = false;
-    play.disabled = false;
-    stage.classList.add("is-ready");
-    if (soon) soon.hidden = true;
+    ready();
   });
 }
 

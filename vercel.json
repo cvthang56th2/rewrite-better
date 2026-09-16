@@ -10,6 +10,13 @@
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=300" }
       ]
+    },
+    {
+      "source": "/demo.mp4",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400" },
+        { "key": "Content-Type", "value": "video/mp4" }
+      ]
     }
   ]
 }
