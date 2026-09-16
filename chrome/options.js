@@ -127,9 +127,13 @@ document.addEventListener('DOMContentLoaded', function () {
       els.results.innerHTML = results
         .map((r) => {
           const name = (RB.PROVIDERS.find((p) => p.value === r.provider) || {}).displayName || r.provider;
-          return `<div class="rb-test-row">${r.ok ? '✅' : '❌'} ${name} ${r.id} (${r.keyHint})${
-            r.ok ? '' : `<div class="rb-hint">${r.detail}</div>`
-          }</div>`;
+          return `<div class="rb-test-row ${r.ok ? 'is-ok' : 'is-fail'}">
+            <span class="rb-test-icon" aria-hidden="true"></span>
+            <div>
+              <div>${name} ${r.id} (${r.keyHint})</div>
+              ${r.ok ? '' : `<div class="rb-hint">${r.detail}</div>`}
+            </div>
+          </div>`;
         })
         .join('');
     } catch (err) {

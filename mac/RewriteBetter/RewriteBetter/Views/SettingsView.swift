@@ -19,201 +19,173 @@ struct SettingsView: View {
     @State private var voiceSamples = ""
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) {
-                        Text(lang.t("settings.language"))
-                            .font(.subheadline.weight(.medium))
-                        Spacer()
-                        Picker(lang.t("settings.language"), selection: $lang.language) {
-                            ForEach(AppLanguage.allCases) { language in
-                                Text(language.displayName).tag(language)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .labelsHidden()
-                        .frame(maxWidth: 240)
+        Form {
+            Section {
+                Picker(lang.t("settings.language"), selection: $lang.language) {
+                    ForEach(AppLanguage.allCases) { language in
+                        Text(language.displayName).tag(language)
                     }
                 }
+                .pickerStyle(.segmented)
+            }
 
-                Divider()
+            Section {
+                APIKeyDisclaimer()
+                ProviderKeyField(provider: .gemini, text: $geminiKeys)
+                ProviderKeyField(provider: .groq, text: $groqKeys)
+                ProviderKeyField(provider: .cerebras, text: $cerebrasKeys)
+                ProviderKeyField(provider: .openai, text: $openaiKeys)
+            } header: {
+                Text(lang.t("settings.keysTitle"))
+            } footer: {
+                Text(lang.t("settings.failoverOrder"))
+            }
 
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(lang.t("settings.failoverOrder"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    ProviderKeyField(provider: .gemini, text: $geminiKeys)
-                    ProviderKeyField(provider: .groq, text: $groqKeys)
-                    ProviderKeyField(provider: .cerebras, text: $cerebrasKeys)
-                    ProviderKeyField(provider: .openai, text: $openaiKeys)
-
-                    APIKeyDisclaimer()
-                }
-
-                Divider()
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Toggle(lang.t("settings.openAtLogin"), isOn: $launchAtLogin)
-                        .onChange(of: launchAtLogin) { newValue in
-                            do {
-                                _ = try LaunchAtLogin.setEnabled(newValue)
-                                launchAtLogin = LaunchAtLogin.isEnabled
-                                launchAtLoginError = ""
-                                message = lang.t(newValue ? "settings.openAtLoginOn" : "settings.openAtLoginOff")
-                            } catch {
-                                launchAtLogin = LaunchAtLogin.isEnabled
-                                launchAtLoginError = error.localizedDescription
-                                message = lang.t("settings.openAtLoginFail")
-                            }
+            Section {
+                Toggle(lang.t("settings.openAtLogin"), isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { newValue in
+                        do {
+                            _ = try LaunchAtLogin.setEnabled(newValue)
+                            launchAtLogin = LaunchAtLogin.isEnabled
+                            launchAtLoginError = ""
+                            message = lang.t(newValue ? "settings.openAtLoginOn" : "settings.openAtLoginOff")
+                        } catch {
+                            launchAtLogin = LaunchAtLogin.isEnabled
+                            launchAtLoginError = error.localizedDescription
+                            message = lang.t("settings.openAtLoginFail")
                         }
-
-                    Text(lang.t("settings.openAtLoginHelp"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    if !launchAtLoginError.isEmpty {
-                        Text(launchAtLoginError)
-                            .font(.caption)
-                            .foregroundStyle(.red)
                     }
 
+                Text(lang.t("settings.openAtLoginHelp"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                if !launchAtLoginError.isEmpty {
+                    Text(launchAtLoginError)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
+                HStack(spacing: 8) {
+                    Text(lang.t("settings.shortcut"))
+                    Spacer()
+                    if hotkeys.current != .default {
+                        Button(lang.t("settings.reset")) {
+                            applyHotkey(.default)
+                        }
+                        .controlSize(.small)
+                    }
+                    HotkeyRecorderButton(hotkey: hotkeys.current) { shortcut in
+                        applyHotkey(shortcut)
+                    }
+                }
+            } footer: {
+                Text(lang.t("settings.shortcutHelp"))
+            }
+
+            Section {
+                ExtraInstructionsEditor(
+                    title: lang.t("mode.rewrite"),
+                    text: $rewriteExtra,
+                    placeholder: lang.t("settings.extraRewritePlaceholder")
+                )
+                ExtraInstructionsEditor(
+                    title: lang.t("mode.format"),
+                    text: $formatExtra,
+                    placeholder: lang.t("settings.extraFormatPlaceholder")
+                )
+                ExtraInstructionsEditor(
+                    title: lang.t("mode.reply"),
+                    text: $replyExtra,
+                    placeholder: lang.t("settings.extraReplyPlaceholder")
+                )
+            } header: {
+                Text(lang.t("settings.extraTitle"))
+            } footer: {
+                Text(lang.t("settings.extraHelp"))
+            }
+
+            Section {
+                ExtraInstructionsEditor(
+                    title: lang.t("settings.voiceTitle"),
+                    text: $voiceSamples,
+                    placeholder: lang.t("settings.voicePlaceholder"),
+                    minHeight: 96,
+                    maxHeight: 160
+                )
+            } header: {
+                Text(lang.t("settings.voiceTitle"))
+            } footer: {
+                Text(lang.t("settings.voiceHelp"))
+            }
+
+            Section {
+                HStack {
+                    Button(lang.t("settings.save")) {
+                        saveKeys()
+                        message = lang.t("settings.saved")
+                    }
+                    .keyboardShortcut(.defaultAction)
+
+                    Button(lang.t("settings.testKeys")) {
+                        Task { await testKeys() }
+                    }
+                    .disabled(isTesting || !hasAnyDraftKey)
+                }
+
+                if isTesting {
                     HStack(spacing: 8) {
-                        Text(lang.t("settings.shortcut"))
-                            .font(.subheadline.weight(.medium))
-                        Spacer()
-                        if hotkeys.current != .default {
-                            Button(lang.t("settings.reset")) {
-                                applyHotkey(.default)
-                            }
+                        ProgressView()
                             .controlSize(.small)
-                        }
-                        HotkeyRecorderButton(hotkey: hotkeys.current) { shortcut in
-                            applyHotkey(shortcut)
-                        }
+                        Text(lang.t("settings.testing"))
                     }
-
-                    Text(lang.t("settings.shortcutHelp"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                } else if !message.isEmpty {
+                    Text(message)
+                        .font(.callout)
+                        .textSelection(.enabled)
                 }
 
-                Divider()
-
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(lang.t("settings.extraTitle"))
-                        .font(.headline)
-
-                    Text(lang.t("settings.extraHelp"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    ExtraInstructionsEditor(
-                        title: lang.t("mode.rewrite"),
-                        text: $rewriteExtra,
-                        placeholder: lang.t("settings.extraRewritePlaceholder")
-                    )
-                    ExtraInstructionsEditor(
-                        title: lang.t("mode.format"),
-                        text: $formatExtra,
-                        placeholder: lang.t("settings.extraFormatPlaceholder")
-                    )
-                    ExtraInstructionsEditor(
-                        title: lang.t("mode.reply"),
-                        text: $replyExtra,
-                        placeholder: lang.t("settings.extraReplyPlaceholder")
-                    )
-                }
-
-                Divider()
-
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(lang.t("settings.voiceTitle"))
-                        .font(.headline)
-
-                    Text(lang.t("settings.voiceHelp"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    ExtraInstructionsEditor(
-                        title: lang.t("settings.voiceTitle"),
-                        text: $voiceSamples,
-                        placeholder: lang.t("settings.voicePlaceholder"),
-                        minHeight: 96,
-                        maxHeight: 160
-                    )
-                }
-
-                Divider()
-
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Button(lang.t("settings.save")) {
-                            saveKeys()
-                            message = lang.t("settings.saved")
-                        }
-                        .keyboardShortcut(.defaultAction)
-
-                        Button(lang.t("settings.testKeys")) {
-                            Task { await testKeys() }
-                        }
-                        .disabled(isTesting || !hasAnyDraftKey)
-
-                        Spacer()
-                    }
-
-                    HStack {
-                        Button(lang.t("settings.openAccessibility")) {
-                            TextCaptureService.openAccessibilitySettings()
-                        }
-
-                        Button(lang.t("settings.privacy")) {
-                            PanelController.shared.openPrivacy()
-                        }
-
-                        Button(lang.t("onboarding.showAgain")) {
-                            PanelController.shared.openWelcome()
-                        }
-                    }
-
-                    if !message.isEmpty {
-                        Text(message)
-                            .font(.callout)
-                            .textSelection(.enabled)
-                    }
-
-                    if !keyTestResults.isEmpty {
-                        VStack(alignment: .leading, spacing: 6) {
-                            ForEach(keyTestResults) { result in
-                                VStack(alignment: .leading, spacing: 2) {
-                                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                        Text(result.ok ? "✅" : "❌")
-                                        Text("\(result.provider) \(result.id)")
-                                            .fontWeight(.medium)
-                                        Text("(\(result.keyHint))")
-                                            .foregroundStyle(.secondary)
-                                            .font(.system(.caption, design: .monospaced))
-                                    }
-                                    if !result.ok {
-                                        Text(result.detail)
-                                            .font(.caption)
-                                            .foregroundStyle(.red)
-                                            .textSelection(.enabled)
-                                    }
+                if !keyTestResults.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(keyTestResults) { result in
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                    Image(systemName: result.ok ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                        .foregroundStyle(result.ok ? Color.green : Color.red)
+                                        .accessibilityLabel(lang.t(result.ok ? "settings.testOk" : "settings.testFail"))
+                                    Text("\(result.provider) \(result.id)")
+                                        .fontWeight(.medium)
+                                    Text("(\(result.keyHint))")
+                                        .foregroundStyle(.secondary)
+                                        .font(.system(.caption, design: .monospaced))
+                                }
+                                if !result.ok {
+                                    Text(result.detail)
+                                        .font(.caption)
+                                        .foregroundStyle(.red)
+                                        .textSelection(.enabled)
                                 }
                             }
                         }
                     }
-
-                    Text(lang.t("settings.accessibilityFooter", hotkeys.current.displayString))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 }
+
+                HStack {
+                    Button(lang.t("settings.openAccessibility")) {
+                        TextCaptureService.openAccessibilitySettings()
+                    }
+                    Button(lang.t("settings.privacy")) {
+                        PanelController.shared.openPrivacy()
+                    }
+                    Button(lang.t("onboarding.showAgain")) {
+                        PanelController.shared.openWelcome()
+                    }
+                }
+            } footer: {
+                Text(lang.t("settings.accessibilityFooter", hotkeys.current.displayString))
             }
-            .padding(20)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .formStyle(.grouped)
         .frame(minWidth: 520, idealWidth: 560, minHeight: 400, idealHeight: 640)
         .onAppear {
             launchAtLogin = LaunchAtLogin.isEnabled
@@ -309,8 +281,8 @@ private struct ExtraInstructionsEditor: View {
                     }
                 }
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(Color.secondary.opacity(0.25))
+                    RoundedRectangle(cornerRadius: Theme.radius)
+                        .stroke(Theme.line)
                 )
         }
     }
@@ -335,8 +307,8 @@ private struct APIKeyDisclaimer: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background {
             if showBackground {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color(nsColor: .controlBackgroundColor))
+                RoundedRectangle(cornerRadius: Theme.radius)
+                    .fill(Theme.fill)
             }
         }
         .accessibilityElement(children: .combine)
@@ -347,6 +319,7 @@ private struct ProviderKeyField: View {
     let provider: ChatProvider
     @Binding var text: String
     @State private var showingHelp = false
+    @State private var revealed = false
     @ObservedObject private var lang = LanguageStore.shared
 
     var body: some View {
@@ -368,21 +341,48 @@ private struct ProviderKeyField: View {
                 .popover(isPresented: $showingHelp, arrowEdge: .trailing) {
                     ProviderAPIKeyHelpView(provider: provider)
                 }
+
+                Spacer(minLength: 0)
+
+                if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Button {
+                        revealed.toggle()
+                    } label: {
+                        Image(systemName: revealed ? "eye.slash" : "eye")
+                            .frame(minWidth: Theme.controlMin, minHeight: Theme.controlMin)
+                    }
+                    .buttonStyle(.plain)
+                    .help(lang.t(revealed ? "settings.hideKeys" : "settings.showKeys"))
+                    .accessibilityLabel(lang.t(revealed ? "settings.hideKeys" : "settings.showKeys"))
+                }
             }
 
-            TextEditor(text: $text)
-                .font(.system(.body, design: .monospaced))
-                .frame(minHeight: 44, maxHeight: 72)
-                .overlay(alignment: .topLeading) {
-                    if text.isEmpty {
-                        Text(provider.placeholder(lang.language))
-                            .font(.system(.caption, design: .monospaced))
-                            .foregroundStyle(.tertiary)
-                            .padding(.top, 8)
-                            .padding(.leading, 5)
-                            .allowsHitTesting(false)
+            if revealed || text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                TextEditor(text: $text)
+                    .font(.system(.body, design: .monospaced))
+                    .frame(minHeight: 44, maxHeight: 72)
+                    .overlay(alignment: .topLeading) {
+                        if text.isEmpty {
+                            Text(provider.placeholder(lang.language))
+                                .font(.system(.caption, design: .monospaced))
+                                .foregroundStyle(.tertiary)
+                                .padding(.top, 8)
+                                .padding(.leading, 5)
+                                .allowsHitTesting(false)
+                        }
                     }
-                }
+            } else {
+                Text(String(repeating: "•", count: min(max(text.count, 8), 28)))
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .contentShape(Rectangle())
+                    .onTapGesture { revealed = true }
+                    .accessibilityLabel(lang.t("settings.showKeys"))
+            }
+        }
+        .onAppear {
+            revealed = text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
     }
 }
@@ -474,12 +474,12 @@ private struct HotkeyRecorderButton: View {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
                 .background(
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Color(nsColor: .controlBackgroundColor))
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Theme.fill)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(isRecording ? Color.accentColor : Color.secondary.opacity(0.35), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(isRecording ? Color.accentColor : Theme.line, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)

@@ -27,7 +27,7 @@ final class L10nTests: XCTestCase {
     func testInterpolatesPlaceholders() {
         XCTAssertEqual(
             L10n.t("error.http", language: .en, "418", "teapot"),
-            "❌ AI API error: HTTP 418 - teapot"
+            "AI API error: HTTP 418 - teapot"
         )
     }
 

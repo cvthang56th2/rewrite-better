@@ -184,7 +184,7 @@ final class PanelController: ObservableObject {
         let hosting = NSHostingController(rootView: panelView)
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 780, height: 540),
-            styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
+            styleMask: [.titled, .closable, .resizable],
             backing: .buffered,
             defer: false
         )
