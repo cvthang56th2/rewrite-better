@@ -5,6 +5,7 @@ import SwiftUI
 struct GhostTextEditor: NSViewRepresentable {
     @Binding var text: String
     @Binding var ghostText: String
+    var placeholder: String = ""
     var onTextChange: (_ text: String, _ caretAtEnd: Bool) -> Void
 
     func makeCoordinator() -> Coordinator {
@@ -32,6 +33,7 @@ struct GhostTextEditor: NSViewRepresentable {
         textView.textContainer?.widthTracksTextView = true
         textView.textContainerInset = NSSize(width: 6, height: 6)
         textView.string = text
+        textView.placeholder = placeholder
         textView.ghostText = ghostText
         textView.onAcceptGhost = { [weak tv = textView, weak coordinator = context.coordinator] in
             guard let tv, let coordinator else { return }
@@ -65,6 +67,9 @@ struct GhostTextEditor: NSViewRepresentable {
         }
         if textView.ghostText != ghostText {
             textView.ghostText = ghostText
+        }
+        if textView.placeholder != placeholder {
+            textView.placeholder = placeholder
         }
     }
 
@@ -106,12 +111,31 @@ final class GhostCapableTextView: NSTextView {
         }
     }
 
+    var placeholder: String = "" {
+        didSet {
+            if oldValue != placeholder {
+                needsDisplay = true
+            }
+        }
+    }
+
     var onAcceptGhost: (() -> Void)?
     var onDismissGhost: (() -> Void)?
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
+        drawPlaceholderIfNeeded()
         drawGhostTextIfNeeded()
+    }
+
+    private func drawPlaceholderIfNeeded() {
+        guard string.isEmpty, ghostText.isEmpty, !placeholder.isEmpty else { return }
+        let origin = NSPoint(x: textContainerInset.width, y: textContainerInset.height)
+        let attrs: [NSAttributedString.Key: Any] = [
+            .foregroundColor: NSColor.tertiaryLabelColor,
+            .font: font ?? NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        ]
+        (placeholder as NSString).draw(at: origin, withAttributes: attrs)
     }
 
     private func drawGhostTextIfNeeded() {

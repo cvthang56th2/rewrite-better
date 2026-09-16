@@ -17,8 +17,8 @@ assert.strictEqual(RB.t('settings.save', 'en'), 'Save');
 assert.strictEqual(RB.t('settings.save', 'vi'), 'Lưu');
 assert.strictEqual(RB.t('__missing__', 'vi'), '__missing__');
 assert.strictEqual(
-  RB.t('error.http', 'en', '418', 'teapot'),
-  '❌ AI API error: HTTP 418 - teapot'
+      RB.t('error.http', 'en', '418', 'teapot'),
+      'AI API error: HTTP 418 - teapot'
 );
 
 const enKeys = Object.keys(RB.I18N.en).sort();

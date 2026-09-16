@@ -1,4 +1,18 @@
 import Foundation
+import SwiftUI
+
+enum Theme {
+    static let radius: CGFloat = 10
+    static let chipMinHeight: CGFloat = 28
+    static let controlMin: CGFloat = 28
+
+    static var line: Color { Color.secondary.opacity(0.22) }
+    static var fill: Color { Color(nsColor: .controlBackgroundColor) }
+    static var editor: Color { Color(nsColor: .textBackgroundColor) }
+    static var warningFill: Color { Color.orange.opacity(0.12) }
+    static var insertFill: Color { Color.green.opacity(0.16) }
+    static var deleteFill: Color { Color.red.opacity(0.14) }
+}
 
 enum AppMode: String, CaseIterable, Identifiable {
     case rewrite, format, reply

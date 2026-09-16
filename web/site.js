@@ -2,15 +2,26 @@ const COPY = {
   en: {
     "nav.download": "Download",
     "nav.privacy": "Privacy",
-    "hero.title": "Rewrite without leaving the page.",
+    "nav.feedback": "Feedback",
+    "nav.skip": "Skip to content",
+    "hero.title": "Rewrite without leaving the\u00a0page",
     "hero.sub": "A panel on Chrome, Mac, and Windows. Rewrite, format, reply, and writing assist, using your own API key.",
     "cta.mac": "Download for Mac",
     "cta.win": "Download for Windows",
     "cta.chrome": "Get the Chrome zip",
     "cta.zip": "Download zip",
+    "video.play": "Play demo",
+    "video.soon": "Demo video coming soon",
+    "video.caption": "See the panel on Chrome, Mac, and Windows.",
+    "story.a": "You finish a draft, you're not sure, so you paste it into ChatGPT and type rewrite better. Don't. Select the text, press",
+    "story.b": ", pick a style and language, then Rewrite Better. Then you get a better version. Beautiful!",
+    "try.title": "Try a sample rewrite.",
+    "try.lede": "Same panel as Chrome, Mac, and Windows. No API call on this page.",
     "demo.in": "pls send the file asap thx",
     "demo.run": "Rewrite with Groq AI",
+    "demo.working": "Rewriting…",
     "demo.hint": "Sample result. No API call here.",
+    "demo.modes": "Demo modes",
     "demo.assist": "Writing assist",
     "demo.tab": "Tab to accept",
     "demo.variant": "Variant",
@@ -47,6 +58,17 @@ const COPY = {
     "privacy.title": "Your key stays on your device.",
     "privacy.body": "This site does not receive your text or API key. The apps talk to your AI provider directly. Read the full note on the privacy page.",
     "privacy.link": "Privacy",
+    "help.title": "Feedback",
+    "help.lede": "Email me, or open a GitHub issue for a bug, a feature idea, or a question.",
+    "help.email": "Email",
+    "help.bug": "Report a bug",
+    "help.idea": "Request a feature",
+    "help.ask": "Ask a question",
+    "trust.account": "No Rewrite Better account",
+    "trust.key": "API key stays on your device",
+    "trust.mit": "Open source, MIT",
+    "trust.label": "Trust notes",
+    "foot.note": "MIT license. No account. Keys stay on your device.",
     "p.h1": "Privacy",
     "p.updated": "Last updated 16 September 2026.",
     "p.s1": "No Rewrite Better servers",
@@ -64,21 +86,35 @@ const COPY = {
     "p.s6": "This website",
     "p.s6b": "The download site is static files on Vercel. Language preference is stored in your browser (localStorage). We do not run analytics on this page unless Vercel’s platform logs apply to HTTP requests.",
     "p.s7": "Contact",
-    "p.s7b": "Questions: open an issue on the GitHub repository.",
+    "p.s7b": "Email me, or open a GitHub issue for a bug, a feature idea, or a question.",
     "p.home": "Home",
+    "p.fact1": "No account, no backend of ours. We never receive the text you rewrite.",
+    "p.fact2": "Chrome, Mac, and Windows keep your key locally. This website never asks for it.",
+    "p.fact3": "Selected text goes from your device to the AI provider you configured. This website never sees it.",
   },
   vi: {
     "nav.download": "Tải về",
     "nav.privacy": "Quyền riêng tư",
-    "hero.title": "Viết lại ngay, không cần rời trang.",
+    "nav.feedback": "Góp ý",
+    "nav.skip": "Bỏ qua đến nội dung",
+    "hero.title": "Viết lại ngay, không cần rời\u00a0trang",
     "hero.sub": "Panel trên Chrome, Mac, và Windows. Viết lại, format, soạn reply, và hỗ trợ viết, dùng API key của bạn.",
     "cta.mac": "Tải cho Mac",
     "cta.win": "Tải cho Windows",
     "cta.chrome": "Tải bản Chrome",
     "cta.zip": "Tải file zip",
+    "video.play": "Phát video",
+    "video.soon": "Video demo sắp có",
+    "video.caption": "Xem panel trên Chrome, Mac, và Windows.",
+    "story.a": "Viết xong một đoạn, chưa tự tin, bạn mở ChatGPT rồi gõ rewrite better. Đừng. Bôi đen, bấm",
+    "story.b": ", chọn phong cách và ngôn ngữ, rồi Rewrite Better. Xong, bạn có bản hay hơn. Beautiful!",
+    "try.title": "Thử một lần viết lại.",
+    "try.lede": "Cùng panel như Chrome, Mac, và Windows. Trang này không gọi API.",
     "demo.in": "gửi file giúp e với, gấp ạ",
     "demo.run": "Viết lại với Groq AI",
+    "demo.working": "Đang viết lại…",
     "demo.hint": "Kết quả mẫu. Trang này không gọi API.",
+    "demo.modes": "Chế độ demo",
     "demo.assist": "Hỗ trợ viết",
     "demo.tab": "Tab để nhận",
     "demo.variant": "Bản",
@@ -115,6 +151,17 @@ const COPY = {
     "privacy.title": "Key ở lại trên máy bạn.",
     "privacy.body": "Site này không nhận text hay API key. App gọi trực tiếp nhà cung cấp AI của bạn. Chi tiết nằm ở trang quyền riêng tư.",
     "privacy.link": "Quyền riêng tư",
+    "help.title": "Góp ý",
+    "help.lede": "Gửi email cho tôi, hoặc mở issue trên GitHub cho lỗi, ý tưởng, hoặc câu hỏi.",
+    "help.email": "Email",
+    "help.bug": "Báo lỗi",
+    "help.idea": "Đề xuất tính năng",
+    "help.ask": "Đặt câu hỏi",
+    "trust.account": "Không cần tài khoản",
+    "trust.key": "API key ở lại trên máy bạn",
+    "trust.mit": "Mã nguồn mở, MIT",
+    "trust.label": "Ghi chú tin cậy",
+    "foot.note": "Giấy phép MIT. Không cần tài khoản. Key ở lại trên máy.",
     "p.h1": "Quyền riêng tư",
     "p.updated": "Cập nhật 16 tháng 9 2026.",
     "p.s1": "Không có server của Rewrite Better",
@@ -132,8 +179,11 @@ const COPY = {
     "p.s6": "Website này",
     "p.s6b": "Trang tải về là file tĩnh trên Vercel. Ngôn ngữ giao diện lưu trong trình duyệt (localStorage). Chúng tôi không gắn analytics, trừ log HTTP của Vercel nếu có.",
     "p.s7": "Liên hệ",
-    "p.s7b": "Câu hỏi: mở issue trên GitHub.",
+    "p.s7b": "Gửi email cho tôi, hoặc mở issue trên GitHub cho lỗi, ý tưởng, hoặc câu hỏi.",
     "p.home": "Trang chủ",
+    "p.fact1": "Không tài khoản, không backend của chúng tôi. Chúng tôi không nhận đoạn text bạn viết lại.",
+    "p.fact2": "Chrome, Mac, và Windows giữ key trên máy. Website này không hỏi key.",
+    "p.fact3": "Text đang chọn đi từ máy bạn tới nhà cung cấp AI bạn cấu hình. Website này không thấy nội dung đó.",
   },
 };
 
@@ -219,6 +269,10 @@ function applyLang(lang) {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
     if (dict[key]) el.textContent = dict[key];
+  });
+  document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-aria");
+    if (dict[key]) el.setAttribute("aria-label", dict[key]);
   });
   document.querySelectorAll(".lang-btn").forEach((btn) => {
     const on = btn.dataset.lang === lang;
@@ -354,9 +408,10 @@ function styleHeroCtas(os) {
 }
 
 function setDemoShortcut(os) {
-  const kbd = document.querySelector("[data-demo] .kbd");
-  if (!kbd) return;
-  kbd.textContent = os === "mac" ? "Cmd Shift E" : "Ctrl Shift E";
+  const label = os === "mac" ? "Cmd Shift E" : "Ctrl Shift E";
+  document.querySelectorAll("[data-shortcut], [data-demo] .kbd").forEach((el) => {
+    el.textContent = label;
+  });
 }
 
 function initDemo() {
@@ -367,7 +422,11 @@ function initDemo() {
 
   root.querySelectorAll("[data-demo-mode]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      root.querySelectorAll("[data-demo-mode]").forEach((b) => b.classList.toggle("is-active", b === btn));
+      root.querySelectorAll("[data-demo-mode]").forEach((b) => {
+        const on = b === btn;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-selected", String(on));
+      });
       root.dataset.mode = btn.dataset.demoMode;
       renderChips(btn.dataset.demoMode, lang());
       resetDemoResult();
@@ -381,7 +440,21 @@ function initDemo() {
   });
 
   root.querySelector("[data-demo-run]").addEventListener("click", () => {
-    showDemoResult(root.dataset.mode || "rewrite", 0);
+    const run = root.querySelector("[data-demo-run]");
+    const lang = document.documentElement.lang || "en";
+    const mode = root.dataset.mode || "rewrite";
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const finish = () => {
+      showDemoResult(mode, 0);
+      run.disabled = false;
+      run.removeAttribute("aria-busy");
+      run.textContent = DEMO[mode].run[lang];
+    };
+    run.disabled = true;
+    run.setAttribute("aria-busy", "true");
+    run.textContent = COPY[lang]["demo.working"];
+    if (reduce) finish();
+    else setTimeout(finish, 380);
   });
 }
 
@@ -392,11 +465,78 @@ document.querySelectorAll(".lang-btn").forEach((btn) => {
   });
 });
 
+const MEDIA = {
+  video: "demo.mp4",
+  poster: "demo-poster.jpg",
+};
+
+function initVideoStage() {
+  const stage = document.querySelector("[data-video-stage]");
+  const video = document.querySelector("[data-product-video]");
+  const play = document.querySelector("[data-video-play]");
+  const soon = document.querySelector("[data-video-soon]");
+  if (!stage || !video || !play) return;
+
+  const showOverlay = () => stage.classList.remove("is-playing");
+  const hideOverlay = () => stage.classList.add("is-playing");
+
+  play.addEventListener("click", () => {
+    if (video.hidden) return;
+    video.controls = true;
+    video.play();
+    hideOverlay();
+  });
+
+  video.addEventListener("play", hideOverlay);
+  video.addEventListener("pause", () => {
+    if (!video.ended) showOverlay();
+  });
+  video.addEventListener("ended", () => {
+    video.currentTime = 0;
+    showOverlay();
+  });
+
+  Promise.all([existingLocalUrl(MEDIA.video), existingLocalUrl(MEDIA.poster)]).then(([src, poster]) => {
+    if (poster) video.poster = poster;
+    if (!src) return;
+    const source = video.querySelector("source");
+    if (source) source.src = src;
+    else video.src = src;
+    video.load();
+    video.hidden = false;
+    play.disabled = false;
+    stage.classList.add("is-ready");
+    if (soon) soon.hidden = true;
+  });
+}
+
+function initReveals() {
+  const nodes = document.querySelectorAll(".reveal");
+  if (!nodes.length) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    nodes.forEach((node) => node.classList.add("is-in"));
+    return;
+  }
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-in");
+        io.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.18, rootMargin: "0px 0px -6% 0px" },
+  );
+  nodes.forEach((node) => io.observe(node));
+}
+
 const os = detectOs();
 applyLang(detectLang());
 styleHeroCtas(os);
 setDemoShortcut(os);
 initDemo();
+initVideoStage();
+initReveals();
 
 if (window.RewriteBetterWeb && document.getElementById("macDownload")) {
   Promise.all([

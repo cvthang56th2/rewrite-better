@@ -10,11 +10,22 @@
       .replace(/"/g, '&quot;');
   }
 
+  function stringifyVariant(value) {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'object') {
+      if (typeof value.text === 'string') return value.text;
+      if (typeof value.content === 'string') return value.content;
+      if (typeof value.variant === 'string') return value.variant;
+    }
+    return '';
+  }
+
   function uniqueTrimmed(values) {
     const seen = {};
     const out = [];
     (values || []).forEach((value) => {
-      const text = String(value == null ? '' : value).trim();
+      const text = stringifyVariant(value).trim();
       if (!text || seen[text]) return;
       seen[text] = true;
       out.push(text);
@@ -22,16 +33,70 @@
     return out.slice(0, 3);
   }
 
+  function repairJson(json) {
+    let out = '';
+    let inString = false;
+    let escaped = false;
+    for (let i = 0; i < json.length; i += 1) {
+      const ch = json.charAt(i);
+      if (inString) {
+        if (escaped) {
+          out += ch;
+          escaped = false;
+          continue;
+        }
+        if (ch === '\\') {
+          out += ch;
+          escaped = true;
+          continue;
+        }
+        if (ch === '"') {
+          out += ch;
+          inString = false;
+          continue;
+        }
+        if (ch === '\n' || ch === '\r') {
+          out += '\\n';
+          continue;
+        }
+        if (ch === '\t') {
+          out += '\\t';
+          continue;
+        }
+        out += ch;
+        continue;
+      }
+      if (ch === '"') {
+        inString = true;
+        out += ch;
+        continue;
+      }
+      if (ch === ',') {
+        let j = i + 1;
+        while (j < json.length && /\s/.test(json.charAt(j))) j += 1;
+        const next = json.charAt(j);
+        if (next === ']' || next === '}') continue;
+      }
+      out += ch;
+    }
+    return out;
+  }
+
+  function parseObject(json) {
+    try {
+      return JSON.parse(json);
+    } catch (e) {
+      return null;
+    }
+  }
+
   function extractJson(raw) {
     const source = String(raw || '');
     const start = source.indexOf('{');
     const end = source.lastIndexOf('}');
     if (start === -1 || end === -1 || end <= start) return null;
-    try {
-      return JSON.parse(source.slice(start, end + 1));
-    } catch (e) {
-      return null;
-    }
+    const slice = source.slice(start, end + 1);
+    return parseObject(slice) || parseObject(repairJson(slice));
   }
 
   RB.parseVariants = function (raw) {

@@ -10,6 +10,149 @@
       .replace(/"/g, '&quot;');
   }
 
+  RB.selectExistingVariantChip = function (container, count, activeIndex) {
+    if (!container || count < 2) return false;
+    const chips = container.querySelectorAll('[data-variant]');
+    if (chips.length !== count) return false;
+    const index = Number(activeIndex) || 0;
+    chips.forEach((chip, i) => {
+      chip.classList.toggle('is-active', i === index);
+    });
+    return true;
+  };
+
+  RB.isEventInside = function (container, event) {
+    if (!container || !event) return false;
+    if (event.target && typeof container.contains === 'function' && container.contains(event.target)) {
+      return true;
+    }
+    const path = typeof event.composedPath === 'function' ? event.composedPath() : [];
+    return path.indexOf(container) !== -1;
+  };
+
+  const PANEL_POINTER_EVENTS = [
+    'pointerdown',
+    'pointerup',
+    'mousedown',
+    'mouseup',
+    'click',
+    'dblclick',
+    'touchstart',
+    'touchend',
+    'contextmenu',
+    'wheel'
+  ];
+
+  RB.guardPanelInteractions = function (container, onOutside, options) {
+    const opts = options || {};
+    const host = opts.eventTarget || (typeof document !== 'undefined' ? document : null);
+    if (!container || typeof onOutside !== 'function' || !host || !host.addEventListener) {
+      return function () {};
+    }
+
+    function stopInside(event) {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
+    PANEL_POINTER_EVENTS.forEach((type) => container.addEventListener(type, stopInside));
+
+    function onPointerDown(event) {
+      if (!RB.isEventInside(container, event)) onOutside();
+    }
+    host.addEventListener('pointerdown', onPointerDown, true);
+
+    return function unbind() {
+      PANEL_POINTER_EVENTS.forEach((type) => container.removeEventListener(type, stopInside));
+      host.removeEventListener('pointerdown', onPointerDown, true);
+    };
+  };
+
+  RB.focusWithoutScroll = function (el) {
+    if (!el || typeof el.focus !== 'function') return false;
+    try {
+      el.focus({ preventScroll: true });
+    } catch (err) {
+      el.focus();
+    }
+    return true;
+  };
+
+  RB.clampFixedPosition = function (box, viewport, pad) {
+    const inset = pad == null ? 8 : pad;
+    const vw = viewport && viewport.width ? viewport.width : 0;
+    const vh = viewport && viewport.height ? viewport.height : 0;
+    const width = box && box.width ? box.width : 0;
+    const height = box && box.height ? box.height : 0;
+    let left = box && typeof box.left === 'number' ? box.left : inset;
+    let top = box && typeof box.top === 'number' ? box.top : inset;
+    if (left + width > vw - inset) left = Math.max(inset, vw - width - inset);
+    if (top + height > vh - inset) top = Math.max(inset, vh - height - inset);
+    if (left < inset) left = inset;
+    if (top < inset) top = inset;
+    return { left: left, top: top };
+  };
+
+  RB.fitFixedPopup = function (opts) {
+    const o = opts || {};
+    const pad = o.pad == null ? 8 : Number(o.pad);
+    const gap = o.gap == null ? 10 : Number(o.gap);
+    const cap = o.maxHeight == null ? 720 : Number(o.maxHeight);
+    const vw = Number(o.viewport && o.viewport.width) || 0;
+    const vh = Number(o.viewport && o.viewport.height) || 0;
+    const width = Number(o.width) || 0;
+    const contentHeight = Math.max(0, Number(o.height) || 0);
+    const anchorX = Number(o.anchorX);
+    const anchorY = Number(o.anchorY);
+    const maxPanel = Math.max(0, Math.min(cap, vh - pad * 2));
+    const spaceBelow = vh - pad - (anchorY + gap);
+    const spaceAbove = anchorY - gap - pad;
+    const placeAbove = contentHeight > spaceBelow && spaceAbove > spaceBelow;
+
+    let top;
+    let maxH;
+    if (placeAbove) {
+      maxH = Math.min(maxPanel, Math.max(0, spaceAbove));
+      const used = Math.min(contentHeight || maxH, maxH);
+      top = anchorY - gap - used;
+      if (top < pad) {
+        top = pad;
+        maxH = Math.min(maxPanel, Math.max(0, anchorY - gap - pad));
+      }
+    } else {
+      top = Math.max(pad, (Number.isFinite(anchorY) ? anchorY : pad) + gap);
+      maxH = Math.min(maxPanel, Math.max(0, vh - pad - top));
+      if (contentHeight > maxH && spaceAbove > maxH) {
+        maxH = Math.min(maxPanel, Math.max(0, spaceAbove));
+        const used = Math.min(contentHeight || maxH, maxH);
+        top = Math.max(pad, anchorY - gap - used);
+        maxH = Math.min(maxPanel, Math.max(0, vh - pad - top));
+      }
+    }
+
+    let left = o.left != null ? Number(o.left) : anchorX;
+    if (!Number.isFinite(left)) left = pad;
+    if (left + width > vw - pad) left = Math.max(pad, vw - width - pad);
+    if (left < pad) left = pad;
+    if (!Number.isFinite(top)) top = pad;
+
+    const height = Math.min(contentHeight || maxH, maxH);
+    return {
+      left: left,
+      top: top,
+      maxHeight: maxH,
+      height: height,
+      constrain: contentHeight > maxH + 1
+    };
+  };
+
+  RB.retainFocusIn = function (root, fallback) {
+    if (!root) return false;
+    const doc = root.ownerDocument || (typeof document !== 'undefined' ? document : null);
+    const active = doc && doc.activeElement;
+    if (active && typeof root.contains === 'function' && root.contains(active)) return false;
+    const target = fallback && typeof fallback.focus === 'function' ? fallback : root;
+    return RB.focusWithoutScroll(target);
+  };
+
   function chipGroupHtml(name, options, selectedValue, label) {
     const chips = options
       .map((opt) => {
@@ -102,18 +245,23 @@
 
     const root = document.createElement('div');
     root.className = 'rb-root' + (options.compact ? ' rb-root--compact' : '');
+    root.tabIndex = -1;
 
     const headerHtml = showHeader
       ? `<div class="rb-header" data-tauri-drag-region>
           <h1 class="rb-title">${escapeHtml(RB.t('panel.title'))}</h1>
           <div class="rb-header-actions">
-            ${showSettings ? `<button type="button" class="rb-icon-btn" data-action="settings" title="${escapeHtml(RB.t('panel.settings'))}">⚙️</button>` : ''}
-            ${onClose ? `<button type="button" class="rb-icon-btn" data-action="close" title="${escapeHtml(RB.t('panel.close'))}">&times;</button>` : ''}
+            ${showSettings ? `<button type="button" class="rb-icon-btn" data-action="settings" title="${escapeHtml(RB.t('panel.settings'))}" aria-label="${escapeHtml(RB.t('panel.settings'))}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M3 12h2M19 12h2M5.6 18.4l1.4-1.4M17 7l1.4-1.4"/></svg>
+            </button>` : ''}
+            ${onClose ? `<button type="button" class="rb-icon-btn" data-action="close" title="${escapeHtml(RB.t('panel.close'))}" aria-label="${escapeHtml(RB.t('panel.close'))}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>` : ''}
           </div>
         </div>`
       : '';
 
-    const apiStatusHtml = showApiStatus ? '<div class="rb-api-status" data-role="api-status"></div>' : '';
+    const apiStatusHtml = showApiStatus ? '<div class="rb-api-status" data-role="api-status" hidden></div>' : '';
 
     const modeChips = RB.localizeOptions(RB.MODES, 'mode')
       .map((m, i) => {
@@ -124,6 +272,7 @@
 
     root.innerHTML = `
       ${headerHtml}
+      <div class="rb-mode-selector" role="tablist">${modeChips}</div>
       ${apiStatusHtml}
       <div class="rb-columns">
         <div class="rb-left">
@@ -179,7 +328,6 @@
         </div>
         <div class="rb-divider" aria-hidden="true"></div>
         <div class="rb-right">
-          <div class="rb-mode-selector" role="tablist">${modeChips}</div>
           <div class="rb-mode-scroll">
             <div class="rb-mode-panel" data-mode-panel="rewrite">
               ${chipGroupHtml('tone', RB.localizeOptions(RB.TONES, 'tone'), 'friendly', RB.t('panel.tone'))}
@@ -273,9 +421,11 @@
       resultEl.textContent = text;
       resultHint.hidden = !!text.trim();
       copyBtn.hidden = !text.trim();
+      root.classList.toggle('has-result', !!text.trim());
       renderVariantChips();
       renderDiff();
       refreshPasteButton();
+      RB.retainFocusIn(root, inputEl);
     }
 
     function renderVariantChips() {
@@ -286,6 +436,7 @@
         return;
       }
       variantsEl.hidden = false;
+      if (RB.selectExistingVariantChip(variantsEl, variants.length, variantIndex)) return;
       variantsEl.innerHTML =
         `<div class="rb-field-label">${escapeHtml(RB.t('panel.variants'))}</div>` +
         `<div class="rb-chip-group" role="tablist">` +
@@ -326,10 +477,11 @@
       pasteBtn.hidden = !(hasResult && canPaste);
       if (pasteBtn.hidden) return;
       const hadSelection = !!(pasteBack && pasteBack.hadSelection);
-      pasteBtn.textContent = RB.t(hadSelection ? 'paste.replace' : 'paste.paste');
+      const appName = (pasteBack && pasteBack.appName) || RB.t('paste.previousApp');
+      pasteBtn.textContent = RB.t(hadSelection ? 'paste.replaceIn' : 'paste.pasteIn', appName);
       pasteBtn.title = RB.t(
         hadSelection ? 'paste.replaceHelp' : 'paste.pasteHelp',
-        (pasteBack && pasteBack.appName) || RB.t('paste.previousApp')
+        appName
       );
     }
 
@@ -344,6 +496,7 @@
       if (!list.length) {
         issuesEl.hidden = true;
         issuesEl.innerHTML = '';
+        RB.retainFocusIn(root, textEl || inputEl);
         return;
       }
       issuesEl.hidden = false;
@@ -358,6 +511,7 @@
           textEl.dispatchEvent(new Event('input', { bubbles: true }));
         });
       });
+      RB.retainFocusIn(root, textEl || inputEl);
     }
 
     function completeFn(prompt, completeOpts) {
@@ -583,6 +737,7 @@
       }
 
       processBtn.disabled = true;
+      processBtn.innerHTML = `<span class="rb-spinner" aria-hidden="true"></span>${escapeHtml(RB.t('panel.processing'))}`;
       setStatus(RB.t('panel.processing'));
 
       try {
@@ -622,6 +777,7 @@
         setStatus(RB.formatCompleteError ? RB.formatCompleteError(error) : RB.t('panel.error', error.message || ''), true);
       } finally {
         processBtn.disabled = false;
+        processBtn.textContent = RB.t('action.' + currentMode) || RB.t('action.process');
       }
     });
 
@@ -631,13 +787,16 @@
         const keys = await RB.getKeysByProvider();
         const backends = RB.resolveChatBackends(keys);
         if (backends.length) {
-          apiStatusEl.className = 'rb-api-status is-success';
-          apiStatusEl.textContent = RB.t('panel.apiOk');
+          apiStatusEl.hidden = true;
+          apiStatusEl.className = 'rb-api-status';
+          apiStatusEl.textContent = '';
         } else {
+          apiStatusEl.hidden = false;
           apiStatusEl.className = 'rb-api-status is-warning';
           apiStatusEl.innerHTML = RB.t('panel.apiMissing');
         }
       } catch (e) {
+        apiStatusEl.hidden = false;
         apiStatusEl.className = 'rb-api-status is-error';
         apiStatusEl.textContent = RB.t('panel.apiCheckError');
       }
@@ -663,7 +822,7 @@
     refreshPasteButton();
 
     setTimeout(() => {
-      inputEl.focus();
+      RB.focusWithoutScroll(inputEl);
       const len = inputEl.value.length;
       inputEl.setSelectionRange(len, len);
       inputEl.scrollTop = inputEl.scrollHeight;
@@ -683,7 +842,7 @@
         inputAssist.dismissGhost();
         notesAssist.dismissGhost();
         setTimeout(() => {
-          inputEl.focus();
+          RB.focusWithoutScroll(inputEl);
           const len = inputEl.value.length;
           inputEl.setSelectionRange(len, len);
         }, 30);

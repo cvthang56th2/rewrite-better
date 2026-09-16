@@ -30,6 +30,15 @@ assert.deepStrictEqual(list(RB.parseVariants('{"variants":["keep","keep","other"
 assert.deepStrictEqual(list(RB.parseVariants('{"variants":["a","b","c","d"]}')), ['a', 'b', 'c']);
 assert.deepStrictEqual(list(RB.parseVariants('{"variants":["","  "]}')), []);
 assert.deepStrictEqual(list(RB.parseVariants('  {"variants":[" spaced "]}  extra')), ['spaced']);
+assert.deepStrictEqual(
+  list(RB.parseVariants('{"variants":["Hello\nthere","Other take","Third"]}')),
+  ['Hello\nthere', 'Other take', 'Third']
+);
+assert.deepStrictEqual(list(RB.parseVariants('{"variants":["A","B","C",]}')), ['A', 'B', 'C']);
+assert.deepStrictEqual(
+  list(RB.parseVariants('{"variants":[{"text":"A"},{"text":"B"},{"content":"C"}]}')),
+  ['A', 'B', 'C']
+);
 
 const equal = parts(RB.diffWords('hello world', 'hello world'));
 assert.deepStrictEqual(equal, [{ type: 'equal', text: 'hello world' }]);

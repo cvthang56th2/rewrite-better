@@ -14,26 +14,27 @@ struct ChipGroup: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            LazyVGrid(columns: columns, alignment: .leading, spacing: 5) {
+            LazyVGrid(columns: columns, alignment: .leading, spacing: 6) {
                 ForEach(options) { item in
                     Button {
                         selection = item.value
                     } label: {
                         Text(item.label)
-                            .font(.caption2)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.85)
-                            .frame(maxWidth: .infinity)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 5)
-                            .background(selection == item.value ? Color.accentColor.opacity(0.18) : Color(nsColor: .controlBackgroundColor))
+                            .font(.caption)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity, minHeight: Theme.chipMinHeight)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(selection == item.value ? Color.accentColor.opacity(0.16) : Theme.fill)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(selection == item.value ? Color.accentColor : Color.secondary.opacity(0.25), lineWidth: 1)
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(selection == item.value ? Color.accentColor : Theme.line, lineWidth: 1)
                             )
-                            .cornerRadius(6)
+                            .cornerRadius(8)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityAddTraits(selection == item.value ? .isSelected : [])
                 }
             }
         }

@@ -12,6 +12,7 @@ final class PanelViewModel: ObservableObject {
     @Published var statusMessage = ""
     @Published var isLoading = false
     @Published var copyFeedback = false
+    @Published var statusKind: StatusKind = .info
 
     // Rewrite
     @Published var tone = "friendly"
@@ -35,6 +36,10 @@ final class PanelViewModel: ObservableObject {
         case unknown, ok, missing, invalid
     }
 
+    enum StatusKind {
+        case info, error
+    }
+
     var inputPlaceholder: String {
         LanguageStore.shared.t(mode == .reply ? "panel.placeholder.reply" : "panel.placeholder.input")
     }
@@ -46,6 +51,7 @@ final class PanelViewModel: ObservableObject {
         variantIndex = 0
         diffSource = ""
         statusMessage = ""
+        statusKind = .info
         copyFeedback = false
         Task { await refreshApiStatus() }
     }
@@ -60,20 +66,24 @@ final class PanelViewModel: ObservableObject {
         variantIndex = 0
         diffSource = ""
         statusMessage = ""
+        statusKind = .info
         copyFeedback = false
 
         if mode == .reply {
             if inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                statusKind = .error
                 statusMessage = LanguageStore.shared.t("panel.emptyReply")
                 return
             }
         } else if inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            statusKind = .error
             statusMessage = LanguageStore.shared.t("panel.emptyInput")
             return
         }
 
         guard SettingsStore.shared.hasAnyApiKey else {
+            statusKind = .error
             statusMessage = LLMError.missingKey.localizedDescription
             return
         }
@@ -113,11 +123,13 @@ final class PanelViewModel: ObservableObject {
         }
 
         guard let prompt else {
+            statusKind = .error
             statusMessage = LanguageStore.shared.t("panel.emptyReply")
             return
         }
 
         isLoading = true
+        statusKind = .info
         statusMessage = LanguageStore.shared.t("panel.processing")
         defer { isLoading = false }
 
@@ -125,6 +137,7 @@ final class PanelViewModel: ObservableObject {
             let text = try await LLMClient.shared.complete(prompt: prompt)
             let parsed = mode == .format ? [text].filter { !$0.isEmpty } : ResultDiff.parseVariants(text)
             guard !parsed.isEmpty else {
+                statusKind = .error
                 statusMessage = LanguageStore.shared.t("panel.emptyResponse")
                 return
             }
@@ -136,6 +149,7 @@ final class PanelViewModel: ObservableObject {
             TextCaptureService.copyToClipboard(resultText)
             copyFeedback = true
         } catch {
+            statusKind = .error
             statusMessage = error.localizedDescription
             resultText = ""
             variants = []
@@ -166,11 +180,14 @@ final class PanelViewModel: ObservableObject {
         switch panel.pasteBack(text: resultText) {
         case .replacedViaAccessibility, .replacedViaPaste:
             statusMessage = ""
+            statusKind = .info
         case .noTarget:
+            statusKind = .error
             statusMessage = LanguageStore.shared.t("panel.pasteNoTarget")
         case .emptyText:
             break
         case .activateFailed:
+            statusKind = .error
             statusMessage = LanguageStore.shared.t("panel.pasteActivateFailed")
         }
     }
@@ -179,6 +196,7 @@ final class PanelViewModel: ObservableObject {
 struct PanelView: View {
     @EnvironmentObject private var panel: PanelController
     @ObservedObject private var lang = LanguageStore.shared
+    @ObservedObject private var hotkeys = HotkeyService.shared
     @StateObject private var vm = PanelViewModel()
     @StateObject private var inputAssist = WritingAssistController()
     @StateObject private var notesAssist = WritingAssistController()
@@ -186,6 +204,7 @@ struct PanelView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             header
+            modeSelector
             apiBanner
 
             // Always two columns; window min width guarantees this fits on Mac.
@@ -201,6 +220,7 @@ struct PanelView: View {
             vm.inputText = newValue
             vm.resultText = ""
             vm.statusMessage = ""
+            vm.statusKind = .info
             vm.copyFeedback = false
             inputAssist.dismissGhost()
         }
@@ -222,26 +242,31 @@ struct PanelView: View {
     }
 
     private var leftColumn: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            inputSection
-                .frame(maxHeight: vm.mode == .reply ? 140 : 200)
+        ScrollView(.vertical, showsIndicators: true) {
+            VStack(alignment: .leading, spacing: 10) {
+                inputSection
+                    .frame(minHeight: vm.mode == .reply ? 100 : 120, maxHeight: vm.mode == .reply ? 140 : 200)
+                    .clipped()
 
-            if vm.mode == .reply {
-                notesSection
-                    .frame(height: 90)
+                if vm.mode == .reply {
+                    notesSection
+                        .frame(height: 90)
+                }
+
+                writingAssistBar(
+                    assist: activeAssist,
+                    enabled: vm.mode == .reply ? $notesAssist.assistEnabled : $inputAssist.assistEnabled,
+                    text: activeTextBinding
+                )
+
+                actionRow
+
+                statusAndResult
             }
-
-            writingAssistBar(
-                assist: activeAssist,
-                enabled: vm.mode == .reply ? $notesAssist.assistEnabled : $inputAssist.assistEnabled,
-                text: activeTextBinding
-            )
-
-            actionRow
-
-            statusAndResult
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .padding(.trailing, 2)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var activeAssist: WritingAssistController {
@@ -253,57 +278,51 @@ struct PanelView: View {
     }
 
     private var rightColumn: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            modeSelector
-            ScrollView(.vertical, showsIndicators: true) {
-                modeOptions
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .frame(maxHeight: .infinity)
+        ScrollView(.vertical, showsIndicators: true) {
+            modeOptions
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .frame(maxHeight: .infinity)
     }
 
     // MARK: - Sections
 
     private var header: some View {
-        HStack {
-            Text(lang.t("panel.title"))
-                .font(.title3.weight(.semibold))
+        HStack(spacing: 10) {
+            Text(hotkeys.current.displayString)
+                .font(.caption.weight(.medium).monospacedDigit())
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+                .background(Capsule().fill(Theme.fill))
+                .overlay(Capsule().stroke(Theme.line))
+                .accessibilityLabel(lang.t("settings.shortcut"))
+                .accessibilityValue(hotkeys.current.displayString)
             Spacer()
             Button {
                 panel.openSettings()
             } label: {
                 Image(systemName: "gearshape")
+                    .frame(minWidth: Theme.controlMin, minHeight: Theme.controlMin)
             }
             .buttonStyle(.borderless)
             .help(lang.t("panel.settings"))
-
-            Button {
-                panel.close()
-            } label: {
-                Image(systemName: "xmark")
-            }
-            .buttonStyle(.borderless)
-            .help(lang.t("panel.close"))
+            .accessibilityLabel(lang.t("panel.settings"))
         }
     }
 
     @ViewBuilder
     private var apiBanner: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             if panel.needsAccessibility {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(lang.t("a11y.untrusted"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(lang.t("a11y.steps"))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                    Text(Bundle.main.bundleURL.path)
-                        .font(.system(.caption2, design: .monospaced))
-                        .textSelection(.enabled)
-                        .foregroundStyle(.secondary)
-                    HStack {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "hand.raised.fill")
+                            .foregroundStyle(.orange)
+                            .accessibilityHidden(true)
+                        Text(lang.t("a11y.untrusted"))
+                            .font(.callout)
+                    }
+                    HStack(spacing: 8) {
                         Button(lang.t("a11y.openSettings")) {
                             TextCaptureService.openAccessibilitySettings()
                         }
@@ -315,32 +334,48 @@ struct PanelView: View {
                         .buttonStyle(.borderless)
                         .controlSize(.small)
                     }
+                    DisclosureGroup(lang.t("a11y.details")) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(lang.t("a11y.steps"))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text(Bundle.main.bundleURL.path)
+                                .font(.system(.caption2, design: .monospaced))
+                                .textSelection(.enabled)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .font(.caption)
                 }
-                .padding(8)
+                .padding(10)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.orange.opacity(0.12))
-                .cornerRadius(8)
+                .background(Theme.warningFill)
+                .cornerRadius(Theme.radius)
             }
 
             switch vm.apiStatus {
-            case .ok:
+            case .ok, .unknown:
                 EmptyView()
             case .missing:
-                HStack(spacing: 4) {
+                HStack(spacing: 8) {
+                    Image(systemName: "key.fill")
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
                     Text(lang.t("api.missing"))
                     Button(lang.t("api.configure")) { panel.openSettings() }
                         .buttonStyle(.link)
                 }
-                .font(.caption)
+                .font(.callout)
             case .invalid:
-                HStack(spacing: 4) {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                        .accessibilityHidden(true)
                     Text(lang.t("api.invalid"))
                     Button(lang.t("api.check")) { panel.openSettings() }
                         .buttonStyle(.link)
                 }
-                .font(.caption)
-            case .unknown:
-                EmptyView()
+                .font(.callout)
             }
         }
     }
@@ -353,6 +388,7 @@ struct PanelView: View {
         }
         .pickerStyle(.segmented)
         .labelsHidden()
+        .frame(maxWidth: .infinity)
     }
 
     private var inputSection: some View {
@@ -369,14 +405,15 @@ struct PanelView: View {
             GhostTextEditor(
                 text: $vm.inputText,
                 ghostText: $inputAssist.ghostText,
+                placeholder: vm.inputPlaceholder,
                 onTextChange: { text, caretAtEnd in
                     // Full writing assist on input for rewrite/format; light assist on reply message too
                     inputAssist.textDidChange(text, caretAtEnd: caretAtEnd)
                 }
             )
             .frame(minHeight: 100, maxHeight: .infinity)
-            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25)))
-            .cornerRadius(8)
+            .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.line))
+            .cornerRadius(Theme.radius)
         }
     }
 
@@ -392,13 +429,14 @@ struct PanelView: View {
             GhostTextEditor(
                 text: $vm.notes,
                 ghostText: $notesAssist.ghostText,
+                placeholder: lang.t("panel.placeholder.notes"),
                 onTextChange: { text, caretAtEnd in
                     notesAssist.textDidChange(text, caretAtEnd: caretAtEnd)
                 }
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25)))
-            .cornerRadius(8)
+            .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.line))
+            .cornerRadius(Theme.radius)
         }
     }
 
@@ -462,9 +500,9 @@ struct PanelView: View {
                         .controlSize(.small)
                         .buttonStyle(.bordered)
                     }
-                    .padding(6)
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .cornerRadius(6)
+                    .padding(8)
+                    .background(Theme.fill)
+                    .cornerRadius(8)
                 }
             }
         }
@@ -523,26 +561,47 @@ struct PanelView: View {
 
     private var actionRow: some View {
         HStack(spacing: 8) {
-            Button(vm.mode.buttonLabel(lang.language)) {
+            Button {
                 Task { await vm.process() }
+            } label: {
+                if vm.isLoading {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text(lang.t("panel.processing"))
+                    }
+                } else {
+                    Text(vm.mode.buttonLabel(lang.language))
+                }
             }
             .keyboardShortcut(.return, modifiers: .command)
             .disabled(vm.isLoading)
             .buttonStyle(.borderedProminent)
 
             if !vm.resultText.isEmpty {
-                Button(vm.copyFeedback ? lang.t("panel.copied") : lang.t("panel.copy")) {
+                Button {
                     vm.copyResult()
+                } label: {
+                    Label(
+                        vm.copyFeedback ? lang.t("panel.copied") : lang.t("panel.copy"),
+                        systemImage: vm.copyFeedback ? "checkmark" : "doc.on.doc"
+                    )
                 }
 
                 if let target = panel.pasteBackTarget {
-                    Button(lang.t(target.hadSelection ? "paste.replace" : "paste.paste")) {
+                    let name = target.appName ?? lang.t("paste.previousApp")
+                    Button {
                         vm.pasteBack(using: panel)
+                    } label: {
+                        Label(
+                            lang.t(target.hadSelection ? "paste.replaceIn" : "paste.pasteIn", name),
+                            systemImage: "arrow.uturn.backward"
+                        )
                     }
                     .keyboardShortcut(.return, modifiers: [.command, .option])
                     .help(lang.t(
                         target.hadSelection ? "paste.replaceHelp" : "paste.pasteHelp",
-                        target.appName ?? lang.t("paste.previousApp")
+                        name
                     ))
                 }
             }
@@ -556,63 +615,70 @@ struct PanelView: View {
             if !vm.statusMessage.isEmpty {
                 Text(vm.statusMessage)
                     .font(.callout)
-                    .foregroundStyle(vm.statusMessage.hasPrefix("❌") ? .red : .secondary)
+                    .foregroundStyle(vm.statusKind == .error ? Color.red : .secondary)
                     .textSelection(.enabled)
+                    .accessibilityAddTraits(.updatesFrequently)
             }
 
             if !vm.resultText.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 8) {
                     Text(lang.t("panel.result"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     if vm.variants.count > 1 {
-                        HStack(spacing: 6) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Text(lang.t("panel.variants"))
-                                .font(.caption2)
+                                .font(.caption)
                                 .foregroundStyle(.secondary)
-                            ForEach(Array(vm.variants.indices), id: \.self) { index in
-                                Button(lang.t("panel.variant", "\(index + 1)")) {
-                                    vm.selectVariant(index)
+                            LazyVGrid(
+                                columns: [GridItem(.adaptive(minimum: 88), spacing: 6)],
+                                alignment: .leading,
+                                spacing: 6
+                            ) {
+                                ForEach(Array(vm.variants.indices), id: \.self) { index in
+                                    Button(lang.t("panel.variant", "\(index + 1)")) {
+                                        vm.selectVariant(index)
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .tint(index == vm.variantIndex ? .accentColor : .secondary)
+                                    .controlSize(.small)
+                                    .frame(maxWidth: .infinity)
                                 }
-                                .buttonStyle(.bordered)
-                                .tint(index == vm.variantIndex ? .accentColor : .secondary)
-                                .controlSize(.small)
                             }
                         }
                     }
-                    ScrollView {
-                        Text(vm.resultText)
-                            .font(.body)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .textSelection(.enabled)
-                            .padding(8)
-                    }
-                    .frame(minHeight: 80, maxHeight: .infinity)
-                    .background(Color(nsColor: .textBackgroundColor))
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25)))
-                    .cornerRadius(8)
+                    Text(vm.resultText)
+                        .font(.body)
+                        .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
+                        .textSelection(.enabled)
+                        .padding(8)
+                        .background(Theme.editor)
+                        .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.line))
+                        .cornerRadius(Theme.radius)
 
                     if ResultDiff.hasVisibleDiff(vm.diffParts) {
-                        Text(lang.t("panel.changes"))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        ScrollView {
-                            Text(diffAttributed(vm.diffParts))
-                                .font(.callout)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .textSelection(.enabled)
-                                .padding(8)
+                        HStack(spacing: 6) {
+                            Image(systemName: "text.redaction")
+                                .foregroundStyle(.secondary)
+                                .accessibilityHidden(true)
+                            Text(lang.t("panel.changes"))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
-                        .frame(minHeight: 56, maxHeight: 120)
-                        .background(Color(nsColor: .textBackgroundColor))
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25), style: StrokeStyle(dash: [4])))
-                        .cornerRadius(8)
+                        Text(diffAttributed(vm.diffParts))
+                            .font(.callout)
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                            .textSelection(.enabled)
+                            .padding(8)
+                            .background(Theme.editor)
+                            .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.line))
+                            .cornerRadius(Theme.radius)
                     }
                 }
             } else if vm.statusMessage.isEmpty {
                 Text(lang.t("panel.resultHint"))
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     .padding(.top, 4)
             }
@@ -628,9 +694,9 @@ struct PanelView: View {
                 break
             case .delete:
                 chunk.strikethroughStyle = .single
-                chunk.backgroundColor = Color.red.opacity(0.16)
+                chunk.backgroundColor = Theme.deleteFill
             case .insert:
-                chunk.backgroundColor = Color.green.opacity(0.18)
+                chunk.backgroundColor = Theme.insertFill
             }
             result += chunk
         }

@@ -18,7 +18,11 @@ xcodebuild \
   -project "$proj/RewriteBetter.xcodeproj" \
   -scheme RewriteBetter \
   -configuration Release \
+  -destination 'generic/platform=macOS' \
   -derivedDataPath "$dd" \
+  CODE_SIGN_IDENTITY="-" \
+  CODE_SIGNING_REQUIRED=NO \
+  DEVELOPMENT_TEAM="" \
   build
 
 cp -R "$dd/Build/Products/Release/RewriteBetter.app" "$stage/"

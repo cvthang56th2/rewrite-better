@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
+
   <div class="nav-shell">
     <nav class="nav" aria-label="Primary">
       <a class="brand" href="./">
@@ -16,49 +18,83 @@
         <span>Rewrite Better</span>
       </a>
       <div class="nav-links">
-        <a href="./#download" data-i18n="nav.download">Download</a>
-        <a href="privacy.html" data-i18n="nav.privacy">Privacy</a>
+        <a class="nav-cta" href="./#download" data-i18n="nav.download">Download</a>
+        <a href="privacy.html" aria-current="page" data-i18n="nav.privacy">Privacy</a>
+        <a href="./#feedback" data-i18n="nav.feedback">Feedback</a>
         <a href="https://github.com/cvthang56th2/rewrite-better">GitHub</a>
-        <button type="button" class="lang-btn" data-lang="en" aria-pressed="true">EN</button>
-        <button type="button" class="lang-btn" data-lang="vi" aria-pressed="false">VI</button>
+        <button type="button" class="lang-btn" data-lang="en" aria-pressed="true" aria-label="English">EN</button>
+        <button type="button" class="lang-btn" data-lang="vi" aria-pressed="false" aria-label="Tiếng Việt">VI</button>
       </div>
     </nav>
   </div>
 
-  <main class="page wrap prose">
+  <main id="main" class="page wrap">
     <h1 data-i18n="p.h1">Privacy</h1>
-    <p data-i18n="p.updated">Last updated 15 September 2026.</p>
+    <p class="lede" data-i18n="p.updated">Last updated 16 September 2026.</p>
 
-    <h2 data-i18n="p.s1">No Rewrite Better servers</h2>
-    <p data-i18n="p.s1b">The Chrome extension, macOS app, and Windows app have no account system and no backend of ours. We do not receive, store, or log the text you rewrite.</p>
+    <ul class="privacy-facts">
+      <li>
+        <strong data-i18n="trust.account">No Rewrite Better account</strong>
+        <span data-i18n="p.fact1">No account, no backend of ours. We never receive the text you rewrite.</span>
+      </li>
+      <li>
+        <strong data-i18n="trust.key">API key stays on your device</strong>
+        <span data-i18n="p.fact2">Chrome, Mac, and Windows keep your key locally. This website never asks for it.</span>
+      </li>
+      <li>
+        <strong data-i18n="p.s3">Where text goes</strong>
+        <span data-i18n="p.fact3">Selected text goes from your device to the AI provider you configured. This website never sees it.</span>
+      </li>
+    </ul>
 
-    <h2 data-i18n="p.s2">API keys</h2>
-    <p data-i18n="p.s2b">Your API key stays on your device. Chrome uses chrome.storage.sync. Mac uses Keychain. Windows keeps keys in local app storage. This website never asks for a key.</p>
+    <div class="prose">
+      <h2 data-i18n="p.s1">No Rewrite Better servers</h2>
+      <p data-i18n="p.s1b">The Chrome extension, macOS app, and Windows app have no account system and no backend of ours. We do not receive, store, or log the text you rewrite.</p>
 
-    <h2 data-i18n="p.s3">Where text goes</h2>
-    <p data-i18n="p.s3b">When you run Rewrite, Format, Reply, or writing assist, the selected text and your options are sent from your device to the AI provider whose key you configured (for example Groq at api.groq.com). That provider’s privacy policy applies.</p>
+      <h2 data-i18n="p.s2">API keys</h2>
+      <p data-i18n="p.s2b">Your API key stays on your device. Chrome uses chrome.storage.sync. Mac uses Keychain. Windows keeps keys in local app storage. This website never asks for a key.</p>
 
-    <h2 data-i18n="p.s4">Chrome permissions</h2>
-    <p data-i18n="p.s4b">The extension can run on any site so the inline panel and keyboard shortcut work wherever you write. It also needs storage (for the key), contextMenus, activeTab, and scripting. Host access includes the provider APIs you use.</p>
+      <h2 data-i18n="p.s3">Where text goes</h2>
+      <p data-i18n="p.s3b">When you run Rewrite, Format, Reply, or writing assist, the selected text and your options are sent from your device to the AI provider whose key you configured (for example Groq at api.groq.com). That provider’s privacy policy applies.</p>
 
-    <h2 data-i18n="p.s5">macOS permissions</h2>
-    <p data-i18n="p.s5b">The Mac app asks for Accessibility so it can read the current text selection and put a result back. You can deny that permission; the panel still opens, but it will not capture selected text automatically.</p>
+      <h2 data-i18n="p.s4">Chrome permissions</h2>
+      <p data-i18n="p.s4b">The extension can run on any site so the inline panel and keyboard shortcut work wherever you write. It also needs storage (for the key), contextMenus, activeTab, and scripting. Host access includes the provider APIs you use.</p>
 
-    <h2 data-i18n="p.s5w">Windows behavior</h2>
-    <p data-i18n="p.s5wb">The Windows app captures selected text with a Ctrl+C probe, then restores the previous clipboard. It does not require a special Accessibility toggle. Elevated windows may not be readable unless Rewrite Better is also elevated.</p>
+      <h2 data-i18n="p.s5">macOS permissions</h2>
+      <p data-i18n="p.s5b">The Mac app asks for Accessibility so it can read the current text selection and put a result back. You can deny that permission; the panel still opens, but it will not capture selected text automatically.</p>
 
-    <h2 data-i18n="p.s6">This website</h2>
-    <p data-i18n="p.s6b">The download site is static files on Vercel. Language preference is stored in your browser (localStorage). We do not run analytics on this page unless Vercel’s platform logs apply to HTTP requests.</p>
+      <h2 data-i18n="p.s5w">Windows behavior</h2>
+      <p data-i18n="p.s5wb">The Windows app captures selected text with a Ctrl+C probe, then restores the previous clipboard. It does not require a special Accessibility toggle. Elevated windows may not be readable unless Rewrite Better is also elevated.</p>
 
-    <h2 data-i18n="p.s7">Contact</h2>
-    <p data-i18n="p.s7b">Questions: open an issue on the GitHub repository.</p>
+      <h2 data-i18n="p.s6">This website</h2>
+      <p data-i18n="p.s6b">The download site is static files on Vercel. Language preference is stored in your browser (localStorage). We do not run analytics on this page unless Vercel’s platform logs apply to HTTP requests.</p>
+
+      <h2 data-i18n="p.s7">Contact</h2>
+      <p data-i18n="p.s7b">Email me, or open a GitHub issue for a bug, a feature idea, or a question.</p>
+      <p class="help-links">
+        <a href="mailto:cvthang56th2@gmail.com">cvthang56th2@gmail.com</a>
+        <a href="https://github.com/cvthang56th2/rewrite-better/issues/new?labels=bug" data-i18n="help.bug">Report a bug</a>
+        <a href="https://github.com/cvthang56th2/rewrite-better/issues/new?labels=enhancement" data-i18n="help.idea">Request a feature</a>
+        <a href="https://github.com/cvthang56th2/rewrite-better/issues/new?labels=question" data-i18n="help.ask">Ask a question</a>
+      </p>
+    </div>
   </main>
 
   <footer class="foot wrap">
     <div class="foot-row">
-      <span>Rewrite Better · MIT</span>
-      <a href="./" data-i18n="p.home">Home</a>
+      <a class="foot-brand" href="./">
+        <img src="icon.png" width="22" height="22" alt="" />
+        Rewrite Better
+      </a>
+      <span>
+        <a href="./#download" data-i18n="nav.download">Download</a>
+        <a href="privacy.html" aria-current="page" data-i18n="nav.privacy">Privacy</a>
+        <a href="./#feedback" data-i18n="nav.feedback">Feedback</a>
+        <a href="mailto:cvthang56th2@gmail.com" data-i18n="help.email">Email</a>
+        <a href="https://github.com/cvthang56th2/rewrite-better">GitHub</a>
+      </span>
     </div>
+    <p class="foot-note" data-i18n="foot.note">MIT license. No account. Keys stay on your device.</p>
   </footer>
 
   <script src="site.js"></script>

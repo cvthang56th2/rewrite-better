@@ -1,55 +1,88 @@
 :root {
-  --rb-bg: #ffffff;
-  --rb-text: #2c3e50;
-  --rb-border: #e0e6ed;
-  --rb-hover: #f0f0f0;
-  --rb-result-bg: #f8f9fa;
-  --rb-result-border: #e9ecef;
+  --rb-bg: #f7f9fb;
+  --rb-text: #161c26;
+  --rb-border: #c3ced9;
+  --rb-hover: #e7edf3;
+  --rb-result-bg: #ffffff;
+  --rb-result-border: #c3ced9;
   --rb-input-bg: #ffffff;
-  --rb-secondary: #7f8c8d;
-  --rb-accent: #3498db;
-  --rb-accent-hover: #2980b9;
-  --rb-chip-bg: #f3f5f7;
-  --rb-chip-active-bg: #3498db;
-  --rb-chip-active-text: #ffffff;
-  --rb-shadow: rgba(0, 0, 0, 0.12);
+  --rb-secondary: #4d5866;
+  --rb-accent: #2e7bc8;
+  --rb-accent-hover: #2468ad;
+  --rb-accent-ink: #f7fbff;
+  --rb-chip-bg: #e7edf3;
+  --rb-chip-active-bg: #2e7bc8;
+  --rb-chip-active-text: #f7fbff;
+  --rb-shadow: rgb(22 28 38 / 0.14);
+  --rb-radius: 10px;
+  --rb-danger: #c0352b;
+  --rb-ok: #0f7b4c;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --rb-bg: #1e1e1e;
-    --rb-text: #e8e8e8;
-    --rb-border: #404040;
-    --rb-hover: #2d2d2d;
-    --rb-result-bg: #2d2d2d;
-    --rb-result-border: #404040;
-    --rb-input-bg: #2d2d2d;
-    --rb-secondary: #b0b0b0;
-    --rb-chip-bg: #2a2a2a;
-    --rb-chip-active-bg: #3498db;
-    --rb-chip-active-text: #ffffff;
-    --rb-shadow: rgba(0, 0, 0, 0.4);
+    --rb-bg: #1a2029;
+    --rb-text: #e8eef5;
+    --rb-border: #2c3642;
+    --rb-hover: #242c36;
+    --rb-result-bg: #12161c;
+    --rb-result-border: #2c3642;
+    --rb-input-bg: #12161c;
+    --rb-secondary: #9aa6b4;
+    --rb-accent: #4d9ee0;
+    --rb-accent-hover: #6ab0e8;
+    --rb-accent-ink: #0e141c;
+    --rb-chip-bg: #242c36;
+    --rb-chip-active-bg: #4d9ee0;
+    --rb-chip-active-text: #0e141c;
+    --rb-shadow: rgb(0 0 0 / 0.45);
+    --rb-danger: #ff6b7a;
+    --rb-ok: #75dd8b;
   }
 }
 
 /* Toolbar popup shell */
+html:has(body.rb-popup-body) {
+  max-height: 600px;
+}
+
 body.rb-popup-body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   margin: 0;
   padding: 16px;
   width: 760px;
   min-height: 480px;
+  max-height: 600px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
   background: var(--rb-bg);
   color: var(--rb-text);
   -webkit-font-smoothing: antialiased;
+}
+
+body.rb-popup-body #panelRoot {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+body.rb-popup-body .rb-root {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Inline floating shell */
 .rb-inline-shell {
   position: fixed;
   width: 720px;
-  max-height: min(540px, 90vh);
+  max-height: min(720px, 92vh);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
   background: var(--rb-bg);
   color: var(--rb-text);
   border: 1px solid var(--rb-border);
@@ -70,6 +103,10 @@ body.rb-popup-body {
   box-sizing: border-box;
   min-height: 440px;
   height: 100%;
+}
+
+.rb-root:focus {
+  outline: none;
 }
 
 .rb-root *,
@@ -103,23 +140,42 @@ body.rb-popup-body {
   cursor: pointer;
   font-size: 16px;
   line-height: 1;
-  padding: 4px 6px;
-  border-radius: 4px;
+  padding: 6px;
+  border-radius: 8px;
   color: var(--rb-text);
-  width: auto;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
   margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rb-icon-btn svg {
+  display: block;
 }
 
 .rb-icon-btn:hover {
   background: var(--rb-hover);
 }
 
+.rb-icon-btn:focus-visible {
+  outline: 2px solid var(--rb-accent);
+  outline-offset: 2px;
+}
+
 .rb-api-status {
   padding: 8px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  text-align: center;
+  border-radius: var(--rb-radius);
+  font-size: 13px;
+  text-align: left;
   line-height: 1.4;
+}
+
+.rb-api-status[hidden] {
+  display: none !important;
 }
 
 .rb-api-status.is-success {
@@ -193,8 +249,9 @@ body.rb-popup-body {
 
 .rb-mode-selector {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
+  flex: none;
 }
 
 .rb-mode-chip {
@@ -251,8 +308,9 @@ body.rb-popup-body {
 
 .rb-chip {
   padding: 6px 10px;
+  min-height: 28px;
   border: 1px solid var(--rb-border);
-  border-radius: 999px;
+  border-radius: 8px;
   background: var(--rb-chip-bg);
   color: var(--rb-text);
   cursor: pointer;
@@ -309,33 +367,71 @@ body.rb-popup-body {
 
 .rb-primary-btn {
   width: 100%;
-  padding: 10px 12px;
+  padding: 10px 14px;
+  min-height: 36px;
   border: none;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  color: #fff;
+  border-radius: 8px;
+  background: var(--rb-accent);
+  color: var(--rb-accent-ink);
   font: inherit;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .rb-primary-btn:hover {
-  background: linear-gradient(135deg, #2980b9, #1f5f8b);
+  background: var(--rb-accent-hover);
 }
 
 .rb-primary-btn:disabled {
-  background: #bdc3c7;
+  opacity: 0.55;
   cursor: not-allowed;
+}
+
+.rb-primary-btn:focus-visible,
+.rb-copy-btn:focus-visible,
+.rb-paste-btn:focus-visible,
+.rb-text-btn:focus-visible,
+.rb-chip:focus-visible,
+.rb-mode-chip:focus-visible {
+  outline: 2px solid var(--rb-accent);
+  outline-offset: 2px;
+}
+
+.rb-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgb(247 251 255 / 0.35);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: rb-spin 0.7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rb-spinner {
+    animation: none;
+    border-top-color: currentColor;
+  }
+}
+
+@keyframes rb-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .rb-copy-btn {
   width: 100%;
   padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #27ae60, #2ecc71);
-  color: #fff;
+  min-height: 36px;
+  border: 1px solid var(--rb-border);
+  border-radius: 8px;
+  background: var(--rb-chip-bg);
+  color: var(--rb-text);
   font: inherit;
   font-size: 13px;
   cursor: pointer;
@@ -347,7 +443,8 @@ body.rb-popup-body {
 }
 
 .rb-copy-btn.is-copied {
-  background: linear-gradient(135deg, #e67e22, #f39c12);
+  border-color: var(--rb-ok);
+  color: var(--rb-ok);
 }
 
 .rb-result {
@@ -358,38 +455,46 @@ body.rb-popup-body {
   white-space: pre-wrap;
   font-size: 13px;
   line-height: 1.5;
-  max-height: 220px;
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
   color: var(--rb-text);
   min-height: 0;
+  flex-shrink: 0;
 }
 
 .rb-result:empty {
   display: none;
 }
 
+.rb-result:not(:empty) {
+  min-height: 4.5em;
+  flex: 1 0 auto;
+}
+
 .rb-variants {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex-shrink: 0;
 }
 
 .rb-diff {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex-shrink: 0;
 }
 
 .rb-diff-body {
   background: var(--rb-result-bg);
-  border: 1px dashed var(--rb-result-border);
-  border-radius: 6px;
+  border: 1px solid var(--rb-result-border);
+  border-radius: var(--rb-radius);
   padding: 10px 12px;
   white-space: pre-wrap;
   font-size: 12px;
   line-height: 1.55;
-  max-height: 140px;
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
   color: var(--rb-text);
 }
 
@@ -425,6 +530,19 @@ body.rb-popup-body {
 .rb-left {
   flex: 1;
   min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rb-border) transparent;
+}
+
+.rb-left::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rb-left::-webkit-scrollbar-thumb {
+  background: var(--rb-border);
+  border-radius: 8px;
 }
 
 .rb-right {
@@ -602,7 +720,55 @@ body.rb-popup-body {
 }
 
 .rb-status.is-error {
-  color: #c0392b;
+  color: var(--rb-danger);
+}
+
+.rb-disclaimer {
+  margin: 0;
+  font-size: 13px;
+  color: var(--rb-text);
+  background: var(--rb-result-bg);
+  border: 1px solid var(--rb-border);
+  border-radius: var(--rb-radius);
+  padding: 12px;
+}
+
+.rb-test-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.rb-test-icon {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--rb-danger);
+}
+
+.rb-test-row.is-ok .rb-test-icon {
+  background: var(--rb-ok);
+}
+
+.rb-test-row.is-ok .rb-test-icon::after,
+.rb-test-row.is-fail .rb-test-icon::after {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: center / 10px 10px no-repeat;
+}
+
+.rb-test-row.is-ok .rb-test-icon::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='white' d='M6.2 11.1 3.4 8.3l1.1-1.1 1.7 1.7 4.3-4.3 1.1 1.1z'/%3E%3C/svg%3E");
+}
+
+.rb-test-row.is-fail .rb-test-icon::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='white' d='M4.2 4.2l7.6 7.6-1.1 1.1-7.6-7.6zm7.6 0-1.1-1.1-7.6 7.6 1.1 1.1z'/%3E%3C/svg%3E");
 }
 
 .rb-result-wrap {
@@ -610,13 +776,22 @@ body.rb-popup-body {
   flex-direction: column;
   gap: 4px;
   min-height: 0;
-  flex: 1;
+  flex: 1 0 auto;
 }
 
 .rb-inline-shell .rb-root {
+  flex: 1 1 auto;
   min-height: 0;
   height: 100%;
-  max-height: calc(min(540px, 90vh) - 32px);
+  max-height: none;
+  overflow: hidden;
+}
+
+.rb-root.has-result .rb-ghost-editor,
+.rb-root.has-result .rb-ghost-editor textarea {
+  flex: 0 0 auto;
+  min-height: 72px;
+  max-height: 120px;
 }
 
 /* Options page fallbacks (options.html also has its own styles) */
@@ -670,11 +845,12 @@ body.rb-settings-body {
 
 .rb-disclaimer {
   margin: 0;
-  font-size: 12px;
-  color: var(--rb-secondary);
+  font-size: 13px;
+  color: var(--rb-text);
   background: var(--rb-result-bg);
-  border-radius: 8px;
-  padding: 10px;
+  border: 1px solid var(--rb-border);
+  border-radius: var(--rb-radius);
+  padding: 12px;
 }
 
 .rb-provider {
@@ -724,9 +900,4 @@ body.rb-settings-body {
 .rb-settings-actions .rb-copy-btn {
   width: auto;
   flex: 1;
-}
-
-.rb-test-row {
-  font-size: 13px;
-  margin-bottom: 6px;
 }

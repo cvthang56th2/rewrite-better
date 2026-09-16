@@ -107,13 +107,17 @@
       ? `<div class="rb-header" data-tauri-drag-region>
           <h1 class="rb-title">${escapeHtml(RB.t('panel.title'))}</h1>
           <div class="rb-header-actions">
-            ${showSettings ? `<button type="button" class="rb-icon-btn" data-action="settings" title="${escapeHtml(RB.t('panel.settings'))}">⚙️</button>` : ''}
-            ${onClose ? `<button type="button" class="rb-icon-btn" data-action="close" title="${escapeHtml(RB.t('panel.close'))}">&times;</button>` : ''}
+            ${showSettings ? `<button type="button" class="rb-icon-btn" data-action="settings" title="${escapeHtml(RB.t('panel.settings'))}" aria-label="${escapeHtml(RB.t('panel.settings'))}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M3 12h2M19 12h2M5.6 18.4l1.4-1.4M17 7l1.4-1.4"/></svg>
+            </button>` : ''}
+            ${onClose ? `<button type="button" class="rb-icon-btn" data-action="close" title="${escapeHtml(RB.t('panel.close'))}" aria-label="${escapeHtml(RB.t('panel.close'))}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>` : ''}
           </div>
         </div>`
       : '';
 
-    const apiStatusHtml = showApiStatus ? '<div class="rb-api-status" data-role="api-status"></div>' : '';
+    const apiStatusHtml = showApiStatus ? '<div class="rb-api-status" data-role="api-status" hidden></div>' : '';
 
     const modeChips = RB.localizeOptions(RB.MODES, 'mode')
       .map((m, i) => {
@@ -124,6 +128,7 @@
 
     root.innerHTML = `
       ${headerHtml}
+      <div class="rb-mode-selector" role="tablist">${modeChips}</div>
       ${apiStatusHtml}
       <div class="rb-columns">
         <div class="rb-left">
@@ -179,7 +184,6 @@
         </div>
         <div class="rb-divider" aria-hidden="true"></div>
         <div class="rb-right">
-          <div class="rb-mode-selector" role="tablist">${modeChips}</div>
           <div class="rb-mode-scroll">
             <div class="rb-mode-panel" data-mode-panel="rewrite">
               ${chipGroupHtml('tone', RB.localizeOptions(RB.TONES, 'tone'), 'friendly', RB.t('panel.tone'))}
@@ -326,10 +330,11 @@
       pasteBtn.hidden = !(hasResult && canPaste);
       if (pasteBtn.hidden) return;
       const hadSelection = !!(pasteBack && pasteBack.hadSelection);
-      pasteBtn.textContent = RB.t(hadSelection ? 'paste.replace' : 'paste.paste');
+      const appName = (pasteBack && pasteBack.appName) || RB.t('paste.previousApp');
+      pasteBtn.textContent = RB.t(hadSelection ? 'paste.replaceIn' : 'paste.pasteIn', appName);
       pasteBtn.title = RB.t(
         hadSelection ? 'paste.replaceHelp' : 'paste.pasteHelp',
-        (pasteBack && pasteBack.appName) || RB.t('paste.previousApp')
+        appName
       );
     }
 
@@ -583,6 +588,7 @@
       }
 
       processBtn.disabled = true;
+      processBtn.innerHTML = `<span class="rb-spinner" aria-hidden="true"></span>${escapeHtml(RB.t('panel.processing'))}`;
       setStatus(RB.t('panel.processing'));
 
       try {
@@ -622,6 +628,7 @@
         setStatus(RB.formatCompleteError ? RB.formatCompleteError(error) : RB.t('panel.error', error.message || ''), true);
       } finally {
         processBtn.disabled = false;
+        processBtn.textContent = RB.t('action.' + currentMode) || RB.t('action.process');
       }
     });
 
@@ -631,13 +638,16 @@
         const keys = await RB.getKeysByProvider();
         const backends = RB.resolveChatBackends(keys);
         if (backends.length) {
-          apiStatusEl.className = 'rb-api-status is-success';
-          apiStatusEl.textContent = RB.t('panel.apiOk');
+          apiStatusEl.hidden = true;
+          apiStatusEl.className = 'rb-api-status';
+          apiStatusEl.textContent = '';
         } else {
+          apiStatusEl.hidden = false;
           apiStatusEl.className = 'rb-api-status is-warning';
           apiStatusEl.innerHTML = RB.t('panel.apiMissing');
         }
       } catch (e) {
+        apiStatusEl.hidden = false;
         apiStatusEl.className = 'rb-api-status is-error';
         apiStatusEl.textContent = RB.t('panel.apiCheckError');
       }

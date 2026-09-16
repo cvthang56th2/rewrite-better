@@ -24,7 +24,7 @@ enum ResultDiff {
     static func parseVariants(_ raw: String) -> [String] {
         if let object = extractJSON(raw),
            let variants = object["variants"] as? [Any] {
-            return uniqueTrimmed(variants.compactMap { $0 as? String })
+            return uniqueTrimmed(variants.compactMap(stringifyVariant))
         }
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         return text.isEmpty ? [] : uniqueTrimmed([text])
@@ -103,11 +103,92 @@ enum ResultDiff {
               let end = raw.lastIndex(of: "}"),
               start < end else { return nil }
         let slice = String(raw[start...end])
-        guard let data = slice.data(using: .utf8),
+        if let object = decodeObject(slice) { return object }
+        return decodeObject(repairJSON(slice))
+    }
+
+    private static func decodeObject(_ json: String) -> [String: Any]? {
+        guard let data = json.data(using: .utf8),
               let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             return nil
         }
         return object
+    }
+
+    /// Models often emit raw newlines/tabs inside JSON strings, or a trailing comma.
+    private static func repairJSON(_ json: String) -> String {
+        var out = ""
+        out.reserveCapacity(json.count + 8)
+        var inString = false
+        var escaped = false
+        let chars = Array(json)
+        var i = 0
+        while i < chars.count {
+            let ch = chars[i]
+            if inString {
+                if escaped {
+                    out.append(ch)
+                    escaped = false
+                    i += 1
+                    continue
+                }
+                if ch == "\\" {
+                    out.append(ch)
+                    escaped = true
+                    i += 1
+                    continue
+                }
+                if ch == "\"" {
+                    out.append(ch)
+                    inString = false
+                    i += 1
+                    continue
+                }
+                if ch == "\n" || ch == "\r" {
+                    out.append("\\n")
+                    i += 1
+                    continue
+                }
+                if ch == "\t" {
+                    out.append("\\t")
+                    i += 1
+                    continue
+                }
+                out.append(ch)
+                i += 1
+                continue
+            }
+
+            if ch == "\"" {
+                inString = true
+                out.append(ch)
+                i += 1
+                continue
+            }
+
+            if ch == "," {
+                var j = i + 1
+                while j < chars.count, chars[j].isWhitespace { j += 1 }
+                if j < chars.count, chars[j] == "]" || chars[j] == "}" {
+                    i += 1
+                    continue
+                }
+            }
+
+            out.append(ch)
+            i += 1
+        }
+        return out
+    }
+
+    private static func stringifyVariant(_ value: Any) -> String? {
+        if let text = value as? String { return text }
+        if let obj = value as? [String: Any] {
+            for key in ["text", "content", "variant"] {
+                if let text = obj[key] as? String { return text }
+            }
+        }
+        return nil
     }
 
     private static func uniqueTrimmed(_ values: [String]) -> [String] {
