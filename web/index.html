@@ -11,6 +11,7 @@
   <meta property="og:description" content="Rewrite without leaving the page. Chrome, macOS, and Windows." />
   <meta property="og:image" content="icon.png" />
   <link rel="stylesheet" href="styles.css" />
+  <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
   <a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
@@ -39,13 +40,13 @@
         <h1 data-i18n="hero.title">Rewrite without leaving the&nbsp;page</h1>
         <p class="hero-sub" data-i18n="hero.sub">A panel on Chrome, Mac, and Windows. Rewrite, format, reply, and writing assist, using your own API key.</p>
         <div class="cta-row" id="heroCtas">
-          <a class="btn btn-primary" id="macDownload" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
+          <a class="btn btn-primary" id="macDownload" data-download="mac" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
             <span data-i18n="cta.mac">Download for Mac</span>
             <span class="btn-icon" aria-hidden="true">
               <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
             </span>
           </a>
-          <a class="btn btn-secondary" id="winDownload" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
+          <a class="btn btn-secondary" id="winDownload" data-download="win" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
             <span data-i18n="cta.win">Download for Windows</span>
             <span class="btn-icon" aria-hidden="true">
               <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
@@ -195,7 +196,7 @@
             <div class="platform-body">
             <h3 data-i18n="mac.title">macOS menu bar</h3>
             <p data-i18n="mac.body">Select text in Mail, Slack, or a browser, press the shortcut, then Replace or copy the result back.</p>
-            <a class="btn btn-primary" id="macDownload2" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
+            <a class="btn btn-primary" id="macDownload2" data-download="mac" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
               <span data-i18n="cta.mac">Download for Mac</span>
               <span class="btn-icon" aria-hidden="true">
                 <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
@@ -212,7 +213,7 @@
             <div class="platform-body">
             <h3 data-i18n="win.title">Windows tray</h3>
             <p data-i18n="win.body">Select text in any app, press Ctrl Shift E, then Replace to put the result back, or copy from the tray panel.</p>
-            <a class="btn btn-primary" id="winDownload2" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
+            <a class="btn btn-primary" id="winDownload2" data-download="win" href="https://github.com/cvthang56th2/rewrite-better/releases/latest">
               <span data-i18n="cta.win">Download for Windows</span>
               <span class="btn-icon" aria-hidden="true">
                 <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
@@ -229,7 +230,7 @@
             <div class="platform-body">
             <h3 data-i18n="chrome.title">Chrome extension</h3>
             <p data-i18n="chrome.body">Works on any site from the toolbar, the context menu, or Ctrl/Cmd Shift E. Replace puts the result back into the field.</p>
-            <a class="btn btn-secondary" href="downloads/rewrite-better-chrome.zip">
+            <a class="btn btn-secondary" data-download="chrome" href="downloads/rewrite-better-chrome.zip">
               <span data-i18n="cta.zip">Download zip</span>
               <span class="btn-icon" aria-hidden="true">
                 <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg>
@@ -367,6 +368,7 @@
     </div>
   </dialog>
 
+  <script src="analytics.js"></script>
   <script src="release-assets.js"></script>
   <script src="site.js"></script>
 </body>

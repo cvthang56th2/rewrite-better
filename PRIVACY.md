@@ -31,7 +31,13 @@ It does not record your screen or keystrokes.
 
 The Windows app captures selected text with a `Ctrl+C` probe, then restores the previous clipboard. After rewriting, **Replace** / **Paste** hides the panel and synthesizes `Ctrl+V` into the previous app. It does not require a separate Accessibility toggle. Apps running elevated (as Administrator) may not be readable unless Rewrite Better is also elevated.
 
-## What we do not collect
+## This website
+
+The public download site uses [Vercel Web Analytics](https://vercel.com/docs/analytics) for page views and download-button clicks. That data stays with Vercel. We do not use it for advertising.
+
+The Chrome, macOS, and Windows apps do not include this.
+
+## What the apps do not collect
 
 - No analytics
 - No crash reporting
