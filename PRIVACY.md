@@ -5,11 +5,11 @@ Rewrite Better has no account and no server of its own. There is no Rewrite Bett
 ## What stays on your device
 
 - **API keys** are stored only on your machine: Keychain in the macOS app, Chrome sync storage in the extension, and local app storage on Windows. The apps never upload them.
-- **Settings** (language, hotkey, extra instructions) stay in local preferences.
+- **Settings** (language, hotkey, extra instructions, voice samples) stay in local preferences.
 
 ## What is sent to AI providers
 
-When you rewrite, format, draft a reply, or use writing assist, the text and the options you chose are sent **directly** to the AI provider whose key you configured:
+When you rewrite, format, draft a reply, or use writing assist, the text and the options you chose are sent **directly** to the AI provider whose key you configured. If you saved a voice profile, those samples are included in the prompt:
 
 - Google (Gemini)
 - Groq

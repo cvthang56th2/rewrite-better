@@ -1,6 +1,6 @@
 # Rewrite Better for Chrome
 
-Chrome extension with the same Rewrite / Format / Reply panel as the macOS app: two-column layout, writing assist, extra instructions, and multi-provider failover (Gemini → Groq → Cerebras → OpenAI).
+Chrome extension with the same Rewrite / Format / Reply panel as the macOS app: two-column layout, writing assist, extra instructions, voice profile, rewrite variants with a diff, and multi-provider failover (Gemini → Groq → Cerebras → OpenAI).
 
 ## Install
 

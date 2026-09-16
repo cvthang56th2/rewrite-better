@@ -35,4 +35,4 @@ hdiutil create \
 cp "$dmg" "$web_dmg"
 echo "Wrote $dmg"
 echo "Copied $web_dmg"
-echo "If you upload a GitHub Release, name the asset RewriteBetter-1.0.dmg so the site fallback URL works."
+echo "A GitHub Release can use any .dmg filename; the site picks the latest .dmg asset automatically."

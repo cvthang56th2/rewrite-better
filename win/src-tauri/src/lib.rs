@@ -34,6 +34,7 @@ fn save_prefs(app: AppHandle, prefs: Prefs) -> Result<(), String> {
     let mut current = store::load_prefs(&app);
     current.ui_language = prefs.ui_language;
     current.extra_instructions = prefs.extra_instructions;
+    current.voice_samples = prefs.voice_samples;
     store::save_prefs(&app, &current)
 }
 

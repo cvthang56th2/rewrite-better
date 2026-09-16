@@ -5,27 +5,45 @@ enum PromptBuilder {
         AppOptions.languageNames[code] ?? code
     }
 
+    private static func variantsFormat() -> String {
+        """
+        Return ONLY valid JSON (no markdown) with this shape:
+        {"variants":["...","...","..."]}
+        Rules:
+        - Provide exactly 3 complete alternatives.
+        - Keep the same meaning and requested tone.
+        - Make the variants meaningfully different in wording or structure.
+        - Each item is the full output — no numbering, labels, or commentary.
+        """
+    }
+
     static func buildRewrite(
         input: String,
         tone: String,
         translationEnabled: Bool,
         fromLanguage: String,
         toLanguage: String,
-        extraInstructions: String = ""
+        extraInstructions: String = "",
+        voiceSamples: String = ""
     ) -> String {
         let instruction: String
         if translationEnabled {
             let toName = langName(toLanguage)
             if fromLanguage == "auto" {
-                instruction = "First, translate the following text to \(toName), then rewrite it in a \(tone) tone. The output should be in \(toName) and maintain a \(tone) style. Return only the final rewritten text without any explanations:"
+                instruction = "First, translate the following text to \(toName), then rewrite it in a \(tone) tone. The output should be in \(toName) and maintain a \(tone) style.\n\(variantsFormat())"
             } else {
                 let fromName = langName(fromLanguage)
-                instruction = "First, translate the following text from \(fromName) to \(toName), then rewrite it in a \(tone) tone. The output should be in \(toName) and maintain a \(tone) style. Return only the final rewritten text without any explanations:"
+                instruction = "First, translate the following text from \(fromName) to \(toName), then rewrite it in a \(tone) tone. The output should be in \(toName) and maintain a \(tone) style.\n\(variantsFormat())"
             }
         } else {
-            instruction = "Rewrite the following text in a \(tone) tone. Return only the rewritten text without any additional comments or explanations:"
+            instruction = "Rewrite the following text in a \(tone) tone.\n\(variantsFormat())"
         }
-        return withUserContent(input, extraInstructions: extraInstructions, attachedTo: instruction)
+        return withUserContent(
+            input,
+            extraInstructions: extraInstructions,
+            voiceSamples: voiceSamples,
+            attachedTo: instruction
+        )
     }
 
     static func buildFormat(formatType: String, input: String, extraInstructions: String = "") -> String {
@@ -51,7 +69,8 @@ enum PromptBuilder {
         outputLanguage: String,
         incomingText: String,
         notes: String,
-        extraInstructions: String = ""
+        extraInstructions: String = "",
+        voiceSamples: String = ""
     ) -> String? {
         let outLang = langName(outputLanguage)
         let isEmail = channel == "email"
@@ -96,10 +115,11 @@ enum PromptBuilder {
         Intent: \(intentDesc)
         Length: \(lengthDesc)
         Write the entire output in \(outLang).
-        Return only the final \(isEmail ? "email (subject + body)" : "message") — no explanations or meta commentary.
+        \(variantsFormat())
         """
 
         prompt = appendExtraInstructions(extraInstructions, to: prompt)
+        prompt = appendVoiceProfile(voiceSamples, to: prompt)
 
         if hasIncoming {
             prompt += "\n\n--- Received message ---\n\(incomingText.trimmingCharacters(in: .whitespacesAndNewlines))"
@@ -110,13 +130,34 @@ enum PromptBuilder {
         return prompt
     }
 
-    private static func withUserContent(_ input: String, extraInstructions: String, attachedTo instruction: String) -> String {
-        let withExtra = appendExtraInstructions(extraInstructions, to: instruction)
-        if extraInstructions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "\(withExtra)\n\n\(input)"
+    static func appendVoiceProfile(_ voiceSamples: String, to prompt: String) -> String {
+        let samples = voiceSamples.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !samples.isEmpty else { return prompt }
+        return """
+        \(prompt)
+
+        --- Writer's voice ---
+        Match this writer's voice: vocabulary, sentence length, punctuation habits, and any mix of languages. Do not copy sentences verbatim.
+
+        \(samples)
+        """
+    }
+
+    private static func withUserContent(
+        _ input: String,
+        extraInstructions: String,
+        voiceSamples: String = "",
+        attachedTo instruction: String
+    ) -> String {
+        var prompt = appendExtraInstructions(extraInstructions, to: instruction)
+        prompt = appendVoiceProfile(voiceSamples, to: prompt)
+        let hasWrap = !extraInstructions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !voiceSamples.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        if !hasWrap {
+            return "\(prompt)\n\n\(input)"
         }
         return """
-        \(withExtra)
+        \(prompt)
 
         --- Text ---
         \(input)
@@ -131,7 +172,7 @@ enum PromptBuilder {
 
         --- Extra instructions ---
         \(extra)
-        Follow the extra instructions, but still return only the final output — no explanations or meta commentary.
+        Follow the extra instructions, but still obey the output format required above.
         """
     }
 }

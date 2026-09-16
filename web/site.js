@@ -158,9 +158,8 @@ const DEMO = {
 
 const RELEASE = {
   macLocal: "downloads/RewriteBetter.dmg",
-  macRemote: "https://github.com/cvthang56th2/rewrite-better/releases/latest/download/RewriteBetter-1.0.dmg",
   winLocal: "downloads/RewriteBetter-setup.exe",
-  winRemote: "https://github.com/cvthang56th2/rewrite-better/releases/latest/download/RewriteBetter-1.0.0-x64-setup.exe",
+  api: "https://api.github.com/repos/cvthang56th2/rewrite-better/releases",
 };
 
 function detectLang() {
@@ -203,14 +202,28 @@ function renderChips(mode, lang) {
   if (run) run.textContent = spec.run[lang];
 }
 
-async function resolveAssetUrl(localPath, remoteUrl) {
+async function existingLocalUrl(path) {
   try {
-    const res = await fetch(localPath, { method: "HEAD" });
-    if (res.ok) return localPath;
+    const res = await fetch(path, { method: "HEAD" });
+    if (res.ok) return path;
   } catch {
-    /* use remote */
+    /* missing */
   }
-  return remoteUrl;
+  return null;
+}
+
+async function fetchPublishedRelease() {
+  const api = window.RewriteBetterWeb;
+  if (!api) return null;
+  try {
+    const latest = await fetch(`${RELEASE.api}/latest`);
+    if (latest.ok) return api.latestPublishedRelease(await latest.json());
+    const all = await fetch(RELEASE.api);
+    if (all.ok) return api.latestPublishedRelease(await all.json());
+  } catch {
+    /* use fallback */
+  }
+  return null;
 }
 
 function styleHeroCtas(os) {
@@ -273,14 +286,18 @@ styleHeroCtas(os);
 setDemoShortcut(os);
 initDemo();
 
-Promise.all([
-  resolveAssetUrl(RELEASE.macLocal, RELEASE.macRemote),
-  resolveAssetUrl(RELEASE.winLocal, RELEASE.winRemote),
-]).then(([macUrl, winUrl]) => {
-  document.querySelectorAll("#macDownload, #macDownload2").forEach((a) => {
-    a.href = macUrl;
+if (window.RewriteBetterWeb && document.getElementById("macDownload")) {
+  Promise.all([
+    existingLocalUrl(RELEASE.macLocal),
+    existingLocalUrl(RELEASE.winLocal),
+    fetchPublishedRelease(),
+  ]).then(([localMac, localWin, remote]) => {
+    const urls = window.RewriteBetterWeb.desktopDownloadUrls({ localMac, localWin, remote });
+    document.querySelectorAll("#macDownload, #macDownload2").forEach((a) => {
+      a.href = urls.mac;
+    });
+    document.querySelectorAll("#winDownload, #winDownload2").forEach((a) => {
+      a.href = urls.win;
+    });
   });
-  document.querySelectorAll("#winDownload, #winDownload2").forEach((a) => {
-    a.href = winUrl;
-  });
-});
+}

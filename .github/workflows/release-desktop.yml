@@ -1,0 +1,75 @@
+name: Release desktop apps
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build DMG
+        run: ./mac/package.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-dmg
+          path: mac/dist/RewriteBetter-*.dmg
+          if-no-files-found: error
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build installer
+        working-directory: win
+        run: |
+          npm ci
+          npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-setup
+          path: win/src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error
+
+  release:
+    needs: [macos, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          shopt -s globstar nullglob
+          files=(artifacts/**/*.dmg artifacts/**/*.exe)
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "No desktop artifacts to publish" >&2
+            exit 1
+          fi
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            tag="${GITHUB_REF_NAME}"
+          else
+            tag="v1.0.0"
+          fi
+          if gh release view "$tag" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            gh release upload "$tag" "${files[@]}" --clobber --repo "${GITHUB_REPOSITORY}"
+          else
+            gh release create "$tag" "${files[@]}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --title "Rewrite Better ${tag#v}" \
+              --generate-notes \
+              --latest
+          fi

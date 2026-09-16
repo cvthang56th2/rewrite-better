@@ -13,7 +13,8 @@ Public download site: [`web/`](web/) (deploy to Vercel).
 - **Inline popup** — Select text on any page, right-click, and choose **Rewrite with Rewrite Better**. **Replace** puts the result back into the field
 - **Keyboard shortcut** — `Ctrl+Shift+E` (Windows/Linux) or `Cmd+Shift+E` (Mac)
 - **Toolbar popup** — Click the extension icon for the full panel
-- **Rewrite** — Tone control + optional translation (visible chip selectors)
+- **Rewrite** — Tone control + optional translation (visible chip selectors). Three variants plus a word-level diff of what changed
+- **Voice profile** — Paste a few samples of how you write; Rewrite, Reply, and writing assist match that voice. Stays on the device
 - **Format Document** — Markdown, HTML, bullets, tables, outlines, FAQ, and more
 - **Reply / Compose** — Draft a chat message or email reply from a received message and/or your notes (intent, length, language)
 - **Copy / Replace** — Copy the output, or replace the selection on the page
@@ -101,13 +102,19 @@ The download landing lives in `web/`. From the repo root:
 2. Leave the Root Directory empty (the root `vercel.json` already points at `web/`)
 3. Deploy
 
-Each deploy zips `chrome/` into `web/downloads/rewrite-better-chrome.zip`. Desktop installers are not built on Vercel. Either:
+Each deploy zips `chrome/` into `web/downloads/rewrite-better-chrome.zip`. Desktop installers are not built on Vercel. The site looks up the latest GitHub Release and uses whatever `.dmg` / Windows `.exe` assets are attached.
 
-- Copy built binaries into `web/downloads/` (`RewriteBetter.dmg`, `RewriteBetter-setup.exe`) then deploy, or
-- Attach release assets named `RewriteBetter-1.0.dmg` and `RewriteBetter-1.0.0-x64-setup.exe`. The site falls back to those GitHub Release URLs when local files are missing.
+To publish Mac and Windows builds:
+
+1. Push a tag (`git tag v1.0.0 && git push origin v1.0.0`), or
+2. Run **Actions → Release desktop apps → Run workflow**
+
+That workflow builds the Mac DMG and Windows NSIS installer and uploads them to the GitHub Release. After it finishes, the Download buttons on the site point at those files.
+
+You can still copy local builds into `web/downloads/` (`RewriteBetter.dmg`, `RewriteBetter-setup.exe`) if you want the site to serve them directly; those files are gitignored.
 
 Mac packaging: `./scripts/package-mac-dmg.sh`  
-Windows packaging (on a Windows machine): `cd win && npm run build`, then rename/copy the NSIS installer to `web/downloads/RewriteBetter-setup.exe` or upload it as the release asset above.
+Windows packaging (on a Windows machine): `cd win && npm run build`
 
 Preview the site locally:
 

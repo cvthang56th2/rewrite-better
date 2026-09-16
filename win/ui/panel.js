@@ -162,6 +162,7 @@
             <div class="rb-issues" data-role="issues" hidden></div>
           </div>
           <p class="rb-hint" data-role="extra-hint" hidden>${escapeHtml(RB.t('panel.extraHint'))}</p>
+          <p class="rb-hint" data-role="voice-hint" hidden>${escapeHtml(RB.t('panel.voiceHint'))}</p>
           <div class="rb-actions">
             <button type="button" class="rb-primary-btn" data-role="process">${escapeHtml(RB.t('action.rewrite'))}</button>
             <button type="button" class="rb-copy-btn" data-role="copy" hidden>${escapeHtml(RB.t('panel.copy'))}</button>
@@ -170,7 +171,9 @@
           <div class="rb-status" data-role="status"></div>
           <div class="rb-result-wrap">
             <div class="rb-field-label">${escapeHtml(RB.t('panel.result'))}</div>
+            <div class="rb-variants" data-role="variants" hidden></div>
             <div class="rb-result" data-role="result"></div>
+            <div class="rb-diff" data-role="diff" hidden></div>
             <p class="rb-hint" data-role="result-hint">${escapeHtml(RB.t('panel.resultHint'))}</p>
           </div>
         </div>
@@ -221,6 +224,9 @@
     const translateOptions = root.querySelector('[data-role="translate-options"]');
     const apiStatusEl = root.querySelector('[data-role="api-status"]');
     const extraHintEl = root.querySelector('[data-role="extra-hint"]');
+    const voiceHintEl = root.querySelector('[data-role="voice-hint"]');
+    const variantsEl = root.querySelector('[data-role="variants"]');
+    const diffEl = root.querySelector('[data-role="diff"]');
     const assistEnabledEl = root.querySelector('[data-role="assist-enabled"]');
     const checkBtn = root.querySelector('[data-role="check-writing"]');
     const issuesEl = root.querySelector('[data-role="issues"]');
@@ -229,10 +235,18 @@
 
     let currentMode = 'rewrite';
     let extraByMode = { rewrite: '', format: '', reply: '' };
+    let voiceSamples = '';
+    let variants = [];
+    let variantIndex = 0;
+    let diffSource = '';
     let copyResetTimer = null;
 
     function extraFor(mode) {
       return extraByMode[mode] || '';
+    }
+
+    function currentResultText() {
+      return variants[variantIndex] || '';
     }
 
     function setStatus(message, isError) {
@@ -241,14 +255,73 @@
     }
 
     function showResult(text) {
-      resultEl.textContent = text || '';
-      resultHint.hidden = !!String(text || '').trim();
-      copyBtn.hidden = !String(text || '').trim();
+      variants = String(text || '').trim() ? [String(text)] : [];
+      variantIndex = 0;
+      diffSource = '';
+      renderOutput();
+    }
+
+    function showVariants(list, sourceText) {
+      variants = (list || []).filter((item) => String(item || '').trim());
+      variantIndex = 0;
+      diffSource = sourceText || '';
+      renderOutput();
+    }
+
+    function renderOutput() {
+      const text = currentResultText();
+      resultEl.textContent = text;
+      resultHint.hidden = !!text.trim();
+      copyBtn.hidden = !text.trim();
+      renderVariantChips();
+      renderDiff();
       refreshPasteButton();
     }
 
+    function renderVariantChips() {
+      if (!variantsEl) return;
+      if (variants.length < 2) {
+        variantsEl.hidden = true;
+        variantsEl.innerHTML = '';
+        return;
+      }
+      variantsEl.hidden = false;
+      variantsEl.innerHTML =
+        `<div class="rb-field-label">${escapeHtml(RB.t('panel.variants'))}</div>` +
+        `<div class="rb-chip-group" role="tablist">` +
+        variants
+          .map((item, index) => {
+            const active = index === variantIndex ? ' is-active' : '';
+            return `<button type="button" class="rb-chip${active}" data-variant="${index}">${escapeHtml(
+              RB.t('panel.variant', String(index + 1))
+            )}</button>`;
+          })
+          .join('') +
+        `</div>`;
+    }
+
+    function renderDiff() {
+      if (!diffEl) return;
+      const text = currentResultText();
+      if (!diffSource || !text || !RB.diffWords || !RB.hasVisibleDiff) {
+        diffEl.hidden = true;
+        diffEl.innerHTML = '';
+        return;
+      }
+      const parts = RB.diffWords(diffSource, text);
+      if (!RB.hasVisibleDiff(parts)) {
+        diffEl.hidden = true;
+        diffEl.innerHTML = '';
+        return;
+      }
+      diffEl.hidden = false;
+      diffEl.innerHTML =
+        `<div class="rb-field-label">${escapeHtml(RB.t('panel.changes'))}</div>` +
+        `<div class="rb-diff-body">${RB.renderDiffHtml(parts)}</div>`;
+    }
+
     function refreshPasteButton() {
-      const hasResult = !!(resultEl.textContent || '').trim();
+      const hasResult = !!currentResultText().trim();
       const canPaste = !!(pasteBack && (pasteBack.perform || RB.pasteBack));
       pasteBtn.hidden = !(hasResult && canPaste);
       if (pasteBtn.hidden) return;
@@ -293,6 +366,7 @@
 
     const inputAssist = RB.createWritingAssist({
       complete: completeFn,
+      voiceSamples: () => voiceSamples,
       onUpdate(state) {
         if (inputAssist._renderGhost) inputAssist._renderGhost();
         renderAssistHint(inputHint, state);
@@ -304,6 +378,7 @@
     });
     const notesAssist = RB.createWritingAssist({
       complete: completeFn,
+      voiceSamples: () => voiceSamples,
       onUpdate(state) {
         if (notesAssist._renderGhost) notesAssist._renderGhost();
         renderAssistHint(notesHint, state);
@@ -348,10 +423,20 @@
         syncCheckButton(inputAssist.snapshot(), inputEl);
       }
       extraHintEl.hidden = !String(extraFor(mode)).trim();
+      voiceHintEl.hidden = !String(voiceSamples).trim();
       assistEnabledEl.checked = activeAssist.snapshot().assistEnabled;
     }
 
     root.addEventListener('click', (e) => {
+      const variantChip = e.target.closest('[data-variant]');
+      if (variantChip && root.contains(variantChip)) {
+        e.preventDefault();
+        variantIndex = Number(variantChip.getAttribute('data-variant')) || 0;
+        copyBtn.textContent = RB.t('panel.copy');
+        copyBtn.classList.remove('is-copied');
+        renderOutput();
+        return;
+      }
       const chip = e.target.closest('.rb-chip');
       if (chip && root.contains(chip)) {
         e.preventDefault();
@@ -400,7 +485,7 @@
     });
 
     copyBtn.addEventListener('click', async () => {
-      const text = resultEl.innerText;
+      const text = currentResultText();
       if (!text.trim()) return;
       try {
         if (RB.copyText) await RB.copyText(text);
@@ -424,7 +509,7 @@
     });
 
     pasteBtn.addEventListener('click', async () => {
-      const text = resultEl.innerText;
+      const text = currentResultText();
       if (!text.trim()) return;
       const perform = (pasteBack && pasteBack.perform) || RB.pasteBack;
       if (!perform) return;
@@ -468,7 +553,8 @@
             fromLanguage: getSelectedChip(rewritePanel, 'fromLanguage') || 'auto',
             toLanguage: getSelectedChip(rewritePanel, 'toLanguage') || 'en'
           },
-          extra
+          extra,
+          voiceSamples
         );
       } else if (currentMode === 'format') {
         const formatPanel = root.querySelector('[data-mode-panel="format"]');
@@ -487,7 +573,8 @@
           outputLanguage: getSelectedChip(replyPanel, 'outputLanguage') || 'en',
           incomingText: input,
           notes,
-          extraInstructions: extra
+          extraInstructions: extra,
+          voiceSamples
         });
         if (!prompt) {
           setStatus(RB.t('panel.emptyReply'), true);
@@ -504,11 +591,19 @@
           setStatus(RB.t('panel.emptyResponse'), true);
           return;
         }
+        const parsed =
+          currentMode === 'format' || !RB.parseVariants
+            ? [text]
+            : RB.parseVariants(text);
+        if (!parsed.length) {
+          setStatus(RB.t('panel.emptyResponse'), true);
+          return;
+        }
         setStatus('');
-        showResult(text);
+        showVariants(parsed, currentMode === 'rewrite' ? input : '');
         if (RB.copyText) {
           try {
-            await RB.copyText(text);
+            await RB.copyText(currentResultText());
             copyBtn.textContent = RB.t('panel.copied');
             copyBtn.classList.add('is-copied');
             copyBtn.hidden = false;
@@ -553,7 +648,9 @@
       try {
         const prefs = await RB.getPrefs();
         extraByMode = (prefs && prefs.extraInstructions) || extraByMode;
+        voiceSamples = (prefs && prefs.voiceSamples) || '';
         extraHintEl.hidden = !String(extraFor(currentMode)).trim();
+        voiceHintEl.hidden = !String(voiceSamples).trim();
         if (prefs && prefs.uiLanguage) RB.setLanguage(prefs.uiLanguage);
       } catch (e) {
         /* ignore */

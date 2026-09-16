@@ -6,6 +6,9 @@ final class PanelViewModel: ObservableObject {
     @Published var inputText = ""
     @Published var notes = ""
     @Published var resultText = ""
+    @Published var variants: [String] = []
+    @Published var variantIndex = 0
+    @Published var diffSource = ""
     @Published var statusMessage = ""
     @Published var isLoading = false
     @Published var copyFeedback = false
@@ -39,6 +42,9 @@ final class PanelViewModel: ObservableObject {
     func syncInput(from controller: PanelController) {
         inputText = controller.inputText
         resultText = ""
+        variants = []
+        variantIndex = 0
+        diffSource = ""
         statusMessage = ""
         copyFeedback = false
         Task { await refreshApiStatus() }
@@ -50,6 +56,9 @@ final class PanelViewModel: ObservableObject {
 
     func process() async {
         resultText = ""
+        variants = []
+        variantIndex = 0
+        diffSource = ""
         statusMessage = ""
         copyFeedback = false
 
@@ -70,6 +79,7 @@ final class PanelViewModel: ObservableObject {
         }
 
         let extra = SettingsStore.shared.extraInstructions(for: mode)
+        let voice = SettingsStore.shared.voiceSamples
         let prompt: String?
         switch mode {
         case .rewrite:
@@ -79,7 +89,8 @@ final class PanelViewModel: ObservableObject {
                 translationEnabled: enableTranslate,
                 fromLanguage: fromLanguage,
                 toLanguage: toLanguage,
-                extraInstructions: extra
+                extraInstructions: extra,
+                voiceSamples: voice
             )
         case .format:
             prompt = PromptBuilder.buildFormat(
@@ -96,7 +107,8 @@ final class PanelViewModel: ObservableObject {
                 outputLanguage: outputLanguage,
                 incomingText: inputText,
                 notes: notes,
-                extraInstructions: extra
+                extraInstructions: extra,
+                voiceSamples: voice
             )
         }
 
@@ -111,14 +123,37 @@ final class PanelViewModel: ObservableObject {
 
         do {
             let text = try await LLMClient.shared.complete(prompt: prompt)
-            resultText = text
+            let parsed = mode == .format ? [text].filter { !$0.isEmpty } : ResultDiff.parseVariants(text)
+            guard !parsed.isEmpty else {
+                statusMessage = LanguageStore.shared.t("panel.emptyResponse")
+                return
+            }
+            variants = parsed
+            variantIndex = 0
+            resultText = parsed[0]
+            diffSource = mode == .rewrite ? inputText : ""
             statusMessage = ""
-            TextCaptureService.copyToClipboard(text)
+            TextCaptureService.copyToClipboard(resultText)
             copyFeedback = true
         } catch {
             statusMessage = error.localizedDescription
             resultText = ""
+            variants = []
+            variantIndex = 0
+            diffSource = ""
         }
+    }
+
+    func selectVariant(_ index: Int) {
+        guard variants.indices.contains(index) else { return }
+        variantIndex = index
+        resultText = variants[index]
+        copyFeedback = false
+    }
+
+    var diffParts: [DiffOp] {
+        guard !diffSource.isEmpty, !resultText.isEmpty else { return [] }
+        return ResultDiff.diffWords(original: diffSource, next: resultText)
     }
 
     func copyResult() {
@@ -472,8 +507,15 @@ struct PanelView: View {
     private var extraInstructionsHint: some View {
         let extra = SettingsStore.shared.extraInstructions(for: vm.mode)
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        let voice = SettingsStore.shared.voiceSamples
+            .trimmingCharacters(in: .whitespacesAndNewlines)
         if !extra.isEmpty {
             Text(lang.t("panel.extraHint"))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        if !voice.isEmpty {
+            Text(lang.t("panel.voiceHint"))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
@@ -523,6 +565,21 @@ struct PanelView: View {
                     Text(lang.t("panel.result"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    if vm.variants.count > 1 {
+                        HStack(spacing: 6) {
+                            Text(lang.t("panel.variants"))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            ForEach(Array(vm.variants.indices), id: \.self) { index in
+                                Button(lang.t("panel.variant", "\(index + 1)")) {
+                                    vm.selectVariant(index)
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(index == vm.variantIndex ? .accentColor : .secondary)
+                                .controlSize(.small)
+                            }
+                        }
+                    }
                     ScrollView {
                         Text(vm.resultText)
                             .font(.body)
@@ -534,6 +591,23 @@ struct PanelView: View {
                     .background(Color(nsColor: .textBackgroundColor))
                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25)))
                     .cornerRadius(8)
+
+                    if ResultDiff.hasVisibleDiff(vm.diffParts) {
+                        Text(lang.t("panel.changes"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        ScrollView {
+                            Text(diffAttributed(vm.diffParts))
+                                .font(.callout)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .textSelection(.enabled)
+                                .padding(8)
+                        }
+                        .frame(minHeight: 56, maxHeight: 120)
+                        .background(Color(nsColor: .textBackgroundColor))
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.25), style: StrokeStyle(dash: [4])))
+                        .cornerRadius(8)
+                    }
                 }
             } else if vm.statusMessage.isEmpty {
                 Text(lang.t("panel.resultHint"))
@@ -543,5 +617,23 @@ struct PanelView: View {
                     .padding(.top, 4)
             }
         }
+    }
+
+    private func diffAttributed(_ parts: [DiffOp]) -> AttributedString {
+        var result = AttributedString()
+        for part in parts {
+            var chunk = AttributedString(part.text)
+            switch part {
+            case .equal:
+                break
+            case .delete:
+                chunk.strikethroughStyle = .single
+                chunk.backgroundColor = Color.red.opacity(0.16)
+            case .insert:
+                chunk.backgroundColor = Color.green.opacity(0.18)
+            }
+            result += chunk
+        }
+        return result
     }
 }

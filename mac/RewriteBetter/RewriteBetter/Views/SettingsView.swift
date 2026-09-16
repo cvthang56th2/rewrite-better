@@ -16,6 +16,7 @@ struct SettingsView: View {
     @State private var rewriteExtra = ""
     @State private var formatExtra = ""
     @State private var replyExtra = ""
+    @State private var voiceSamples = ""
 
     var body: some View {
         ScrollView {
@@ -128,6 +129,25 @@ struct SettingsView: View {
                 Divider()
 
                 VStack(alignment: .leading, spacing: 10) {
+                    Text(lang.t("settings.voiceTitle"))
+                        .font(.headline)
+
+                    Text(lang.t("settings.voiceHelp"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    ExtraInstructionsEditor(
+                        title: lang.t("settings.voiceTitle"),
+                        text: $voiceSamples,
+                        placeholder: lang.t("settings.voicePlaceholder"),
+                        minHeight: 96,
+                        maxHeight: 160
+                    )
+                }
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Button(lang.t("settings.save")) {
                             saveKeys()
@@ -204,6 +224,7 @@ struct SettingsView: View {
             rewriteExtra = SettingsStore.shared.extraInstructions(for: .rewrite)
             formatExtra = SettingsStore.shared.extraInstructions(for: .format)
             replyExtra = SettingsStore.shared.extraInstructions(for: .reply)
+            voiceSamples = SettingsStore.shared.voiceSamples
             NSApp.keyWindow?.title = lang.t("settings.windowTitle")
         }
         .onChange(of: lang.language) { _ in
@@ -224,6 +245,7 @@ struct SettingsView: View {
         SettingsStore.shared.setExtraInstructions(rewriteExtra, for: .rewrite)
         SettingsStore.shared.setExtraInstructions(formatExtra, for: .format)
         SettingsStore.shared.setExtraInstructions(replyExtra, for: .reply)
+        SettingsStore.shared.voiceSamples = voiceSamples
     }
 
     private func applyHotkey(_ shortcut: PanelHotkey) {
@@ -265,6 +287,8 @@ private struct ExtraInstructionsEditor: View {
     let title: String
     @Binding var text: String
     let placeholder: String
+    var minHeight: CGFloat = 56
+    var maxHeight: CGFloat = 88
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -273,7 +297,7 @@ private struct ExtraInstructionsEditor: View {
 
             TextEditor(text: $text)
                 .font(.system(.body))
-                .frame(minHeight: 56, maxHeight: 88)
+                .frame(minHeight: minHeight, maxHeight: maxHeight)
                 .overlay(alignment: .topLeading) {
                     if text.isEmpty {
                         Text(placeholder)

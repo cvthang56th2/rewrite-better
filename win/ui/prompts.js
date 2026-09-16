@@ -6,6 +6,16 @@
     return (RB.LANGUAGE_NAMES && RB.LANGUAGE_NAMES[code]) || code;
   }
 
+  function variantsFormat() {
+    return `Return ONLY valid JSON (no markdown) with this shape:
+{"variants":["...","...","..."]}
+Rules:
+- Provide exactly 3 complete alternatives.
+- Keep the same meaning and requested tone.
+- Make the variants meaningfully different in wording or structure.
+- Each item is the full output — no numbering, labels, or commentary.`;
+  }
+
   function appendExtraInstructions(extraInstructions, prompt) {
     const extra = String(extraInstructions || '').trim();
     if (!extra) return prompt;
@@ -13,34 +23,51 @@
 
 --- Extra instructions ---
 ${extra}
-Follow the extra instructions, but still return only the final output — no explanations or meta commentary.`;
+Follow the extra instructions, but still obey the output format required above.`;
   }
 
-  function withUserContent(input, extraInstructions, instruction) {
-    const withExtra = appendExtraInstructions(extraInstructions, instruction);
-    if (!String(extraInstructions || '').trim()) {
-      return `${withExtra}\n\n${input}`;
+  function appendVoiceProfile(prompt, voiceSamples) {
+    const samples = String(voiceSamples || '').trim();
+    if (!samples) return prompt;
+    return `${prompt}
+
+--- Writer's voice ---
+Match this writer's voice: vocabulary, sentence length, punctuation habits, and any mix of languages. Do not copy sentences verbatim.
+
+${samples}`;
+  }
+
+  function withUserContent(input, extraInstructions, instruction, voiceSamples) {
+    let prompt = appendExtraInstructions(extraInstructions, instruction);
+    prompt = appendVoiceProfile(prompt, voiceSamples);
+    const hasWrap =
+      !!String(extraInstructions || '').trim() || !!String(voiceSamples || '').trim();
+    if (!hasWrap) {
+      return `${prompt}\n\n${input}`;
     }
-    return `${withExtra}
+    return `${prompt}
 
 --- Text ---
 ${input}`;
   }
 
-  RB.buildRewritePrompt = function (input, tone, translation, extraInstructions) {
+  RB.appendVoiceProfile = appendVoiceProfile;
+
+  RB.buildRewritePrompt = function (input, tone, translation, extraInstructions, voiceSamples) {
     let instruction;
     if (translation && translation.enabled) {
       const toLangName = langName(translation.toLanguage);
       if (translation.fromLanguage === 'auto') {
-        instruction = `First, translate the following text to ${toLangName}, then rewrite it in a ${tone} tone. The output should be in ${toLangName} and maintain a ${tone} style. Return only the final rewritten text without any explanations:`;
+        instruction = `First, translate the following text to ${toLangName}, then rewrite it in a ${tone} tone. The output should be in ${toLangName} and maintain a ${tone} style.`;
       } else {
         const fromLangName = langName(translation.fromLanguage);
-        instruction = `First, translate the following text from ${fromLangName} to ${toLangName}, then rewrite it in a ${tone} tone. The output should be in ${toLangName} and maintain a ${tone} style. Return only the final rewritten text without any explanations:`;
+        instruction = `First, translate the following text from ${fromLangName} to ${toLangName}, then rewrite it in a ${tone} tone. The output should be in ${toLangName} and maintain a ${tone} style.`;
       }
     } else {
-      instruction = `Rewrite the following text in a ${tone} tone. Return only the rewritten text without any additional comments or explanations:`;
+      instruction = `Rewrite the following text in a ${tone} tone.`;
     }
-    return withUserContent(input, extraInstructions, instruction);
+    instruction += `\n${variantsFormat()}`;
+    return withUserContent(input, extraInstructions, instruction, voiceSamples);
   };
 
   RB.buildFormatPrompt = function (formatType, input, extraInstructions) {
@@ -72,7 +99,8 @@ ${input}`;
       outputLanguage,
       incomingText,
       notes,
-      extraInstructions
+      extraInstructions,
+      voiceSamples
     } = options;
 
     const outLang = langName(outputLanguage);
@@ -117,9 +145,10 @@ Tone: ${tone}.
 Intent: ${intentDesc}
 Length: ${lengthDesc}
 Write the entire output in ${outLang}.
-Return only the final ${isEmail ? 'email (subject + body)' : 'message'} — no explanations or meta commentary.`;
+${variantsFormat()}`;
 
     prompt = appendExtraInstructions(extraInstructions, prompt);
+    prompt = appendVoiceProfile(prompt, voiceSamples);
 
     if (hasIncoming) {
       prompt += `\n\n--- Received message ---\n${incomingText.trim()}`;

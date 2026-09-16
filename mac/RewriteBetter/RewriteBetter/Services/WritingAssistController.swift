@@ -63,7 +63,10 @@ final class WritingAssistController: ObservableObject {
         defer { isSuggesting = false }
 
         do {
-            let prompt = WritingAssistPrompts.autocomplete(prefix: text)
+            let prompt = WritingAssistPrompts.autocomplete(
+                prefix: text,
+                voiceSamples: SettingsStore.shared.voiceSamples
+            )
             let raw = try await LLMClient.shared.complete(
                 prompt: prompt,
                 temperature: 0.4,
@@ -96,7 +99,10 @@ final class WritingAssistController: ObservableObject {
         defer { isChecking = false }
 
         do {
-            let prompt = WritingAssistPrompts.grammarCheck(text: text)
+            let prompt = WritingAssistPrompts.grammarCheck(
+                text: text,
+                voiceSamples: SettingsStore.shared.voiceSamples
+            )
             let raw = try await LLMClient.shared.complete(
                 prompt: prompt,
                 temperature: 0.2,

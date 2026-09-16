@@ -2,30 +2,45 @@
 (function (global) {
   const RB = (global.RewriteBetter = global.RewriteBetter || {});
 
+  function withVoice(prompt, voiceSamples) {
+    if (typeof RB.appendVoiceProfile === 'function') {
+      return RB.appendVoiceProfile(prompt, voiceSamples);
+    }
+    const samples = String(voiceSamples || '').trim();
+    if (!samples) return prompt;
+    return `${prompt}
+
+--- Writer's voice ---
+Match this writer's voice: vocabulary, sentence length, punctuation habits, and any mix of languages. Do not copy sentences verbatim.
+
+${samples}`;
+  }
+
   RB.writingAssistPrompts = {
-    autocomplete(prefix) {
+    autocomplete(prefix, voiceSamples) {
       const trimmed = String(prefix || '').trim();
       const last = trimmed.slice(-1);
       const endsSentence = !trimmed || '.!?…'.indexOf(last) !== -1 || /\n$/.test(prefix);
-      if (endsSentence) {
-        return `You are a writing autocomplete engine like Cursor Tab.
+      const body = endsSentence
+        ? `You are a writing autocomplete engine like Cursor Tab.
 The writer just finished a sentence or paragraph. Suggest a short natural continuation (1–3 sentences) that could come next.
 Match the writer's language and style.
 Return ONLY the continuation text to append — no quotes, no explanation, no repeating the existing text.
 
 Existing text:
-${prefix}`;
-      }
-      return `You are a writing autocomplete engine like Cursor Tab.
+${prefix}`
+        : `You are a writing autocomplete engine like Cursor Tab.
 The writer is mid-sentence. Complete the current sentence naturally (and only that sentence ending).
 Match the writer's language and style.
 Return ONLY the missing suffix to append at the caret — no quotes, no explanation, no repeating text already written.
 
 Text so far:
 ${prefix}`;
+      return withVoice(body, voiceSamples);
     },
-    grammarCheck(text) {
-      return `Review the text for grammar, spelling, clarity, and tone issues.
+    grammarCheck(text, voiceSamples) {
+      return withVoice(
+        `Review the text for grammar, spelling, clarity, and tone issues.
 Return ONLY valid JSON (no markdown) with this shape:
 {"issues":[{"kind":"grammar|spelling|tone|clarity","message":"short reason","original":"exact substring from text","replacement":"fixed substring"}]}
 Rules:
@@ -34,7 +49,9 @@ Rules:
 - If nothing to fix, return {"issues":[]}.
 
 Text:
-${text}`;
+${text}`,
+        voiceSamples
+      );
     }
   };
 
@@ -92,6 +109,10 @@ ${text}`;
     const options = opts || {};
     const complete = options.complete;
     const onUpdate = options.onUpdate || function () {};
+    function voiceSamples() {
+      if (typeof options.voiceSamples === 'function') return options.voiceSamples();
+      return options.voiceSamples || '';
+    }
 
     let ghostText = '';
     let issues = [];
@@ -133,7 +154,7 @@ ${text}`;
       isSuggesting = true;
       emit();
       try {
-        const raw = await complete(RB.writingAssistPrompts.autocomplete(text), {
+        const raw = await complete(RB.writingAssistPrompts.autocomplete(text, voiceSamples()), {
           temperature: 0.4,
           maxTokens: 512
         });
@@ -160,7 +181,7 @@ ${text}`;
       isChecking = true;
       emit();
       try {
-        const raw = await complete(RB.writingAssistPrompts.grammarCheck(text), {
+        const raw = await complete(RB.writingAssistPrompts.grammarCheck(text, voiceSamples()), {
           temperature: 0.2,
           maxTokens: 700
         });

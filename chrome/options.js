@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     extraRewrite: document.getElementById('extraRewrite'),
     extraFormat: document.getElementById('extraFormat'),
     extraReply: document.getElementById('extraReply'),
+    voiceSamples: document.getElementById('voiceSamples'),
     save: document.getElementById('saveBtn'),
     test: document.getElementById('testBtn'),
     message: document.getElementById('message'),
@@ -22,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
     els.extraRewrite.placeholder = RB.t('settings.extraRewritePlaceholder');
     els.extraFormat.placeholder = RB.t('settings.extraFormatPlaceholder');
     els.extraReply.placeholder = RB.t('settings.extraReplyPlaceholder');
+    els.voiceSamples.placeholder = RB.t('settings.voicePlaceholder');
     RB.PROVIDERS.forEach((provider) => {
       const input = keyInputs[provider.value];
       if (!input) return;
@@ -72,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
     els.extraRewrite.value = extra.rewrite || '';
     els.extraFormat.value = extra.format || '';
     els.extraReply.value = extra.reply || '';
+    els.voiceSamples.value = prefs.voiceSamples || '';
     applyI18n();
   }
 
@@ -86,7 +89,8 @@ document.addEventListener('DOMContentLoaded', function () {
         rewrite: els.extraRewrite.value,
         format: els.extraFormat.value,
         reply: els.extraReply.value
-      }
+      },
+      voiceSamples: els.voiceSamples.value
     });
     RB.dailySkip.clearAll();
     applyI18n();

@@ -39,6 +39,8 @@ pub struct Prefs {
     pub hotkey: String,
     #[serde(default)]
     pub extra_instructions: ExtraInstructions,
+    #[serde(default)]
+    pub voice_samples: String,
 }
 
 impl Default for Prefs {
@@ -47,6 +49,7 @@ impl Default for Prefs {
             ui_language: default_language(),
             hotkey: default_hotkey(),
             extra_instructions: ExtraInstructions::default(),
+            voice_samples: String::new(),
         }
     }
 }

@@ -60,14 +60,15 @@
         reject(new Error('Chrome storage API is not available. Please check extension permissions.'));
         return;
       }
-      chrome.storage.sync.get(['uiLanguage', 'extraInstructions'], (result) => {
+      chrome.storage.sync.get(['uiLanguage', 'extraInstructions', 'voiceSamples'], (result) => {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
           return;
         }
         resolve({
           uiLanguage: result.uiLanguage,
-          extraInstructions: result.extraInstructions || { rewrite: '', format: '', reply: '' }
+          extraInstructions: result.extraInstructions || { rewrite: '', format: '', reply: '' },
+          voiceSamples: result.voiceSamples || ''
         });
       });
     });
@@ -86,6 +87,7 @@
           format: '',
           reply: ''
         },
+        voiceSamples: (prefs && prefs.voiceSamples) || '',
         uiLanguage: RB.setLanguage(prefs && prefs.uiLanguage)
       };
       if (payload.apiKeys.groq) payload.groqApiKey = payload.apiKeys.groq;

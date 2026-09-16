@@ -28,5 +28,13 @@ assert.strictEqual(ignored.length, 0);
 
 assert.ok(RB.writingAssistPrompts.autocomplete('I am writ').includes('mid-sentence'));
 assert.ok(RB.writingAssistPrompts.autocomplete('Done.').includes('continuation'));
+assert.ok(!RB.writingAssistPrompts.autocomplete('Done.').includes("Writer's voice"));
+assert.ok(
+  RB.writingAssistPrompts.autocomplete('Done.', 'yeah Thursday works').includes("Writer's voice")
+);
+assert.ok(
+  RB.writingAssistPrompts.grammarCheck('I was go', 'yeah Thursday works').includes("Writer's voice")
+);
+assert.ok(!RB.writingAssistPrompts.grammarCheck('I was go').includes("Writer's voice"));
 
 console.log('ok — writing assist sanitize, parse, prompts');

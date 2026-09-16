@@ -95,6 +95,20 @@ final class SettingsStore {
         "extraInstructions.\(mode.rawValue)"
     }
 
+    // MARK: - Voice profile
+
+    var voiceSamples: String {
+        get { UserDefaults.standard.string(forKey: "voiceSamples") ?? "" }
+        set {
+            let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty {
+                UserDefaults.standard.removeObject(forKey: "voiceSamples")
+            } else {
+                UserDefaults.standard.set(trimmed, forKey: "voiceSamples")
+            }
+        }
+    }
+
     // MARK: - Keychain
 
     private func account(for provider: ChatProvider) -> String {

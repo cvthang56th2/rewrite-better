@@ -1,14 +1,15 @@
 import Foundation
 
 enum WritingAssistPrompts {
-    static func autocomplete(prefix: String) -> String {
+    static func autocomplete(prefix: String, voiceSamples: String = "") -> String {
         let trimmed = prefix.trimmingCharacters(in: .whitespacesAndNewlines)
         let endsSentence = trimmed.isEmpty
             || trimmed.last.map { ".!?…".contains($0) } == true
             || trimmed.hasSuffix("\n")
 
+        let body: String
         if endsSentence {
-            return """
+            body = """
             You are a writing autocomplete engine like Cursor Tab.
             The writer just finished a sentence or paragraph. Suggest a short natural continuation (1–3 sentences) that could come next.
             Match the writer's language and style.
@@ -17,31 +18,35 @@ enum WritingAssistPrompts {
             Existing text:
             \(prefix)
             """
+        } else {
+            body = """
+            You are a writing autocomplete engine like Cursor Tab.
+            The writer is mid-sentence. Complete the current sentence naturally (and only that sentence ending).
+            Match the writer's language and style.
+            Return ONLY the missing suffix to append at the caret — no quotes, no explanation, no repeating text already written.
+
+            Text so far:
+            \(prefix)
+            """
         }
-
-        return """
-        You are a writing autocomplete engine like Cursor Tab.
-        The writer is mid-sentence. Complete the current sentence naturally (and only that sentence ending).
-        Match the writer's language and style.
-        Return ONLY the missing suffix to append at the caret — no quotes, no explanation, no repeating text already written.
-
-        Text so far:
-        \(prefix)
-        """
+        return PromptBuilder.appendVoiceProfile(voiceSamples, to: body)
     }
 
-    static func grammarCheck(text: String) -> String {
-        """
-        Review the text for grammar, spelling, clarity, and tone issues.
-        Return ONLY valid JSON (no markdown) with this shape:
-        {"issues":[{"kind":"grammar|spelling|tone|clarity","message":"short reason","original":"exact substring from text","replacement":"fixed substring"}]}
-        Rules:
-        - "original" MUST be an exact contiguous substring of the input.
-        - Prefer at most 8 high-value issues.
-        - If nothing to fix, return {"issues":[]}.
+    static func grammarCheck(text: String, voiceSamples: String = "") -> String {
+        PromptBuilder.appendVoiceProfile(
+            voiceSamples,
+            to: """
+            Review the text for grammar, spelling, clarity, and tone issues.
+            Return ONLY valid JSON (no markdown) with this shape:
+            {"issues":[{"kind":"grammar|spelling|tone|clarity","message":"short reason","original":"exact substring from text","replacement":"fixed substring"}]}
+            Rules:
+            - "original" MUST be an exact contiguous substring of the input.
+            - Prefer at most 8 high-value issues.
+            - If nothing to fix, return {"issues":[]}.
 
-        Text:
-        \(text)
-        """
+            Text:
+            \(text)
+            """
+        )
     }
 }
