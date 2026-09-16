@@ -14,6 +14,25 @@ final class ResultDiffTests: XCTestCase {
         XCTAssertEqual(ResultDiff.parseVariants("  {\"variants\":[\" spaced \"]}  extra"), ["spaced"])
     }
 
+    func testParseVariantsRepairsUnescapedNewlines() {
+        let raw = "{\"variants\":[\"Hello\nthere\",\"Other take\",\"Third\"]} "
+        XCTAssertEqual(ResultDiff.parseVariants(raw), ["Hello\nthere", "Other take", "Third"])
+    }
+
+    func testParseVariantsRepairsTrailingComma() {
+        XCTAssertEqual(
+            ResultDiff.parseVariants("{\"variants\":[\"A\",\"B\",\"C\",]}"),
+            ["A", "B", "C"]
+        )
+    }
+
+    func testParseVariantsCoercesObjectItems() {
+        XCTAssertEqual(
+            ResultDiff.parseVariants("{\"variants\":[{\"text\":\"A\"},{\"text\":\"B\"},{\"content\":\"C\"}]}"),
+            ["A", "B", "C"]
+        )
+    }
+
     func testWordDiffMarksReplacement() {
         let equal = ResultDiff.diffWords(original: "hello world", next: "hello world")
         XCTAssertEqual(equal, [.equal("hello world")])

@@ -242,26 +242,31 @@ struct PanelView: View {
     }
 
     private var leftColumn: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            inputSection
-                .frame(maxHeight: vm.mode == .reply ? 140 : 200)
+        ScrollView(.vertical, showsIndicators: true) {
+            VStack(alignment: .leading, spacing: 10) {
+                inputSection
+                    .frame(minHeight: vm.mode == .reply ? 100 : 120, maxHeight: vm.mode == .reply ? 140 : 200)
+                    .clipped()
 
-            if vm.mode == .reply {
-                notesSection
-                    .frame(height: 90)
+                if vm.mode == .reply {
+                    notesSection
+                        .frame(height: 90)
+                }
+
+                writingAssistBar(
+                    assist: activeAssist,
+                    enabled: vm.mode == .reply ? $notesAssist.assistEnabled : $inputAssist.assistEnabled,
+                    text: activeTextBinding
+                )
+
+                actionRow
+
+                statusAndResult
             }
-
-            writingAssistBar(
-                assist: activeAssist,
-                enabled: vm.mode == .reply ? $notesAssist.assistEnabled : $inputAssist.assistEnabled,
-                text: activeTextBinding
-            )
-
-            actionRow
-
-            statusAndResult
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .padding(.trailing, 2)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var activeAssist: WritingAssistController {
@@ -616,36 +621,40 @@ struct PanelView: View {
             }
 
             if !vm.resultText.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 8) {
                     Text(lang.t("panel.result"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     if vm.variants.count > 1 {
-                        HStack(spacing: 6) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Text(lang.t("panel.variants"))
-                                .font(.caption2)
+                                .font(.caption)
                                 .foregroundStyle(.secondary)
-                            ForEach(Array(vm.variants.indices), id: \.self) { index in
-                                Button(lang.t("panel.variant", "\(index + 1)")) {
-                                    vm.selectVariant(index)
+                            LazyVGrid(
+                                columns: [GridItem(.adaptive(minimum: 88), spacing: 6)],
+                                alignment: .leading,
+                                spacing: 6
+                            ) {
+                                ForEach(Array(vm.variants.indices), id: \.self) { index in
+                                    Button(lang.t("panel.variant", "\(index + 1)")) {
+                                        vm.selectVariant(index)
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .tint(index == vm.variantIndex ? .accentColor : .secondary)
+                                    .controlSize(.small)
+                                    .frame(maxWidth: .infinity)
                                 }
-                                .buttonStyle(.bordered)
-                                .tint(index == vm.variantIndex ? .accentColor : .secondary)
-                                .controlSize(.small)
                             }
                         }
                     }
-                    ScrollView {
-                        Text(vm.resultText)
-                            .font(.body)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .textSelection(.enabled)
-                            .padding(8)
-                    }
-                    .frame(minHeight: 80, maxHeight: .infinity)
-                    .background(Theme.editor)
-                    .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.line))
-                    .cornerRadius(Theme.radius)
+                    Text(vm.resultText)
+                        .font(.body)
+                        .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
+                        .textSelection(.enabled)
+                        .padding(8)
+                        .background(Theme.editor)
+                        .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.line))
+                        .cornerRadius(Theme.radius)
 
                     if ResultDiff.hasVisibleDiff(vm.diffParts) {
                         HStack(spacing: 6) {
@@ -656,17 +665,14 @@ struct PanelView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-                        ScrollView {
-                            Text(diffAttributed(vm.diffParts))
-                                .font(.callout)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .textSelection(.enabled)
-                                .padding(8)
-                        }
-                        .frame(minHeight: 56, maxHeight: 120)
-                        .background(Theme.editor)
-                        .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.line))
-                        .cornerRadius(Theme.radius)
+                        Text(diffAttributed(vm.diffParts))
+                            .font(.callout)
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                            .textSelection(.enabled)
+                            .padding(8)
+                            .background(Theme.editor)
+                            .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.line))
+                            .cornerRadius(Theme.radius)
                     }
                 }
             } else if vm.statusMessage.isEmpty {
