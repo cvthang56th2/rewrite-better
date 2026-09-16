@@ -1,5 +1,36 @@
 import Foundation
 
+enum LLMError: LocalizedError {
+    case missingKey
+    case http(Int, String)
+    case emptyResponse
+    case network(String)
+    case allKeysResting
+
+    var errorDescription: String? {
+        let language = LanguageStore.shared.language
+        switch self {
+        case .missingKey:
+            return L10n.t("error.missingKey", language: language)
+        case .allKeysResting:
+            return L10n.t("error.allKeysResting", language: language)
+        case .http(let status, let message):
+            switch status {
+            case 401: return L10n.t("error.401", language: language)
+            case 403: return L10n.t("error.403", language: language)
+            case 429: return L10n.t("error.429", language: language)
+            case 402: return L10n.t("error.402", language: language)
+            case 500, 502, 503: return L10n.t("error.5xx", language: language)
+            default: return L10n.t("error.http", language: language, "\(status)", message)
+            }
+        case .emptyResponse:
+            return L10n.t("error.emptyResponse", language: language)
+        case .network(let message):
+            return L10n.t("error.network", language: language, message)
+        }
+    }
+}
+
 enum ChatProvider: String, CaseIterable, Identifiable {
     case gemini, groq, cerebras, openai
 
@@ -14,13 +45,8 @@ enum ChatProvider: String, CaseIterable, Identifiable {
         }
     }
 
-    var placeholder: String {
-        switch self {
-        case .gemini: return "AIza… (comma or newline for multiple)"
-        case .groq: return "gsk_… (comma or newline for multiple)"
-        case .cerebras: return "csk_… (comma or newline for multiple)"
-        case .openai: return "sk-… (comma or newline for multiple)"
-        }
+    func placeholder(_ language: AppLanguage = LanguageStore.shared.language) -> String {
+        L10n.t("settings.placeholder.\(rawValue)", language: language)
     }
 
     var keyPrefixHint: String {
@@ -41,50 +67,12 @@ enum ChatProvider: String, CaseIterable, Identifiable {
         }
     }
 
-    var helpSummary: String {
-        switch self {
-        case .gemini:
-            return "Tried first. Google AI Studio gives a free quota after you sign in with Google."
-        case .groq:
-            return "Second fallback. Groq is fast and has a free tier after you create an account."
-        case .cerebras:
-            return "Third fallback. Cerebras Cloud has a free trial. Open API Keys in the left sidebar."
-        case .openai:
-            return "Last in the chain. Create a secret key on the OpenAI platform. Billing is required after any trial."
-        }
+    func helpSummary(_ language: AppLanguage = LanguageStore.shared.language) -> String {
+        L10n.t("provider.\(rawValue).summary", language: language)
     }
 
-    var helpSteps: [String] {
-        switch self {
-        case .gemini:
-            return [
-                "Open Google AI Studio (link below).",
-                "Sign in with your Google account.",
-                "Click Create API key. Create or pick a Google Cloud project if asked.",
-                "Copy the key and paste it here. It starts with \(keyPrefixHint)."
-            ]
-        case .groq:
-            return [
-                "Open Groq Console (link below).",
-                "Sign up or sign in.",
-                "Open API Keys and create a new key.",
-                "Copy it and paste here. It starts with \(keyPrefixHint)."
-            ]
-        case .cerebras:
-            return [
-                "Open Cerebras Cloud (link below).",
-                "Sign up or sign in.",
-                "Open API Keys in the left sidebar. On a paid account, pick a project first.",
-                "Generate a key, copy it, and paste here. It starts with \(keyPrefixHint)."
-            ]
-        case .openai:
-            return [
-                "Open the OpenAI API keys page (link below).",
-                "Sign in to your OpenAI account.",
-                "Click Create new secret key and copy it immediately.",
-                "Paste it here. It starts with \(keyPrefixHint)."
-            ]
-        }
+    func helpSteps(_ language: AppLanguage = LanguageStore.shared.language) -> [String] {
+        (1...4).map { L10n.t("provider.\(rawValue).step\($0)", language: language, keyPrefixHint) }
     }
 }
 
@@ -207,8 +195,10 @@ enum LLMProviders {
                 return try await call(backend)
             } catch {
                 lastError = error
-                // Any failure during process → rest this key until tomorrow.
-                skipped.insert(backend.skipId)
+                // Rest only quota / auth failures until tomorrow — not blips like network errors.
+                if isStickySkipError(error) {
+                    skipped.insert(backend.skipId)
+                }
                 if index + 1 < active.count {
                     continue
                 }

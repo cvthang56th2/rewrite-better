@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rewrite Better - Cài đặt</title>
+    <title>Rewrite Better Settings</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         body {
@@ -57,7 +57,18 @@
             transition: border-color 0.3s ease;
         }
         
-        .form-group input[type="text"]:focus {
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+            background: white;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #3498db;
         }
@@ -129,36 +140,44 @@
 <body>
     <div class="options-container">
         <div class="header">
-            <h1>Cài đặt Rewrite Better</h1>
-            <p>Cấu hình Groq API key để sử dụng tính năng viết lại văn bản</p>
+            <h1 data-i18n="options.title">Rewrite Better Settings</h1>
+            <p data-i18n="options.subtitle">Configure your Groq API key to rewrite text</p>
         </div>
         
+        <div class="form-group">
+            <label for="uiLanguage" data-i18n="settings.language">Interface language</label>
+            <select id="uiLanguage">
+                <option value="en">English</option>
+                <option value="vi">Tiếng Việt</option>
+            </select>
+        </div>
+
         <div class="api-key-info">
-            <h3>🚀 Hướng dẫn lấy Groq API Key (MIỄN PHÍ)</h3>
-            <p>1. Truy cập <a href="https://console.groq.com/keys" target="_blank">Groq Console</a></p>
-            <p>2. Đăng ký/Đăng nhập (miễn phí)</p>
-            <p>3. Tạo API key mới và sao chép</p>
-            <p><strong>✅ Lợi ích:</strong> Hoàn toàn miễn phí, nhanh hơn OpenAI 10-20 lần!</p>
-            <p><strong>📊 Giới hạn:</strong> 14,400 requests/ngày (rất nhiều)</p>
+            <h3 data-i18n="options.helpTitle">How to get a Groq API key (free)</h3>
+            <p><span data-i18n="options.help1">1. Open</span> <a href="https://console.groq.com/keys" target="_blank">Groq Console</a></p>
+            <p data-i18n="options.help2">2. Sign up or sign in (free)</p>
+            <p data-i18n="options.help3">3. Create a new API key and copy it</p>
+            <p data-i18n="options.helpBenefit">Free to start, and typically much faster than OpenAI.</p>
         </div>
         
         <form id="optionsForm">
             <div class="form-group">
-                <label for="apiKey">Groq API Key:</label>
+                <label for="apiKey" data-i18n="options.apiKeyLabel">Groq API Key:</label>
                 <input type="text" id="apiKey" name="apiKey" placeholder="gsk_...">
-                <div class="help-text">
-                    Nhập API key của bạn từ Groq. Bắt đầu bằng "gsk_"
+                <div class="help-text" data-i18n="options.apiKeyHelp">
+                    Paste your Groq API key. It starts with "gsk_"
                 </div>
             </div>
             
-            <button type="submit" class="save-btn">Lưu cài đặt</button>
+            <button type="submit" class="save-btn" data-i18n="options.save">Save settings</button>
             
-            <div id="successMessage" class="success-message">
-                ✅ Đã lưu cài đặt thành công!
+            <div id="successMessage" class="success-message" data-i18n="options.saved">
+                ✅ Settings saved
             </div>
         </form>
     </div>
     
+    <script src="shared/i18n.js"></script>
     <script src="options.js"></script>
 </body>
 </html>

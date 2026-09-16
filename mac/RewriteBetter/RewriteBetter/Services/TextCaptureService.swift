@@ -35,14 +35,114 @@ final class FrontmostAppTracker {
     }
 }
 
+struct SelectionCapture {
+    var text: String
+    var focusedElement: AXUIElement?
+    var selectedRange: CFRange?
+    var rawSelectedText: String = ""
+}
+
 enum TextCaptureService {
-    /// Selected text only (Accessibility → Cmd+C probe). Does not read the clipboard.
+    /// Selection plus the focused AX element, so paste-back can replace in-place.
     @MainActor
-    static func capturePreferredText() -> String {
-        if let selected = readSelectedText(), !selected.isEmpty {
-            return selected
+    static func captureSelection() -> SelectionCapture {
+        guard hasAccessibilityPermission else {
+            return SelectionCapture(text: "", focusedElement: nil)
         }
-        return ""
+
+        if let captured = readSelectedTextWithElement() {
+            return SelectionCapture(
+                text: captured.text,
+                focusedElement: captured.element,
+                selectedRange: captured.range,
+                rawSelectedText: captured.raw
+            )
+        }
+
+        return SelectionCapture(text: "", focusedElement: focusedTextElement())
+    }
+
+    @MainActor
+    static func currentSourceApp() -> (pid: pid_t, name: String?)? {
+        let selfPID = ProcessInfo.processInfo.processIdentifier
+        let selfBundle = Bundle.main.bundleIdentifier
+
+        if let app = NSWorkspace.shared.frontmostApplication,
+           app.processIdentifier != selfPID,
+           app.bundleIdentifier != selfBundle {
+            return (app.processIdentifier, app.localizedName)
+        }
+
+        guard let pid = FrontmostAppTracker.shared.lastForeignAppPID else { return nil }
+        let app = NSRunningApplication(processIdentifier: pid)
+        if let app, app.isTerminated { return nil }
+        return (pid, app?.localizedName)
+    }
+
+    static func replaceSelectedText(
+        _ text: String,
+        in element: AXUIElement?,
+        range: CFRange?,
+        original: String
+    ) -> Bool {
+        guard let element else { return false }
+
+        if let resolved = resolvedRange(in: element, preferred: range, original: original) {
+            let nsRange = NSRange(location: resolved.location, length: resolved.length)
+            if let value = stringValue(of: element),
+               let spliced = PasteBackAX.splice(value: value, range: nsRange, replacement: text),
+               setStringValue(spliced, of: element),
+               let after = stringValue(of: element),
+               PasteBackAX.didReplaceNotAppend(original: original, replacement: text, valueAfter: after) {
+                return true
+            }
+
+            // Selection often collapses when our panel takes focus. Put it back first.
+            if setSelectedTextRange(resolved, of: element) {
+                let error = AXUIElementSetAttributeValue(
+                    element,
+                    kAXSelectedTextAttribute as CFString,
+                    text as CFTypeRef
+                )
+                if error == .success, let after = stringValue(of: element) {
+                    return PasteBackAX.didReplaceNotAppend(
+                        original: original,
+                        replacement: text,
+                        valueAfter: after
+                    )
+                }
+            }
+        }
+
+        return false
+    }
+
+    static func restoreSelectedRange(_ range: CFRange?, in element: AXUIElement?, original: String = "") -> Bool {
+        guard let element else { return false }
+        let resolved = resolvedRange(in: element, preferred: range, original: original) ?? range
+        guard let resolved else { return false }
+        return setSelectedTextRange(resolved, of: element)
+    }
+
+    static func sendCommandV() {
+        sendCommandKey(0x09)
+    }
+
+    @MainActor
+    static func focusedTextElement() -> AXUIElement? {
+        guard hasAccessibilityPermission else { return nil }
+        if let element = focusedElement(of: AXUIElementCreateSystemWide()) {
+            return element
+        }
+        if let pid = FrontmostAppTracker.shared.lastForeignAppPID {
+            return focusedTextElement(inAppPID: pid)
+        }
+        return nil
+    }
+
+    static func focusedTextElement(inAppPID pid: pid_t) -> AXUIElement? {
+        guard hasAccessibilityPermission else { return nil }
+        return focusedElement(of: AXUIElementCreateApplication(pid))
     }
 
     static func copyToClipboard(_ text: String) {
@@ -53,6 +153,13 @@ enum TextCaptureService {
 
     static var hasAccessibilityPermission: Bool {
         AXIsProcessTrusted()
+    }
+
+    /// Shows the system Accessibility prompt when the app is not yet trusted.
+    @discardableResult
+    static func promptAccessibilityIfNeeded() -> Bool {
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        return AXIsProcessTrustedWithOptions(options)
     }
 
     static func openAccessibilitySettings() {
@@ -70,39 +177,27 @@ enum TextCaptureService {
     // MARK: - Selection
 
     @MainActor
-    private static func readSelectedText() -> String? {
-        guard hasAccessibilityPermission else { return nil }
-
-        // 1) Focused UI element (works best with global hotkey while other app is focused)
-        if let text = selectedTextFromSystemFocus(), !text.isEmpty {
-            return text
+    private static func readSelectedTextWithElement() -> (text: String, raw: String, element: AXUIElement?, range: CFRange?)? {
+        if let result = selectedTextAndElement(fromFocusedElementOf: AXUIElementCreateSystemWide()),
+           !result.text.isEmpty {
+            return result
         }
 
-        // 2) Last foreign app (menu-bar click often moves focus away)
         if let pid = FrontmostAppTracker.shared.lastForeignAppPID,
-           let text = selectedText(inApplicationPID: pid), !text.isEmpty {
-            return text
+           let result = selectedTextAndElement(fromFocusedElementOf: AXUIElementCreateApplication(pid)),
+           !result.text.isEmpty {
+            return result
         }
 
-        // 3) Temporary Cmd+C without clearing clipboard first
         if let text = selectedTextViaCopyShortcut(), !text.isEmpty {
-            return text
+            let element = focusedTextElement()
+            return (text, text, element, element.flatMap { selectedTextRange(of: $0) })
         }
 
         return nil
     }
 
-    private static func selectedTextFromSystemFocus() -> String? {
-        let systemWide = AXUIElementCreateSystemWide()
-        return selectedText(fromFocusedElementOf: systemWide)
-    }
-
-    private static func selectedText(inApplicationPID pid: pid_t) -> String? {
-        let appElement = AXUIElementCreateApplication(pid)
-        return selectedText(fromFocusedElementOf: appElement)
-    }
-
-    private static func selectedText(fromFocusedElementOf root: AXUIElement) -> String? {
+    private static func focusedElement(of root: AXUIElement) -> AXUIElement? {
         var focusedRef: CFTypeRef?
         let status = AXUIElementCopyAttributeValue(
             root,
@@ -110,7 +205,11 @@ enum TextCaptureService {
             &focusedRef
         )
         guard status == .success, let focusedRef else { return nil }
-        let focused = focusedRef as! AXUIElement
+        return (focusedRef as! AXUIElement)
+    }
+
+    private static func selectedTextAndElement(fromFocusedElementOf root: AXUIElement) -> (text: String, raw: String, element: AXUIElement?, range: CFRange?)? {
+        guard let focused = focusedElement(of: root) else { return nil }
 
         var selectedRef: CFTypeRef?
         let selectedStatus = AXUIElementCopyAttributeValue(
@@ -120,23 +219,76 @@ enum TextCaptureService {
         )
         if selectedStatus == .success, let text = selectedRef as? String {
             let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-            return trimmed.isEmpty ? nil : trimmed
+            if trimmed.isEmpty { return nil }
+            return (trimmed, text, focused, selectedTextRange(of: focused))
         }
 
-        // Fallback: some fields expose full value only
-        var valueRef: CFTypeRef?
-        if AXUIElementCopyAttributeValue(focused, kAXValueAttribute as CFString, &valueRef) == .success,
-           let text = valueRef as? String {
-            // Only use full value if it's short enough to likely be a selection/field contents
-            // Prefer not to dump huge documents — skip if very long without selected text attr.
-            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !trimmed.isEmpty && trimmed.count <= 8000 {
-                // Without selected-text attribute we can't know selection vs whole field.
-                // Don't use full value — avoid overwriting with entire document.
-                return nil
+        return nil
+    }
+
+    private static func resolvedRange(in element: AXUIElement, preferred: CFRange?, original: String) -> CFRange? {
+        if let preferred, let value = stringValue(of: element) {
+            let nsRange = NSRange(location: preferred.location, length: preferred.length)
+            let ns = value as NSString
+            if nsRange.location >= 0, NSMaxRange(nsRange) <= ns.length {
+                let slice = ns.substring(with: nsRange)
+                let trimmedSlice = slice.trimmingCharacters(in: .whitespacesAndNewlines)
+                let trimmedOriginal = original.trimmingCharacters(in: .whitespacesAndNewlines)
+                if slice == original || trimmedSlice == trimmedOriginal {
+                    return preferred
+                }
             }
         }
-        return nil
+
+        guard !original.isEmpty, let value = stringValue(of: element) else { return preferred }
+        let ns = value as NSString
+        let first = ns.range(of: original)
+        guard first.location != NSNotFound else { return preferred }
+        let last = ns.range(of: original, options: .backwards)
+        guard first == last else { return preferred }
+        return CFRange(location: first.location, length: first.length)
+    }
+
+    private static func selectedTextRange(of element: AXUIElement) -> CFRange? {
+        var ref: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            element,
+            kAXSelectedTextRangeAttribute as CFString,
+            &ref
+        ) == .success, let ref else { return nil }
+        var range = CFRange()
+        guard AXValueGetValue(ref as! AXValue, .cfRange, &range), range.location >= 0, range.length > 0 else {
+            return nil
+        }
+        return range
+    }
+
+    private static func setSelectedTextRange(_ range: CFRange, of element: AXUIElement) -> Bool {
+        var range = range
+        guard let value = AXValueCreate(.cfRange, &range) else { return false }
+        return AXUIElementSetAttributeValue(
+            element,
+            kAXSelectedTextRangeAttribute as CFString,
+            value
+        ) == .success
+    }
+
+    private static func stringValue(of element: AXUIElement) -> String? {
+        var ref: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(
+            element,
+            kAXValueAttribute as CFString,
+            &ref
+        ) == .success else { return nil }
+        return ref as? String
+    }
+
+    private static func setStringValue(_ text: String, of element: AXUIElement) -> Bool {
+        AXUIElementSetAttributeValue(
+            element,
+            kAXValueAttribute as CFString,
+            text as CFTypeRef
+        ) == .success
     }
 
     /// Probe selection by synthesizing ⌘C; restore previous clipboard afterward.
@@ -145,7 +297,7 @@ enum TextCaptureService {
         let previousChangeCount = pasteboard.changeCount
         let previousString = pasteboard.string(forType: .string)
 
-        sendCommandC()
+        sendCommandKey(0x08)
 
         var copied: String?
         for _ in 0..<15 {
@@ -166,10 +318,10 @@ enum TextCaptureService {
         return trimmed.isEmpty ? nil : trimmed
     }
 
-    private static func sendCommandC() {
+    private static func sendCommandKey(_ virtualKey: CGKeyCode) {
         let source = CGEventSource(stateID: .hidSystemState)
-        let keyDown = CGEvent(keyboardEventSource: source, virtualKey: 0x08, keyDown: true) // C
-        let keyUp = CGEvent(keyboardEventSource: source, virtualKey: 0x08, keyDown: false)
+        let keyDown = CGEvent(keyboardEventSource: source, virtualKey: virtualKey, keyDown: true)
+        let keyUp = CGEvent(keyboardEventSource: source, virtualKey: virtualKey, keyDown: false)
         keyDown?.flags = .maskCommand
         keyUp?.flags = .maskCommand
         keyDown?.post(tap: .cghidEventTap)

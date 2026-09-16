@@ -56,17 +56,17 @@
 
     const headerHtml = showHeader
       ? `<div class="rb-header">
-          <h1 class="rb-title">Rewrite Better</h1>
+          <h1 class="rb-title">${escapeHtml(RB.t('panel.title'))}</h1>
           <div class="rb-header-actions">
-            ${showSettings ? '<button type="button" class="rb-icon-btn" data-action="settings" title="Settings">⚙️</button>' : ''}
-            ${onClose ? '<button type="button" class="rb-icon-btn" data-action="close" title="Close">&times;</button>' : ''}
+            ${showSettings ? `<button type="button" class="rb-icon-btn" data-action="settings" title="${escapeHtml(RB.t('panel.settings'))}">⚙️</button>` : ''}
+            ${onClose ? `<button type="button" class="rb-icon-btn" data-action="close" title="${escapeHtml(RB.t('panel.close'))}">&times;</button>` : ''}
           </div>
         </div>`
       : '';
 
     const apiStatusHtml = showApiStatus ? '<div class="rb-api-status" data-role="api-status"></div>' : '';
 
-    const modeChips = RB.MODES.map((m, i) => {
+    const modeChips = RB.localizeOptions(RB.MODES, 'mode').map((m, i) => {
       const active = i === 0 ? ' is-active' : '';
       return `<button type="button" class="rb-mode-chip${active}" data-mode="${m.value}">${escapeHtml(m.label)}</button>`;
     }).join('');
@@ -74,40 +74,40 @@
     root.innerHTML = `
       ${headerHtml}
       ${apiStatusHtml}
-      <textarea class="rb-input" data-role="input" rows="4" placeholder="Paste or type text here...">${escapeHtml(initialText)}</textarea>
+      <textarea class="rb-input" data-role="input" rows="4" placeholder="${escapeHtml(RB.t('panel.placeholder.input'))}">${escapeHtml(initialText)}</textarea>
       <div class="rb-mode-selector" role="tablist">${modeChips}</div>
 
       <div class="rb-mode-panel" data-mode-panel="rewrite">
-        ${chipGroupHtml('tone', RB.TONES, 'friendly', 'Tone')}
+        ${chipGroupHtml('tone', RB.localizeOptions(RB.TONES, 'tone'), 'friendly', RB.t('panel.tone'))}
         <label class="rb-check">
           <input type="checkbox" data-role="enable-translate" />
-          <span>Enable Translation</span>
+          <span>${escapeHtml(RB.t('panel.enableTranslation'))}</span>
         </label>
         <div class="rb-translate" data-role="translate-options" hidden>
-          ${chipGroupHtml('fromLanguage', RB.LANGUAGES, 'auto', 'From')}
-          ${chipGroupHtml('toLanguage', RB.OUTPUT_LANGUAGES, 'en', 'To')}
+          ${chipGroupHtml('fromLanguage', RB.LANGUAGES, 'auto', RB.t('panel.from'))}
+          ${chipGroupHtml('toLanguage', RB.OUTPUT_LANGUAGES, 'en', RB.t('panel.to'))}
         </div>
       </div>
 
       <div class="rb-mode-panel" data-mode-panel="format" hidden>
-        ${chipGroupHtml('formatType', RB.FORMAT_TYPES, 'markdown', 'Format')}
+        ${chipGroupHtml('formatType', RB.localizeOptions(RB.FORMAT_TYPES, 'format'), 'markdown', RB.t('panel.format'))}
       </div>
 
       <div class="rb-mode-panel" data-mode-panel="reply" hidden>
         <div class="rb-field">
-          <div class="rb-field-label">Your notes (optional)</div>
-          <textarea class="rb-notes" data-role="notes" rows="2" placeholder="What you want to say / key points..."></textarea>
+          <div class="rb-field-label">${escapeHtml(RB.t('panel.notes'))}</div>
+          <textarea class="rb-notes" data-role="notes" rows="2" placeholder="${escapeHtml(RB.t('panel.placeholder.notes'))}"></textarea>
         </div>
-        ${chipGroupHtml('channel', RB.CHANNELS, 'message', 'Type')}
-        ${chipGroupHtml('intent', RB.INTENTS, 'general', 'Intent')}
-        ${chipGroupHtml('tone', RB.TONES, 'professional', 'Tone')}
-        ${chipGroupHtml('length', RB.LENGTHS, 'medium', 'Length')}
-        ${chipGroupHtml('outputLanguage', RB.OUTPUT_LANGUAGES, 'en', 'Language')}
-        <p class="rb-hint">Paste the received message above to reply, or leave it empty and use notes to compose new.</p>
+        ${chipGroupHtml('channel', RB.localizeOptions(RB.CHANNELS, 'channel'), 'message', RB.t('panel.type'))}
+        ${chipGroupHtml('intent', RB.localizeOptions(RB.INTENTS, 'intent'), 'general', RB.t('panel.intent'))}
+        ${chipGroupHtml('tone', RB.localizeOptions(RB.TONES, 'tone'), 'professional', RB.t('panel.tone'))}
+        ${chipGroupHtml('length', RB.localizeOptions(RB.LENGTHS, 'length'), 'medium', RB.t('panel.length'))}
+        ${chipGroupHtml('outputLanguage', RB.OUTPUT_LANGUAGES, 'en', RB.t('panel.language'))}
+        <p class="rb-hint">${escapeHtml(RB.t('panel.replyHint'))}</p>
       </div>
 
-      <button type="button" class="rb-primary-btn" data-role="process">${RB.MODE_BUTTON_LABELS.rewrite}</button>
-      <button type="button" class="rb-copy-btn" data-role="copy" hidden>📋 Copy to Clipboard</button>
+      <button type="button" class="rb-primary-btn" data-role="process">${escapeHtml(RB.t('action.rewrite'))}</button>
+      <button type="button" class="rb-copy-btn" data-role="copy" hidden>${escapeHtml(RB.t('panel.copy'))}</button>
       <div class="rb-result" data-role="result"></div>
     `;
 
@@ -132,11 +132,11 @@
       root.querySelectorAll('[data-mode-panel]').forEach((panel) => {
         panel.hidden = panel.dataset.modePanel !== mode;
       });
-      processBtn.textContent = RB.MODE_BUTTON_LABELS[mode] || 'Process';
+      processBtn.textContent = RB.t('action.' + mode) || RB.t('action.process');
       if (mode === 'reply') {
-        inputEl.placeholder = 'Paste received message to reply (or leave empty to compose)...';
+        inputEl.placeholder = RB.t('panel.placeholder.reply');
       } else {
-        inputEl.placeholder = 'Paste or type text here...';
+        inputEl.placeholder = RB.t('panel.placeholder.input');
       }
     }
 
@@ -187,7 +187,7 @@
         document.body.removeChild(ta);
       }
       const original = copyBtn.textContent;
-      copyBtn.textContent = '✅ Copied!';
+      copyBtn.textContent = RB.t('panel.copied');
       copyBtn.classList.add('is-copied');
       setTimeout(() => {
         copyBtn.textContent = original;
@@ -203,11 +203,11 @@
 
       if (currentMode === 'reply') {
         if (!input.trim() && !notes.trim()) {
-          resultEl.textContent = '❌ Enter a received message and/or your notes.';
+          resultEl.textContent = RB.t('panel.emptyReply');
           return;
         }
       } else if (!input.trim()) {
-        resultEl.textContent = '❌ Vui lòng nhập văn bản cần xử lý.';
+        resultEl.textContent = RB.t('panel.emptyInput');
         return;
       }
 
@@ -215,11 +215,11 @@
       try {
         apiKey = await RB.getApiKey();
       } catch (err) {
-        resultEl.textContent = '❌ Lỗi truy cập cài đặt.';
+        resultEl.textContent = RB.t('panel.settingsError');
         return;
       }
       if (!apiKey) {
-        resultEl.textContent = '❌ Chưa cấu hình Groq API Key. Vui lòng vào Cài đặt.';
+        resultEl.textContent = RB.t('panel.missingKey');
         return;
       }
 
@@ -247,18 +247,18 @@
           notes
         });
         if (!prompt) {
-          resultEl.textContent = '❌ Enter a received message and/or your notes.';
+          resultEl.textContent = RB.t('panel.emptyReply');
           return;
         }
       }
 
       processBtn.disabled = true;
-      resultEl.textContent = '⏳ Đang xử lý...';
+      resultEl.textContent = RB.t('panel.processing');
 
       try {
         const text = await RB.callGroq(prompt, apiKey);
         if (!text) {
-          resultEl.textContent = '❌ Không thể xử lý văn bản.';
+          resultEl.textContent = RB.t('panel.emptyResponse');
           return;
         }
         resultEl.textContent = text;
@@ -268,9 +268,9 @@
         if (error.message && error.message.startsWith('❌')) {
           resultEl.textContent = error.message;
         } else if (error.name === 'TypeError' && String(error.message).includes('fetch')) {
-          resultEl.textContent = '❌ Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.';
+          resultEl.textContent = RB.t('panel.network');
         } else {
-          resultEl.textContent = `❌ Lỗi: ${error.message}`;
+          resultEl.textContent = RB.t('panel.error', error.message);
         }
       } finally {
         processBtn.disabled = false;
@@ -285,18 +285,18 @@
           const valid = await RB.testApiKey();
           if (valid) {
             apiStatusEl.className = 'rb-api-status is-success';
-            apiStatusEl.textContent = '✅ Groq API Key hoạt động bình thường';
+            apiStatusEl.textContent = RB.t('panel.apiOk');
           } else {
             apiStatusEl.className = 'rb-api-status is-warning';
-            apiStatusEl.innerHTML = '⚠️ API Key có vấn đề. <a href="#" data-action="settings">Kiểm tra lại</a>';
+            apiStatusEl.innerHTML = RB.t('panel.apiInvalid');
           }
         } else {
           apiStatusEl.className = 'rb-api-status is-warning';
-          apiStatusEl.innerHTML = '⚠️ Chưa cấu hình Groq API Key. <a href="#" data-action="settings">Cấu hình ngay</a>';
+          apiStatusEl.innerHTML = RB.t('panel.apiMissing');
         }
       } catch (e) {
         apiStatusEl.className = 'rb-api-status is-error';
-        apiStatusEl.textContent = '❌ Lỗi kiểm tra API Key';
+        apiStatusEl.textContent = RB.t('panel.apiCheckError');
       }
     }
 

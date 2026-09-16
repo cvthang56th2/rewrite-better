@@ -64,22 +64,25 @@ function showInlinePopup(selectedText) {
   document.body.appendChild(popup);
   currentPopup = popup;
 
-  panelApi = RewriteBetter.mountPanel(popup, {
-    initialText: selectedText,
-    showHeader: true,
-    showSettings: true,
-    showApiStatus: false,
-    compact: true,
-    onClose: closePopup
-  });
+  RewriteBetter.loadUiLanguage().then(() => {
+    if (currentPopup !== popup) return;
+    panelApi = RewriteBetter.mountPanel(popup, {
+      initialText: selectedText,
+      showHeader: true,
+      showSettings: true,
+      showApiStatus: false,
+      compact: true,
+      onClose: closePopup
+    });
 
-  const rect = popup.getBoundingClientRect();
-  if (rect.right > window.innerWidth) {
-    popup.style.left = `${Math.max(8, mousePosition.x - rect.width)}px`;
-  }
-  if (rect.bottom > window.innerHeight) {
-    popup.style.top = `${Math.max(8, mousePosition.y - rect.height - 10)}px`;
-  }
+    const rect = popup.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+      popup.style.left = `${Math.max(8, mousePosition.x - rect.width)}px`;
+    }
+    if (rect.bottom > window.innerHeight) {
+      popup.style.top = `${Math.max(8, mousePosition.y - rect.height - 10)}px`;
+    }
+  });
 
   setTimeout(() => {
     const closeOnClickOutside = (e) => {

@@ -12,6 +12,7 @@ struct SettingsView: View {
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
     @State private var launchAtLoginError = ""
     @ObservedObject private var hotkeys = HotkeyService.shared
+    @ObservedObject private var lang = LanguageStore.shared
     @State private var rewriteExtra = ""
     @State private var formatExtra = ""
     @State private var replyExtra = ""
@@ -19,8 +20,26 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        Text(lang.t("settings.language"))
+                            .font(.subheadline.weight(.medium))
+                        Spacer()
+                        Picker(lang.t("settings.language"), selection: $lang.language) {
+                            ForEach(AppLanguage.allCases) { language in
+                                Text(language.displayName).tag(language)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .frame(maxWidth: 240)
+                    }
+                }
+
+                Divider()
+
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Failover order: Gemini → Groq → Cerebras → OpenAI. Multiple keys per provider: separate with comma or newline. On quota/rate-limit, the next key is used until all are exhausted.")
+                    Text(lang.t("settings.failoverOrder"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
@@ -35,21 +54,21 @@ struct SettingsView: View {
                 Divider()
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Toggle("Open at login", isOn: $launchAtLogin)
+                    Toggle(lang.t("settings.openAtLogin"), isOn: $launchAtLogin)
                         .onChange(of: launchAtLogin) { newValue in
                             do {
                                 _ = try LaunchAtLogin.setEnabled(newValue)
                                 launchAtLogin = LaunchAtLogin.isEnabled
                                 launchAtLoginError = ""
-                                message = newValue ? "✅ Will open when you log in" : "✅ Won’t open at login"
+                                message = lang.t(newValue ? "settings.openAtLoginOn" : "settings.openAtLoginOff")
                             } catch {
                                 launchAtLogin = LaunchAtLogin.isEnabled
                                 launchAtLoginError = error.localizedDescription
-                                message = "❌ Không bật được Open at login"
+                                message = lang.t("settings.openAtLoginFail")
                             }
                         }
 
-                    Text("Starts Rewrite Better in the menu bar when you log in to this Mac.")
+                    Text(lang.t("settings.openAtLoginHelp"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
@@ -60,11 +79,11 @@ struct SettingsView: View {
                     }
 
                     HStack(spacing: 8) {
-                        Text("Open panel shortcut")
+                        Text(lang.t("settings.shortcut"))
                             .font(.subheadline.weight(.medium))
                         Spacer()
                         if hotkeys.current != .default {
-                            Button("Reset") {
+                            Button(lang.t("settings.reset")) {
                                 applyHotkey(.default)
                             }
                             .controlSize(.small)
@@ -74,7 +93,7 @@ struct SettingsView: View {
                         }
                     }
 
-                    Text("Click the shortcut, then press a new combo. Include ⌘, ⌥, or ⌃. Esc cancels.")
+                    Text(lang.t("settings.shortcutHelp"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -82,27 +101,27 @@ struct SettingsView: View {
                 Divider()
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Extra instructions")
+                    Text(lang.t("settings.extraTitle"))
                         .font(.headline)
 
-                    Text("Optional. Added on top of the built-in prompt for that mode. The app still requires only the final text back — these cannot replace that rule.")
+                    Text(lang.t("settings.extraHelp"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
                     ExtraInstructionsEditor(
-                        title: "Rewrite",
+                        title: lang.t("mode.rewrite"),
                         text: $rewriteExtra,
-                        placeholder: "e.g. Always write in Vietnamese. Keep my voice. No emoji."
+                        placeholder: lang.t("settings.extraRewritePlaceholder")
                     )
                     ExtraInstructionsEditor(
-                        title: "Format",
+                        title: lang.t("mode.format"),
                         text: $formatExtra,
-                        placeholder: "e.g. Prefer ATX headings. Never wrap in a code fence."
+                        placeholder: lang.t("settings.extraFormatPlaceholder")
                     )
                     ExtraInstructionsEditor(
-                        title: "Reply",
+                        title: lang.t("mode.reply"),
                         text: $replyExtra,
-                        placeholder: "e.g. Sign off as Thắng. Be warm but brief."
+                        placeholder: lang.t("settings.extraReplyPlaceholder")
                     )
                 }
 
@@ -110,21 +129,31 @@ struct SettingsView: View {
 
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Button("Save") {
+                        Button(lang.t("settings.save")) {
                             saveKeys()
-                            message = "✅ Saved"
+                            message = lang.t("settings.saved")
                         }
                         .keyboardShortcut(.defaultAction)
 
-                        Button("Test keys") {
+                        Button(lang.t("settings.testKeys")) {
                             Task { await testKeys() }
                         }
                         .disabled(isTesting || !hasAnyDraftKey)
 
                         Spacer()
+                    }
 
-                        Button("Open Accessibility…") {
+                    HStack {
+                        Button(lang.t("settings.openAccessibility")) {
                             TextCaptureService.openAccessibilitySettings()
+                        }
+
+                        Button(lang.t("settings.privacy")) {
+                            PanelController.shared.openPrivacy()
+                        }
+
+                        Button(lang.t("onboarding.showAgain")) {
+                            PanelController.shared.openWelcome()
                         }
                     }
 
@@ -157,7 +186,7 @@ struct SettingsView: View {
                         }
                     }
 
-                    Text("\(hotkeys.current.displayString) needs Accessibility to read selected text. Prefer the copy in /Applications.")
+                    Text(lang.t("settings.accessibilityFooter", hotkeys.current.displayString))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -175,6 +204,10 @@ struct SettingsView: View {
             rewriteExtra = SettingsStore.shared.extraInstructions(for: .rewrite)
             formatExtra = SettingsStore.shared.extraInstructions(for: .format)
             replyExtra = SettingsStore.shared.extraInstructions(for: .reply)
+            NSApp.keyWindow?.title = lang.t("settings.windowTitle")
+        }
+        .onChange(of: lang.language) { _ in
+            NSApp.keyWindow?.title = lang.t("settings.windowTitle")
         }
     }
 
@@ -195,9 +228,9 @@ struct SettingsView: View {
 
     private func applyHotkey(_ shortcut: PanelHotkey) {
         if HotkeyService.shared.apply(shortcut) {
-            message = "✅ Shortcut set to \(shortcut.displayString)"
+            message = lang.t("settings.shortcutSet", shortcut.displayString)
         } else {
-            message = "Couldn't register \(shortcut.displayString). That combo may already be in use."
+            message = lang.t("settings.shortcutFail", shortcut.displayString)
         }
     }
 
@@ -206,7 +239,7 @@ struct SettingsView: View {
         defer { isTesting = false }
         saveKeys()
         keyTestResults = []
-        message = "⏳ Testing each key…"
+        message = lang.t("settings.testing")
 
         let results = await LLMClient.shared.testAllKeys()
         keyTestResults = results
@@ -219,11 +252,11 @@ struct SettingsView: View {
         let okCount = results.filter(\.ok).count
         let failCount = results.count - okCount
         if failCount == 0 {
-            message = "✅ All \(okCount) key(s) work"
+            message = lang.t("settings.allKeysOk", "\(okCount)")
         } else if okCount == 0 {
-            message = "❌ All \(failCount) key(s) failed"
+            message = lang.t("settings.allKeysFailed", "\(failCount)")
         } else {
-            message = "⚠️ \(okCount) OK · \(failCount) failed"
+            message = lang.t("settings.keysPartial", "\(okCount)", "\(failCount)")
         }
     }
 }
@@ -261,6 +294,7 @@ private struct ExtraInstructionsEditor: View {
 
 private struct APIKeyDisclaimer: View {
     var showBackground = true
+    @ObservedObject private var lang = LanguageStore.shared
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
@@ -268,7 +302,7 @@ private struct APIKeyDisclaimer: View {
                 .foregroundStyle(.secondary)
                 .padding(.top, 1)
 
-            Text("API keys are stored only on this Mac (Keychain). They are never uploaded or saved anywhere else. You are responsible for keeping them private. The developer is not liable if a key is leaked.")
+            Text(lang.t("settings.disclaimer"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -289,6 +323,7 @@ private struct ProviderKeyField: View {
     let provider: ChatProvider
     @Binding var text: String
     @State private var showingHelp = false
+    @ObservedObject private var lang = LanguageStore.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -304,8 +339,8 @@ private struct ProviderKeyField: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
-                .help("How to get a \(provider.displayName) API key")
-                .accessibilityLabel("How to get a \(provider.displayName) API key")
+                .help(lang.t("settings.howToGetKey", provider.displayName))
+                .accessibilityLabel(lang.t("settings.howToGetKey", provider.displayName))
                 .popover(isPresented: $showingHelp, arrowEdge: .trailing) {
                     ProviderAPIKeyHelpView(provider: provider)
                 }
@@ -316,7 +351,7 @@ private struct ProviderKeyField: View {
                 .frame(minHeight: 44, maxHeight: 72)
                 .overlay(alignment: .topLeading) {
                     if text.isEmpty {
-                        Text(provider.placeholder)
+                        Text(provider.placeholder(lang.language))
                             .font(.system(.caption, design: .monospaced))
                             .foregroundStyle(.tertiary)
                             .padding(.top, 8)
@@ -330,20 +365,21 @@ private struct ProviderKeyField: View {
 
 private struct ProviderAPIKeyHelpView: View {
     let provider: ChatProvider
+    @ObservedObject private var lang = LanguageStore.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Get a \(provider.displayName) API key")
+                Text(lang.t("settings.getKeyTitle", provider.displayName))
                     .font(.headline)
-                Text(provider.helpSummary)
+                Text(provider.helpSummary(lang.language))
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                ForEach(Array(provider.helpSteps.enumerated()), id: \.offset) { index, step in
+                ForEach(Array(provider.helpSteps(lang.language).enumerated()), id: \.offset) { index, step in
                     HStack(alignment: .top, spacing: 8) {
                         Text("\(index + 1)")
                             .font(.caption.weight(.semibold).monospacedDigit())
@@ -359,12 +395,12 @@ private struct ProviderAPIKeyHelpView: View {
             Button {
                 NSWorkspace.shared.open(provider.helpURL)
             } label: {
-                Label("Open \(provider.helpURL.host ?? provider.displayName)", systemImage: "arrow.up.right")
+                Label(lang.t("settings.openHost", provider.helpURL.host ?? provider.displayName), systemImage: "arrow.up.right")
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.small)
 
-            Text("You can add more than one key, separated by comma or newline.")
+            Text(lang.t("settings.multipleKeys"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -399,6 +435,7 @@ private struct HotkeyRecorderButton: View {
 
     @State private var isRecording = false
     @StateObject private var capture = HotkeyCaptureMonitor()
+    @ObservedObject private var lang = LanguageStore.shared
 
     var body: some View {
         Button {
@@ -408,7 +445,7 @@ private struct HotkeyRecorderButton: View {
                 startRecording()
             }
         } label: {
-            Text(isRecording ? "Type shortcut…" : hotkey.displayString)
+            Text(isRecording ? lang.t("settings.typeShortcut") : hotkey.displayString)
                 .font(.body.weight(.medium))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
@@ -422,9 +459,9 @@ private struct HotkeyRecorderButton: View {
                 )
         }
         .buttonStyle(.plain)
-        .help(isRecording ? "Press a shortcut, or Esc to cancel" : "Click to change the shortcut")
+        .help(isRecording ? lang.t("settings.pressShortcut") : lang.t("settings.changeShortcut"))
         .onDisappear { stopRecording() }
-        .accessibilityLabel("Open panel shortcut")
+        .accessibilityLabel(lang.t("settings.shortcut"))
         .accessibilityValue(hotkey.displayString)
     }
 

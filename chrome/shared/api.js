@@ -25,17 +25,17 @@
   RB.formatApiError = function (status, errorData) {
     switch (status) {
       case 401:
-        return '❌ API Key không hợp lệ hoặc đã hết hạn.';
+        return RB.t('error.401');
       case 403:
-        return '❌ Không có quyền truy cập API.';
+        return RB.t('error.403');
       case 429:
-        return '❌ Đã vượt quá giới hạn requests. Vui lòng thử lại sau.';
+        return RB.t('error.429');
       case 500:
       case 502:
       case 503:
-        return '❌ Lỗi server Groq. Vui lòng thử lại sau.';
+        return RB.t('error.5xx');
       default:
-        return `❌ Lỗi Groq API: HTTP ${status} - ${errorData?.error?.message || 'Lỗi không xác định'}`;
+        return RB.t('error.http', String(status), errorData?.error?.message || RB.t('error.unknown'));
     }
   };
 

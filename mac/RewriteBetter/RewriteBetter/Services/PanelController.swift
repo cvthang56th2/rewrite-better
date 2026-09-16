@@ -10,9 +10,15 @@ final class PanelController: ObservableObject {
     @Published var isPresented = false
     @Published var showSettings = false
     @Published var needsAccessibility = false
+    @Published var pasteBackTarget: PasteBackTarget?
 
     private var panel: NSPanel?
     private var settingsWindow: NSWindow?
+    private var welcomeWindow: NSWindow?
+    private var privacyWindow: NSWindow?
+    private var pasteBackElement: AXUIElement?
+    private var pasteBackRange: CFRange?
+    private var pasteBackOriginal = ""
 
     private init() {}
 
@@ -41,14 +47,32 @@ final class PanelController: ObservableObject {
     func openWithCapturedText() {
         // Capture while the previous app still owns focus whenever possible.
         needsAccessibility = !TextCaptureService.hasAccessibilityPermission
-        inputText = TextCaptureService.capturePreferredText()
+        let capture = TextCaptureService.captureSelection()
+        rememberPasteBackTarget(capture: capture)
+        inputText = capture.text
         show()
     }
 
     func openEmpty() {
         needsAccessibility = !TextCaptureService.hasAccessibilityPermission
+        let source = TextCaptureService.currentSourceApp()
+        let element = source.flatMap { TextCaptureService.focusedTextElement(inAppPID: $0.pid) }
+        rememberPasteBackTarget(
+            capture: SelectionCapture(text: "", focusedElement: element),
+            forceNoSelection: true
+        )
         inputText = ""
         show()
+    }
+
+    func pasteBack(text: String) -> PasteBackResult {
+        let env = SystemPasteBackEnvironment(
+            focusedElement: pasteBackElement,
+            selectedRange: pasteBackRange,
+            original: pasteBackOriginal,
+            onResign: { [weak self] in self?.close() }
+        )
+        return PasteBackService.perform(text: text, target: pasteBackTarget, using: env)
     }
 
     func refreshAccessibilityStatus() {
@@ -86,20 +110,71 @@ final class PanelController: ObservableObject {
         isPresented = false
     }
 
+    private func rememberPasteBackTarget(capture: SelectionCapture, forceNoSelection: Bool = false) {
+        pasteBackElement = capture.focusedElement
+        pasteBackRange = capture.selectedRange
+        pasteBackOriginal = capture.rawSelectedText.isEmpty ? capture.text : capture.rawSelectedText
+        let hadSelection = !forceNoSelection
+            && !capture.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        pasteBackTarget = TextCaptureService.currentSourceApp().map { source in
+            PasteBackTarget(pid: source.pid, appName: source.name, hadSelection: hadSelection)
+        }
+    }
+
     func openSettings() {
         if settingsWindow == nil {
             let view = SettingsView()
             let hosting = NSHostingController(rootView: view)
             let window = NSWindow(contentViewController: hosting)
-            window.title = "Rewrite Better Settings"
+            window.title = LanguageStore.shared.t("settings.windowTitle")
             window.styleMask = [.titled, .closable, .resizable]
             window.setContentSize(NSSize(width: 560, height: 640))
             window.minSize = NSSize(width: 520, height: 400)
+            window.isReleasedWhenClosed = false
             window.center()
             settingsWindow = window
         }
+        settingsWindow?.title = LanguageStore.shared.t("settings.windowTitle")
         NSApp.activate(ignoringOtherApps: true)
         settingsWindow?.makeKeyAndOrderFront(nil)
+    }
+
+    func openWelcome() {
+        if welcomeWindow == nil {
+            let view = WelcomeView(
+                onAddKey: { [weak self] in self?.openSettings() },
+                onPrivacy: { [weak self] in self?.openPrivacy() },
+                onDone: { [weak self] in self?.welcomeWindow?.orderOut(nil) }
+            )
+            let hosting = NSHostingController(rootView: view)
+            let window = NSWindow(contentViewController: hosting)
+            window.title = LanguageStore.shared.t("onboarding.windowTitle")
+            window.styleMask = [.titled, .closable]
+            window.setContentSize(NSSize(width: 540, height: 460))
+            window.isReleasedWhenClosed = false
+            window.center()
+            welcomeWindow = window
+        }
+        welcomeWindow?.title = LanguageStore.shared.t("onboarding.windowTitle")
+        NSApp.activate(ignoringOtherApps: true)
+        welcomeWindow?.makeKeyAndOrderFront(nil)
+    }
+
+    func openPrivacy() {
+        if privacyWindow == nil {
+            let hosting = NSHostingController(rootView: PrivacyView())
+            let window = NSWindow(contentViewController: hosting)
+            window.title = LanguageStore.shared.t("privacy.windowTitle")
+            window.styleMask = [.titled, .closable, .resizable]
+            window.setContentSize(NSSize(width: 560, height: 420))
+            window.minSize = NSSize(width: 480, height: 320)
+            window.isReleasedWhenClosed = false
+            window.center()
+            privacyWindow = window
+        }
+        privacyWindow?.title = LanguageStore.shared.t("privacy.windowTitle")
+        NSApp.activate(ignoringOtherApps: true)
+        privacyWindow?.makeKeyAndOrderFront(nil)
     }
 
     private func createPanel() {
@@ -122,5 +197,66 @@ final class PanelController: ObservableObject {
         panel.minSize = NSSize(width: 720, height: 440)
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         self.panel = panel
+    }
+}
+
+@MainActor
+final class SystemPasteBackEnvironment: PasteBackPerforming {
+    let focusedElement: AXUIElement?
+    let selectedRange: CFRange?
+    let original: String
+    let pasteDelay: TimeInterval
+    let onResign: () -> Void
+
+    init(
+        focusedElement: AXUIElement?,
+        selectedRange: CFRange?,
+        original: String,
+        pasteDelay: TimeInterval = 0.2,
+        onResign: @escaping () -> Void
+    ) {
+        self.focusedElement = focusedElement
+        self.selectedRange = selectedRange
+        self.original = original
+        self.pasteDelay = pasteDelay
+        self.onResign = onResign
+    }
+
+    func copyToClipboard(_ text: String) {
+        TextCaptureService.copyToClipboard(text)
+    }
+
+    func replaceSelectionViaAccessibility(_ text: String) -> Bool {
+        TextCaptureService.replaceSelectedText(
+            text,
+            in: focusedElement,
+            range: selectedRange,
+            original: original.isEmpty ? text : original
+        )
+    }
+
+    func resignPanel() {
+        onResign()
+    }
+
+    func activateSourceApp(pid: pid_t) -> Bool {
+        guard let app = NSRunningApplication(processIdentifier: pid), !app.isTerminated else {
+            return false
+        }
+        return app.activate(options: [.activateIgnoringOtherApps])
+    }
+
+    func restoreSelection() {
+        _ = TextCaptureService.restoreSelectedRange(selectedRange, in: focusedElement, original: original)
+    }
+
+    func sendPasteKeystroke() {
+        let element = focusedElement
+        let range = selectedRange
+        let original = original
+        DispatchQueue.main.asyncAfter(deadline: .now() + pasteDelay) {
+            _ = TextCaptureService.restoreSelectedRange(range, in: element, original: original)
+            TextCaptureService.sendCommandV()
+        }
     }
 }

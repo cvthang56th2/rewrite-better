@@ -2,7 +2,9 @@
 
 A Chrome extension that rewrites, formats, translates, and drafts message/email replies using [Groq AI](https://groq.com) — **free to use** with a Groq account. Works on any webpage via a context menu, keyboard shortcut, or toolbar popup.
 
-Also available as a **native macOS menu bar app** — see [`mac/README.md`](mac/README.md).
+Also available as a **native macOS menu bar app** (English / Tiếng Việt) — see [`mac/README.md`](mac/README.md) — and a **Windows tray app** — see [`win/README.md`](win/README.md).
+
+Public download site: [`web/`](web/) (deploy to Vercel).
 
 ## Features
 
@@ -66,6 +68,7 @@ Auto-detect (rewrite From), English, Vietnamese, Chinese, Japanese, Korean, Fren
 
 ```
 rewrite-better/
+├── web/                    # Public download site (Vercel)
 ├── chrome/                 # Chrome extension (Load unpacked here)
 │   ├── manifest.json
 │   ├── background.js
@@ -80,15 +83,39 @@ rewrite-better/
 │   │   └── panel.js        # Shared panel UI
 │   └── icon.png
 ├── mac/                    # Native macOS menu bar app
-├── win/                    # Native Windows app (planned)
+├── scripts/                # Zip extension / build Mac DMG
+├── win/                    # Tauri Windows tray app
 └── docs/
+```
+
+## Website (Vercel)
+
+The download landing lives in `web/`. From the repo root:
+
+1. Import the GitHub repo in [Vercel](https://vercel.com)
+2. Leave the Root Directory empty (the root `vercel.json` already points at `web/`)
+3. Deploy
+
+Each deploy zips `chrome/` into `web/downloads/rewrite-better-chrome.zip`. The Mac DMG is not built on Vercel. Either:
+
+- Run `./scripts/package-mac-dmg.sh` locally, then `npx vercel --prod` so `web/downloads/RewriteBetter.dmg` uploads, or
+- Attach `RewriteBetter-1.0.dmg` to a GitHub Release. The site uses that URL when the local DMG is missing.
+
+Preview the site locally:
+
+```bash
+./scripts/package-extension.sh
+python3 -m http.server 4173 --directory web
 ```
 
 ## Privacy
 
-- **We never see or store your API key.** There is no backend — your key stays in your browser only (Chrome sync storage via `chrome.storage.sync`)
-- Text is sent directly from your browser to Groq's API; nothing passes through our servers
-- The extension requests access to all URLs so the content script and inline popup work on any site
+See [PRIVACY.md](PRIVACY.md). Short version:
+
+- **We never see or store your API key.** There is no Rewrite Better backend
+- macOS: keys stay in Keychain. Chrome: keys stay in `chrome.storage.sync`
+- Text is sent directly from your device to the AI provider you configured
+- The macOS app uses Accessibility only to read selected text and to Replace it back
 
 ## License
 

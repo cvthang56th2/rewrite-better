@@ -1,37 +1,7 @@
 import Foundation
 
-enum LLMError: LocalizedError {
-    case missingKey
-    case http(Int, String)
-    case emptyResponse
-    case network(String)
-    case allKeysResting
-
-    var errorDescription: String? {
-        switch self {
-        case .missingKey:
-            return "❌ Chưa cấu hình API Key. Vui lòng vào Cài đặt."
-        case .allKeysResting:
-            return "❌ Tất cả API key đang tạm nghỉ đến ngày mai. Thêm key mới hoặc thử lại sau."
-        case .http(let status, let message):
-            switch status {
-            case 401: return "❌ API Key không hợp lệ hoặc đã hết hạn."
-            case 403: return "❌ Không có quyền truy cập API."
-            case 429: return "❌ Đã vượt quá giới hạn requests trên tất cả API key."
-            case 402: return "❌ Hết quota / cần thanh toán trên tất cả API key."
-            case 500, 502, 503: return "❌ Lỗi server AI. Vui lòng thử lại sau."
-            default: return "❌ Lỗi AI API: HTTP \(status) - \(message)"
-            }
-        case .emptyResponse:
-            return "❌ Không thể xử lý văn bản."
-        case .network(let message):
-            return "❌ Lỗi kết nối mạng. \(message)"
-        }
-    }
-}
-
 /// OpenAI-compatible chat client with multi-provider / multi-key failover.
-/// Failed keys are rested until the next local calendar day.
+/// Failed keys are rested until the next local calendar day when the failure is quota or auth.
 final class LLMClient {
     static let shared = LLMClient()
 
@@ -166,7 +136,7 @@ final class LLMClient {
                 let errObj = json["error"] as? [String: Any]
                 let err = errObj?["message"] as? String
                     ?? errObj?["status"] as? String
-                    ?? (bodyText.isEmpty ? "Lỗi không xác định" : String(bodyText.prefix(200)))
+                    ?? (bodyText.isEmpty ? L10n.t("error.unknown", language: LanguageStore.shared.language) : String(bodyText.prefix(200)))
                 throw LLMError.http(http.statusCode, err)
             }
             let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]

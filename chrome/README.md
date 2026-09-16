@@ -16,3 +16,5 @@ If the extension was previously loaded from the repo root, remove it and load th
 1. Create a free Groq API key at [console.groq.com](https://console.groq.com)
 2. Open extension options (toolbar icon → ⚙️ Settings, or right-click the icon → Options)
 3. Paste the API key and save
+
+Privacy: keys stay in Chrome storage; text is sent only to Groq. See [PRIVACY.md](../PRIVACY.md).

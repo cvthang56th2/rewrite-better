@@ -33,9 +33,7 @@ final class PanelViewModel: ObservableObject {
     }
 
     var inputPlaceholder: String {
-        mode == .reply
-            ? "Paste received message to reply (or leave empty to compose)…"
-            : "Paste or type text here…"
+        LanguageStore.shared.t(mode == .reply ? "panel.placeholder.reply" : "panel.placeholder.input")
     }
 
     func syncInput(from controller: PanelController) {
@@ -58,11 +56,11 @@ final class PanelViewModel: ObservableObject {
         if mode == .reply {
             if inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                statusMessage = "❌ Enter a received message and/or your notes."
+                statusMessage = LanguageStore.shared.t("panel.emptyReply")
                 return
             }
         } else if inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            statusMessage = "❌ Vui lòng nhập văn bản cần xử lý."
+            statusMessage = LanguageStore.shared.t("panel.emptyInput")
             return
         }
 
@@ -103,12 +101,12 @@ final class PanelViewModel: ObservableObject {
         }
 
         guard let prompt else {
-            statusMessage = "❌ Enter a received message and/or your notes."
+            statusMessage = LanguageStore.shared.t("panel.emptyReply")
             return
         }
 
         isLoading = true
-        statusMessage = "⏳ Đang xử lý..."
+        statusMessage = LanguageStore.shared.t("panel.processing")
         defer { isLoading = false }
 
         do {
@@ -128,10 +126,24 @@ final class PanelViewModel: ObservableObject {
         TextCaptureService.copyToClipboard(resultText)
         copyFeedback = true
     }
+
+    func pasteBack(using panel: PanelController) {
+        switch panel.pasteBack(text: resultText) {
+        case .replacedViaAccessibility, .replacedViaPaste:
+            statusMessage = ""
+        case .noTarget:
+            statusMessage = LanguageStore.shared.t("panel.pasteNoTarget")
+        case .emptyText:
+            break
+        case .activateFailed:
+            statusMessage = LanguageStore.shared.t("panel.pasteActivateFailed")
+        }
+    }
 }
 
 struct PanelView: View {
     @EnvironmentObject private var panel: PanelController
+    @ObservedObject private var lang = LanguageStore.shared
     @StateObject private var vm = PanelViewModel()
     @StateObject private var inputAssist = WritingAssistController()
     @StateObject private var notesAssist = WritingAssistController()
@@ -220,7 +232,7 @@ struct PanelView: View {
 
     private var header: some View {
         HStack {
-            Text("Rewrite Better")
+            Text(lang.t("panel.title"))
                 .font(.title3.weight(.semibold))
             Spacer()
             Button {
@@ -229,7 +241,7 @@ struct PanelView: View {
                 Image(systemName: "gearshape")
             }
             .buttonStyle(.borderless)
-            .help("Settings")
+            .help(lang.t("panel.settings"))
 
             Button {
                 panel.close()
@@ -237,7 +249,7 @@ struct PanelView: View {
                 Image(systemName: "xmark")
             }
             .buttonStyle(.borderless)
-            .help("Close")
+            .help(lang.t("panel.close"))
         }
     }
 
@@ -246,10 +258,10 @@ struct PanelView: View {
         VStack(alignment: .leading, spacing: 6) {
             if panel.needsAccessibility {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("⚠️ macOS chưa trust bản app đang chạy (thường do toggle đang gắn entry cũ).")
+                    Text(lang.t("a11y.untrusted"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text("1) Open Settings → Accessibility\n2) Xóa mọi “RewriteBetter” cũ → thêm lại / bật bản đang chạy\n3) Quit app hẳn rồi mở lại → Recheck")
+                    Text(lang.t("a11y.steps"))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                     Text(Bundle.main.bundleURL.path)
@@ -257,12 +269,12 @@ struct PanelView: View {
                         .textSelection(.enabled)
                         .foregroundStyle(.secondary)
                     HStack {
-                        Button("Open Settings") {
+                        Button(lang.t("a11y.openSettings")) {
                             TextCaptureService.openAccessibilitySettings()
                         }
                         .buttonStyle(.bordered)
                         .controlSize(.small)
-                        Button("Recheck") {
+                        Button(lang.t("a11y.recheck")) {
                             panel.refreshAccessibilityStatus()
                         }
                         .buttonStyle(.borderless)
@@ -280,15 +292,15 @@ struct PanelView: View {
                 EmptyView()
             case .missing:
                 HStack(spacing: 4) {
-                    Text("⚠️ Chưa cấu hình API Key.")
-                    Button("Cấu hình") { panel.openSettings() }
+                    Text(lang.t("api.missing"))
+                    Button(lang.t("api.configure")) { panel.openSettings() }
                         .buttonStyle(.link)
                 }
                 .font(.caption)
             case .invalid:
                 HStack(spacing: 4) {
-                    Text("⚠️ API Key có vấn đề.")
-                    Button("Kiểm tra") { panel.openSettings() }
+                    Text(lang.t("api.invalid"))
+                    Button(lang.t("api.check")) { panel.openSettings() }
                         .buttonStyle(.link)
                 }
                 .font(.caption)
@@ -301,7 +313,7 @@ struct PanelView: View {
     private var modeSelector: some View {
         Picker("Mode", selection: $vm.mode) {
             ForEach(AppMode.allCases) { mode in
-                Text(mode.label).tag(mode)
+                Text(mode.label(lang.language)).tag(mode)
             }
         }
         .pickerStyle(.segmented)
@@ -311,7 +323,7 @@ struct PanelView: View {
     private var inputSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(vm.mode == .reply ? "Received message" : "Input")
+                Text(lang.t(vm.mode == .reply ? "panel.receivedMessage" : "panel.input"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -336,7 +348,7 @@ struct PanelView: View {
     private var notesSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text("Your notes (optional)")
+                Text(lang.t("panel.notes"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -358,11 +370,11 @@ struct PanelView: View {
     private func assistHint(_ assist: WritingAssistController) -> some View {
         Group {
             if assist.isSuggesting {
-                Text("Suggesting…")
+                Text(lang.t("panel.suggesting"))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             } else if !assist.ghostText.isEmpty {
-                Text("Tab to accept · Esc to dismiss")
+                Text(lang.t("panel.tabHint"))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -377,11 +389,11 @@ struct PanelView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Toggle("Writing assist", isOn: enabled)
+                Toggle(lang.t("panel.writingAssist"), isOn: enabled)
                     .toggleStyle(.checkbox)
                     .font(.caption)
                 Spacer()
-                Button(assist.isChecking ? "Checking…" : "Check writing") {
+                Button(assist.isChecking ? lang.t("panel.checking") : lang.t("panel.checkWriting")) {
                     Task { await assist.checkNow(text.wrappedValue) }
                 }
                 .disabled(assist.isChecking || text.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).count < 12)
@@ -389,7 +401,7 @@ struct PanelView: View {
             }
 
             if !assist.issues.isEmpty {
-                Text("Suggestions")
+                Text(lang.t("panel.suggestions"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 ForEach(assist.issues.prefix(6)) { issue in
@@ -407,7 +419,7 @@ struct PanelView: View {
                                 .lineLimit(2)
                         }
                         Spacer(minLength: 0)
-                        Button("Apply") {
+                        Button(lang.t("panel.apply")) {
                             var value = text.wrappedValue
                             assist.apply(issue: issue, to: &value)
                             text.wrappedValue = value
@@ -428,27 +440,27 @@ struct PanelView: View {
         switch vm.mode {
         case .rewrite:
             VStack(alignment: .leading, spacing: 10) {
-                ChipGroup(title: "Tone", options: AppOptions.tones, selection: $vm.tone)
-                Toggle("Enable Translation", isOn: $vm.enableTranslate)
+                ChipGroup(title: lang.t("panel.tone"), options: AppOptions.tones(lang.language), selection: $vm.tone)
+                Toggle(lang.t("panel.enableTranslation"), isOn: $vm.enableTranslate)
                 if vm.enableTranslate {
-                    ChipGroup(title: "From", options: AppOptions.languages, selection: $vm.fromLanguage)
-                    ChipGroup(title: "To", options: AppOptions.outputLanguages, selection: $vm.toLanguage)
+                    ChipGroup(title: lang.t("panel.from"), options: AppOptions.languages, selection: $vm.fromLanguage)
+                    ChipGroup(title: lang.t("panel.to"), options: AppOptions.outputLanguages, selection: $vm.toLanguage)
                 }
                 extraInstructionsHint
             }
         case .format:
             VStack(alignment: .leading, spacing: 10) {
-                ChipGroup(title: "Format", options: AppOptions.formatTypes, selection: $vm.formatType)
+                ChipGroup(title: lang.t("panel.format"), options: AppOptions.formatTypes(lang.language), selection: $vm.formatType)
                 extraInstructionsHint
             }
         case .reply:
             VStack(alignment: .leading, spacing: 10) {
-                ChipGroup(title: "Type", options: AppOptions.channels, selection: $vm.channel)
-                ChipGroup(title: "Intent", options: AppOptions.intents, selection: $vm.intent)
-                ChipGroup(title: "Tone", options: AppOptions.tones, selection: $vm.replyTone)
-                ChipGroup(title: "Length", options: AppOptions.lengths, selection: $vm.length)
-                ChipGroup(title: "Language", options: AppOptions.outputLanguages, selection: $vm.outputLanguage)
-                Text("Leave message empty and use notes to compose new.")
+                ChipGroup(title: lang.t("panel.type"), options: AppOptions.channels(lang.language), selection: $vm.channel)
+                ChipGroup(title: lang.t("panel.intent"), options: AppOptions.intents(lang.language), selection: $vm.intent)
+                ChipGroup(title: lang.t("panel.tone"), options: AppOptions.tones(lang.language), selection: $vm.replyTone)
+                ChipGroup(title: lang.t("panel.length"), options: AppOptions.lengths(lang.language), selection: $vm.length)
+                ChipGroup(title: lang.t("panel.language"), options: AppOptions.outputLanguages, selection: $vm.outputLanguage)
+                Text(lang.t("panel.replyHint"))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                 extraInstructionsHint
@@ -461,7 +473,7 @@ struct PanelView: View {
         let extra = SettingsStore.shared.extraInstructions(for: vm.mode)
             .trimmingCharacters(in: .whitespacesAndNewlines)
         if !extra.isEmpty {
-            Text("Using extra instructions from Settings.")
+            Text(lang.t("panel.extraHint"))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
@@ -469,7 +481,7 @@ struct PanelView: View {
 
     private var actionRow: some View {
         HStack(spacing: 8) {
-            Button(vm.mode.buttonLabel) {
+            Button(vm.mode.buttonLabel(lang.language)) {
                 Task { await vm.process() }
             }
             .keyboardShortcut(.return, modifiers: .command)
@@ -477,8 +489,19 @@ struct PanelView: View {
             .buttonStyle(.borderedProminent)
 
             if !vm.resultText.isEmpty {
-                Button(vm.copyFeedback ? "✅ Copied" : "📋 Copy") {
+                Button(vm.copyFeedback ? lang.t("panel.copied") : lang.t("panel.copy")) {
                     vm.copyResult()
+                }
+
+                if let target = panel.pasteBackTarget {
+                    Button(lang.t(target.hadSelection ? "paste.replace" : "paste.paste")) {
+                        vm.pasteBack(using: panel)
+                    }
+                    .keyboardShortcut(.return, modifiers: [.command, .option])
+                    .help(lang.t(
+                        target.hadSelection ? "paste.replaceHelp" : "paste.pasteHelp",
+                        target.appName ?? lang.t("paste.previousApp")
+                    ))
                 }
             }
             Spacer(minLength: 0)
@@ -497,7 +520,7 @@ struct PanelView: View {
 
             if !vm.resultText.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Result")
+                    Text(lang.t("panel.result"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     ScrollView {
@@ -513,7 +536,7 @@ struct PanelView: View {
                     .cornerRadius(8)
                 }
             } else if vm.statusMessage.isEmpty {
-                Text("Result will appear here. ⌘↩ to run.")
+                Text(lang.t("panel.resultHint"))
                     .font(.caption)
                     .foregroundStyle(.tertiary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

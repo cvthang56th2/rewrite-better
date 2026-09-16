@@ -1,43 +1,65 @@
+importScripts('shared/i18n.js');
 
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
-    id: "rewriteSelection",
-    title: "Rewrite with Rewrite Better",
-    contexts: ["selection"]
+function syncContextMenu(language) {
+  RewriteBetter.setLanguage(language);
+  const title = RewriteBetter.t('context.rewrite');
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: 'rewriteSelection',
+      title,
+      contexts: ['selection']
+    });
   });
+}
+
+function loadAndSyncMenu() {
+  chrome.storage.sync.get(['uiLanguage'], (result) => {
+    syncContextMenu(result && result.uiLanguage);
+  });
+}
+
+chrome.runtime.onInstalled.addListener(loadAndSyncMenu);
+chrome.runtime.onStartup.addListener(loadAndSyncMenu);
+loadAndSyncMenu();
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'sync' && changes.uiLanguage) {
+    syncContextMenu(changes.uiLanguage.newValue);
+  }
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "rewriteSelection") {
+  if (info.menuItemId === 'rewriteSelection') {
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: (selectedText) => {
-        // Gửi message tới content script để hiển thị popup tại vị trí chuột
-        window.postMessage({
-          type: 'REWRITE_BETTER_SHOW_POPUP',
-          selectedText: selectedText
-        }, '*');
+        window.postMessage(
+          {
+            type: 'REWRITE_BETTER_SHOW_POPUP',
+            selectedText: selectedText
+          },
+          '*'
+        );
       },
       args: [info.selectionText]
     });
   }
 });
 
-// Handle keyboard shortcut commands
 chrome.commands.onCommand.addListener((command, tab) => {
-  if (command === "open-rewrite-popup") {
+  if (command === 'open-rewrite-popup') {
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: () => {
-        // Get selected text
         const selection = window.getSelection();
         const selectedText = selection.toString().trim();
-        
-        // If no text selected, show popup with empty content
-        window.postMessage({
-          type: 'REWRITE_BETTER_SHOW_POPUP',
-          selectedText: selectedText || ''
-        }, '*');
+        window.postMessage(
+          {
+            type: 'REWRITE_BETTER_SHOW_POPUP',
+            selectedText: selectedText || ''
+          },
+          '*'
+        );
       }
     });
   }

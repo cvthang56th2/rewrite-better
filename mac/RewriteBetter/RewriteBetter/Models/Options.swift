@@ -5,20 +5,12 @@ enum AppMode: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var label: String {
-        switch self {
-        case .rewrite: return "Rewrite"
-        case .format: return "Format"
-        case .reply: return "Reply"
-        }
+    func label(_ language: AppLanguage) -> String {
+        L10n.t("mode.\(rawValue)", language: language)
     }
 
-    var buttonLabel: String {
-        switch self {
-        case .rewrite: return "✨ Rewrite"
-        case .format: return "📄 Format"
-        case .reply: return "💬 Draft Reply"
-        }
+    func buttonLabel(_ language: AppLanguage) -> String {
+        L10n.t("action.\(rawValue)", language: language)
     }
 }
 
@@ -29,44 +21,31 @@ struct OptionItem: Identifiable, Hashable {
 }
 
 enum AppOptions {
-    static let tones: [OptionItem] = [
-        .init(value: "friendly", label: "Friendly"),
-        .init(value: "professional", label: "Professional"),
-        .init(value: "concise", label: "Concise"),
-        .init(value: "persuasive", label: "Persuasive"),
-        .init(value: "casual", label: "Casual")
-    ]
+    static func tones(_ language: AppLanguage) -> [OptionItem] {
+        localized(language, prefix: "tone", values: ["friendly", "professional", "concise", "persuasive", "casual"])
+    }
 
-    static let formatTypes: [OptionItem] = [
-        .init(value: "markdown", label: "Markdown"),
-        .init(value: "html", label: "HTML"),
-        .init(value: "bullet-points", label: "Bullets"),
-        .init(value: "numbered-list", label: "Numbered"),
-        .init(value: "table", label: "Table"),
-        .init(value: "outline", label: "Outline"),
-        .init(value: "summary", label: "Summary"),
-        .init(value: "faq", label: "FAQ")
-    ]
+    static func formatTypes(_ language: AppLanguage) -> [OptionItem] {
+        localized(language, prefix: "format", values: [
+            "markdown", "html", "bullet-points", "numbered-list", "table", "outline", "summary", "faq"
+        ])
+    }
 
-    static let channels: [OptionItem] = [
-        .init(value: "message", label: "Message"),
-        .init(value: "email", label: "Email")
-    ]
+    static func channels(_ language: AppLanguage) -> [OptionItem] {
+        localized(language, prefix: "channel", values: ["message", "email"])
+    }
 
-    static let intents: [OptionItem] = [
-        .init(value: "accept", label: "Accept"),
-        .init(value: "decline", label: "Decline"),
-        .init(value: "ask", label: "Ask"),
-        .init(value: "follow-up", label: "Follow up"),
-        .init(value: "thank", label: "Thank"),
-        .init(value: "general", label: "General")
-    ]
+    static func intents(_ language: AppLanguage) -> [OptionItem] {
+        localized(language, prefix: "intent", values: ["accept", "decline", "ask", "follow-up", "thank", "general"])
+    }
 
-    static let lengths: [OptionItem] = [
-        .init(value: "short", label: "Short"),
-        .init(value: "medium", label: "Medium"),
-        .init(value: "long", label: "Long")
-    ]
+    static func lengths(_ language: AppLanguage) -> [OptionItem] {
+        localized(language, prefix: "length", values: ["short", "medium", "long"])
+    }
+
+    private static func localized(_ language: AppLanguage, prefix: String, values: [String]) -> [OptionItem] {
+        values.map { .init(value: $0, label: L10n.t("\(prefix).\($0)", language: language)) }
+    }
 
     static let languages: [OptionItem] = [
         .init(value: "auto", label: "Auto"),

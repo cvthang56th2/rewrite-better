@@ -3,3 +3,9 @@ mac/dist/
 *.xcuserstate
 xcuserdata/
 .DS_Store
+web/downloads/*.zip
+web/downloads/*.dmg
+.vercel/
+win/node_modules/
+win/src-tauri/target/
+win/src-tauri/gen/
