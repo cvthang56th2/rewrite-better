@@ -168,6 +168,9 @@ enum L10n {
         "api.check": "Check",
 
         "settings.failoverOrder": "Failover order: Gemini → Groq → Cerebras → OpenAI. Multiple keys per provider: separate with comma or newline. On quota/rate-limit, the next key is used until all are exhausted.",
+        "settings.tab.keys": "Keys",
+        "settings.tab.writing": "Writing",
+        "settings.tab.general": "General",
         "settings.language": "Interface language",
         "settings.windowTitle": "Rewrite Better Settings",
         "settings.keysTitle": "API keys",
@@ -383,6 +386,9 @@ enum L10n {
         "api.check": "Kiểm tra",
 
         "settings.failoverOrder": "Thứ tự failover: Gemini → Groq → Cerebras → OpenAI. Nhiều key mỗi nhà cung cấp: cách nhau bằng dấu phẩy hoặc xuống dòng. Khi hết quota/rate-limit, key tiếp theo được dùng cho đến khi hết.",
+        "settings.tab.keys": "API key",
+        "settings.tab.writing": "Cách viết",
+        "settings.tab.general": "Chung",
         "settings.language": "Ngôn ngữ giao diện",
         "settings.windowTitle": "Cài đặt Rewrite Better",
         "settings.keysTitle": "API key",

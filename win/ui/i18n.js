@@ -5,6 +5,9 @@
   RB.I18N = {
     en: {
       'settings.save': 'Save',
+      'settings.tab.keys': 'Keys',
+      'settings.tab.writing': 'Writing',
+      'settings.tab.general': 'General',
       'settings.language': 'Interface language',
       'settings.windowTitle': 'Rewrite Better Settings',
       'settings.keysTitle': 'API keys',
@@ -57,6 +60,7 @@
       'settings.openHost': 'Open %@',
       'options.title': 'Rewrite Better Settings',
       'options.subtitle': 'Configure API keys to rewrite text anywhere on Windows',
+      'options.saveError': 'Could not save settings: %@',
       'panel.title': 'Rewrite Better',
       'panel.settings': 'Settings',
       'panel.close': 'Close',
@@ -167,6 +171,9 @@
     },
     vi: {
       'settings.save': 'Lưu',
+      'settings.tab.keys': 'API key',
+      'settings.tab.writing': 'Cách viết',
+      'settings.tab.general': 'Chung',
       'settings.language': 'Ngôn ngữ giao diện',
       'settings.windowTitle': 'Cài đặt Rewrite Better',
       'settings.keysTitle': 'API key',
@@ -218,6 +225,7 @@
       'settings.openHost': 'Mở %@',
       'options.title': 'Cài đặt Rewrite Better',
       'options.subtitle': 'Cấu hình API key để viết lại văn bản ở mọi app trên Windows',
+      'options.saveError': 'Lỗi khi lưu cài đặt: %@',
       'panel.title': 'Rewrite Better',
       'panel.settings': 'Cài đặt',
       'panel.close': 'Đóng',

@@ -5,6 +5,9 @@
   RB.I18N = {
     en: {
       'settings.save': 'Save',
+      'settings.tab.keys': 'Keys',
+      'settings.tab.writing': 'Writing',
+      'settings.tab.general': 'General',
       'settings.language': 'Interface language',
       'settings.windowTitle': 'Rewrite Better Settings',
       'settings.keysTitle': 'API keys',
@@ -153,6 +156,9 @@
     },
     vi: {
       'settings.save': 'Lưu',
+      'settings.tab.keys': 'API key',
+      'settings.tab.writing': 'Cách viết',
+      'settings.tab.general': 'Chung',
       'settings.language': 'Ngôn ngữ giao diện',
       'settings.windowTitle': 'Cài đặt Rewrite Better',
       'settings.keysTitle': 'API key',

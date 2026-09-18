@@ -21,6 +21,7 @@ final class SettingsStore {
 
     func setKeys(_ value: String, for provider: ChatProvider) {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard keys(for: provider) != trimmed else { return }
         if trimmed.isEmpty {
             deleteKeychain(account: account(for: provider))
         } else {
@@ -41,6 +42,7 @@ final class SettingsStore {
     }
 
     func setProviderEnabled(_ enabled: Bool, for provider: ChatProvider) {
+        guard isProviderEnabled(provider) != enabled else { return }
         UserDefaults.standard.set(enabled, forKey: enabledKey(for: provider))
     }
 
@@ -105,6 +107,7 @@ final class SettingsStore {
 
     func setExtraInstructions(_ value: String, for mode: AppMode) {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard extraInstructions(for: mode) != trimmed else { return }
         let key = extraInstructionsKey(for: mode)
         if trimmed.isEmpty {
             UserDefaults.standard.removeObject(forKey: key)
@@ -123,6 +126,7 @@ final class SettingsStore {
         get { UserDefaults.standard.string(forKey: "voiceSamples") ?? "" }
         set {
             let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard voiceSamples != trimmed else { return }
             if trimmed.isEmpty {
                 UserDefaults.standard.removeObject(forKey: "voiceSamples")
             } else {

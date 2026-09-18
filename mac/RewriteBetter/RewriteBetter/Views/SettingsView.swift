@@ -21,121 +21,78 @@ struct SettingsView: View {
     @State private var formatExtra = ""
     @State private var replyExtra = ""
     @State private var voiceSamples = ""
+    @State private var isReady = false
+    @State private var saveTask: Task<Void, Never>?
+    @State private var tab: SettingsTab = .keys
+    @State private var generalMessage = ""
+
+    private enum SettingsTab: Hashable {
+        case keys, writing, general
+    }
 
     var body: some View {
-        Form {
-            Section {
-                Picker(lang.t("settings.language"), selection: $lang.language) {
-                    ForEach(AppLanguage.allCases) { language in
-                        Text(language.displayName).tag(language)
-                    }
-                }
-                .pickerStyle(.segmented)
-            }
+        TabView(selection: $tab) {
+            keysForm
+                .tabItem { Label(lang.t("settings.tab.keys"), systemImage: "key") }
+                .tag(SettingsTab.keys)
+            writingForm
+                .tabItem { Label(lang.t("settings.tab.writing"), systemImage: "pencil") }
+                .tag(SettingsTab.writing)
+            generalForm
+                .tabItem { Label(lang.t("settings.tab.general"), systemImage: "gearshape") }
+                .tag(SettingsTab.general)
+        }
+        .frame(minWidth: 520, idealWidth: 560, minHeight: 400, idealHeight: 640)
+        .onAppear {
+            launchAtLogin = LaunchAtLogin.isEnabled
+            geminiKeys = SettingsStore.shared.keys(for: .gemini)
+            groqKeys = SettingsStore.shared.keys(for: .groq)
+            cerebrasKeys = SettingsStore.shared.keys(for: .cerebras)
+            openaiKeys = SettingsStore.shared.keys(for: .openai)
+            geminiEnabled = SettingsStore.shared.isProviderEnabled(.gemini)
+            groqEnabled = SettingsStore.shared.isProviderEnabled(.groq)
+            cerebrasEnabled = SettingsStore.shared.isProviderEnabled(.cerebras)
+            openaiEnabled = SettingsStore.shared.isProviderEnabled(.openai)
+            rewriteExtra = SettingsStore.shared.extraInstructions(for: .rewrite)
+            formatExtra = SettingsStore.shared.extraInstructions(for: .format)
+            replyExtra = SettingsStore.shared.extraInstructions(for: .reply)
+            voiceSamples = SettingsStore.shared.voiceSamples
+            NSApp.keyWindow?.title = lang.t("settings.windowTitle")
+            isReady = true
+        }
+        .onDisappear {
+            saveNow()
+        }
+        .onChange(of: lang.language) { _ in
+            NSApp.keyWindow?.title = lang.t("settings.windowTitle")
+        }
+        .onChange(of: geminiKeys) { _ in scheduleSave() }
+        .onChange(of: groqKeys) { _ in scheduleSave() }
+        .onChange(of: cerebrasKeys) { _ in scheduleSave() }
+        .onChange(of: openaiKeys) { _ in scheduleSave() }
+        .onChange(of: geminiEnabled) { _ in saveNow() }
+        .onChange(of: groqEnabled) { _ in saveNow() }
+        .onChange(of: cerebrasEnabled) { _ in saveNow() }
+        .onChange(of: openaiEnabled) { _ in saveNow() }
+        .onChange(of: rewriteExtra) { _ in scheduleSave() }
+        .onChange(of: formatExtra) { _ in scheduleSave() }
+        .onChange(of: replyExtra) { _ in scheduleSave() }
+        .onChange(of: voiceSamples) { _ in scheduleSave() }
+    }
 
+    private var keysForm: some View {
+        Form {
             Section {
                 APIKeyDisclaimer()
                 ProviderKeyField(provider: .gemini, text: $geminiKeys, enabled: $geminiEnabled)
                 ProviderKeyField(provider: .groq, text: $groqKeys, enabled: $groqEnabled)
                 ProviderKeyField(provider: .cerebras, text: $cerebrasKeys, enabled: $cerebrasEnabled)
                 ProviderKeyField(provider: .openai, text: $openaiKeys, enabled: $openaiEnabled)
-            } header: {
-                Text(lang.t("settings.keysTitle"))
-            } footer: {
-                Text(lang.t("settings.failoverOrder"))
-            }
 
-            Section {
-                Toggle(lang.t("settings.openAtLogin"), isOn: $launchAtLogin)
-                    .onChange(of: launchAtLogin) { newValue in
-                        do {
-                            _ = try LaunchAtLogin.setEnabled(newValue)
-                            launchAtLogin = LaunchAtLogin.isEnabled
-                            launchAtLoginError = ""
-                            message = lang.t(newValue ? "settings.openAtLoginOn" : "settings.openAtLoginOff")
-                        } catch {
-                            launchAtLogin = LaunchAtLogin.isEnabled
-                            launchAtLoginError = error.localizedDescription
-                            message = lang.t("settings.openAtLoginFail")
-                        }
-                    }
-
-                Text(lang.t("settings.openAtLoginHelp"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                if !launchAtLoginError.isEmpty {
-                    Text(launchAtLoginError)
-                        .font(.caption)
-                        .foregroundStyle(.red)
+                Button(lang.t("settings.testKeys")) {
+                    Task { await testKeys() }
                 }
-
-                HStack(spacing: 8) {
-                    Text(lang.t("settings.shortcut"))
-                    Spacer()
-                    if hotkeys.current != .default {
-                        Button(lang.t("settings.reset")) {
-                            applyHotkey(.default)
-                        }
-                        .controlSize(.small)
-                    }
-                    HotkeyRecorderButton(hotkey: hotkeys.current) { shortcut in
-                        applyHotkey(shortcut)
-                    }
-                }
-            } footer: {
-                Text(lang.t("settings.shortcutHelp"))
-            }
-
-            Section {
-                ExtraInstructionsEditor(
-                    title: lang.t("mode.rewrite"),
-                    text: $rewriteExtra,
-                    placeholder: lang.t("settings.extraRewritePlaceholder")
-                )
-                ExtraInstructionsEditor(
-                    title: lang.t("mode.format"),
-                    text: $formatExtra,
-                    placeholder: lang.t("settings.extraFormatPlaceholder")
-                )
-                ExtraInstructionsEditor(
-                    title: lang.t("mode.reply"),
-                    text: $replyExtra,
-                    placeholder: lang.t("settings.extraReplyPlaceholder")
-                )
-            } header: {
-                Text(lang.t("settings.extraTitle"))
-            } footer: {
-                Text(lang.t("settings.extraHelp"))
-            }
-
-            Section {
-                ExtraInstructionsEditor(
-                    title: lang.t("settings.voiceTitle"),
-                    text: $voiceSamples,
-                    placeholder: lang.t("settings.voicePlaceholder"),
-                    minHeight: 96,
-                    maxHeight: 160
-                )
-            } header: {
-                Text(lang.t("settings.voiceTitle"))
-            } footer: {
-                Text(lang.t("settings.voiceHelp"))
-            }
-
-            Section {
-                HStack {
-                    Button(lang.t("settings.save")) {
-                        saveKeys()
-                        message = lang.t("settings.saved")
-                    }
-                    .keyboardShortcut(.defaultAction)
-
-                    Button(lang.t("settings.testKeys")) {
-                        Task { await testKeys() }
-                    }
-                    .disabled(isTesting || !hasAnyDraftKey)
-                }
+                .disabled(isTesting || !hasAnyDraftKey)
 
                 if isTesting {
                     HStack(spacing: 8) {
@@ -173,7 +130,114 @@ struct SettingsView: View {
                         }
                     }
                 }
+            } footer: {
+                Text(lang.t("settings.failoverOrder"))
+            }
+        }
+        .formStyle(.grouped)
+    }
 
+    private var writingForm: some View {
+        Form {
+            Section {
+                ExtraInstructionsEditor(
+                    title: lang.t("mode.rewrite"),
+                    text: $rewriteExtra,
+                    placeholder: lang.t("settings.extraRewritePlaceholder")
+                )
+                ExtraInstructionsEditor(
+                    title: lang.t("mode.format"),
+                    text: $formatExtra,
+                    placeholder: lang.t("settings.extraFormatPlaceholder")
+                )
+                ExtraInstructionsEditor(
+                    title: lang.t("mode.reply"),
+                    text: $replyExtra,
+                    placeholder: lang.t("settings.extraReplyPlaceholder")
+                )
+            } header: {
+                Text(lang.t("settings.extraTitle"))
+            } footer: {
+                Text(lang.t("settings.extraHelp"))
+            }
+
+            Section {
+                ExtraInstructionsEditor(
+                    title: lang.t("settings.voiceTitle"),
+                    text: $voiceSamples,
+                    placeholder: lang.t("settings.voicePlaceholder"),
+                    minHeight: 96,
+                    maxHeight: 160
+                )
+            } header: {
+                Text(lang.t("settings.voiceTitle"))
+            } footer: {
+                Text(lang.t("settings.voiceHelp"))
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    private var generalForm: some View {
+        Form {
+            Section {
+                Picker(lang.t("settings.language"), selection: $lang.language) {
+                    ForEach(AppLanguage.allCases) { language in
+                        Text(language.displayName).tag(language)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+
+            Section {
+                Toggle(lang.t("settings.openAtLogin"), isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { newValue in
+                        do {
+                            _ = try LaunchAtLogin.setEnabled(newValue)
+                            launchAtLogin = LaunchAtLogin.isEnabled
+                            launchAtLoginError = ""
+                            generalMessage = lang.t(newValue ? "settings.openAtLoginOn" : "settings.openAtLoginOff")
+                        } catch {
+                            launchAtLogin = LaunchAtLogin.isEnabled
+                            launchAtLoginError = error.localizedDescription
+                            generalMessage = lang.t("settings.openAtLoginFail")
+                        }
+                    }
+
+                Text(lang.t("settings.openAtLoginHelp"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                if !launchAtLoginError.isEmpty {
+                    Text(launchAtLoginError)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+
+                HStack(spacing: 8) {
+                    Text(lang.t("settings.shortcut"))
+                    Spacer()
+                    if hotkeys.current != .default {
+                        Button(lang.t("settings.reset")) {
+                            applyHotkey(.default)
+                        }
+                        .controlSize(.small)
+                    }
+                    HotkeyRecorderButton(hotkey: hotkeys.current) { shortcut in
+                        applyHotkey(shortcut)
+                    }
+                }
+
+                if !generalMessage.isEmpty {
+                    Text(generalMessage)
+                        .font(.callout)
+                        .textSelection(.enabled)
+                }
+            } footer: {
+                Text(lang.t("settings.shortcutHelp"))
+            }
+
+            Section {
                 HStack {
                     Button(lang.t("settings.openAccessibility")) {
                         TextCaptureService.openAccessibilitySettings()
@@ -190,26 +254,6 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(minWidth: 520, idealWidth: 560, minHeight: 400, idealHeight: 640)
-        .onAppear {
-            launchAtLogin = LaunchAtLogin.isEnabled
-            geminiKeys = SettingsStore.shared.keys(for: .gemini)
-            groqKeys = SettingsStore.shared.keys(for: .groq)
-            cerebrasKeys = SettingsStore.shared.keys(for: .cerebras)
-            openaiKeys = SettingsStore.shared.keys(for: .openai)
-            geminiEnabled = SettingsStore.shared.isProviderEnabled(.gemini)
-            groqEnabled = SettingsStore.shared.isProviderEnabled(.groq)
-            cerebrasEnabled = SettingsStore.shared.isProviderEnabled(.cerebras)
-            openaiEnabled = SettingsStore.shared.isProviderEnabled(.openai)
-            rewriteExtra = SettingsStore.shared.extraInstructions(for: .rewrite)
-            formatExtra = SettingsStore.shared.extraInstructions(for: .format)
-            replyExtra = SettingsStore.shared.extraInstructions(for: .reply)
-            voiceSamples = SettingsStore.shared.voiceSamples
-            NSApp.keyWindow?.title = lang.t("settings.windowTitle")
-        }
-        .onChange(of: lang.language) { _ in
-            NSApp.keyWindow?.title = lang.t("settings.windowTitle")
-        }
     }
 
     private var hasAnyDraftKey: Bool {
@@ -235,18 +279,34 @@ struct SettingsView: View {
         SettingsStore.shared.voiceSamples = voiceSamples
     }
 
+    private func scheduleSave() {
+        guard isReady else { return }
+        saveTask?.cancel()
+        saveTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 600_000_000)
+            guard !Task.isCancelled else { return }
+            saveKeys()
+        }
+    }
+
+    private func saveNow() {
+        guard isReady else { return }
+        saveTask?.cancel()
+        saveKeys()
+    }
+
     private func applyHotkey(_ shortcut: PanelHotkey) {
         if HotkeyService.shared.apply(shortcut) {
-            message = lang.t("settings.shortcutSet", shortcut.displayString)
+            generalMessage = lang.t("settings.shortcutSet", shortcut.displayString)
         } else {
-            message = lang.t("settings.shortcutFail", shortcut.displayString)
+            generalMessage = lang.t("settings.shortcutFail", shortcut.displayString)
         }
     }
 
     private func testKeys() async {
         isTesting = true
         defer { isTesting = false }
-        saveKeys()
+        saveNow()
         keyTestResults = []
         message = lang.t("settings.testing")
 

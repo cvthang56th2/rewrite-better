@@ -7,12 +7,15 @@ document.addEventListener('DOMContentLoaded', function () {
     extraFormat: document.getElementById('extraFormat'),
     extraReply: document.getElementById('extraReply'),
     voiceSamples: document.getElementById('voiceSamples'),
-    save: document.getElementById('saveBtn'),
     test: document.getElementById('testBtn'),
     message: document.getElementById('message'),
     results: document.getElementById('testResults')
   };
   const keyInputs = {};
+  let ready = false;
+  let saveTimer = null;
+  let lastSignature = '';
+  let lastKeysSignature = '';
 
   function applyI18n() {
     document.documentElement.lang = RB.uiLanguage;
@@ -42,6 +45,23 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  function bindTabs() {
+    const tabs = Array.from(document.querySelectorAll('[data-tab]'));
+    function show(id) {
+      document.querySelectorAll('[data-tab-panel]').forEach((panel) => {
+        panel.hidden = panel.getAttribute('data-tab-panel') !== id;
+      });
+      tabs.forEach((tab) => {
+        const on = tab.getAttribute('data-tab') === id;
+        tab.setAttribute('aria-selected', on ? 'true' : 'false');
+        tab.tabIndex = on ? 0 : -1;
+      });
+    }
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => show(tab.getAttribute('data-tab')));
+    });
+  }
+
   function renderProviders() {
     els.providers.innerHTML = RB.PROVIDERS.map((provider) => {
       return `<div class="rb-provider">
@@ -64,7 +84,10 @@ document.addEventListener('DOMContentLoaded', function () {
       keyInputs[provider.value] = els.providers.querySelector(`[data-provider="${provider.value}"]`);
     });
     els.providers.querySelectorAll('[data-enabled]').forEach((toggle) => {
-      toggle.addEventListener('change', syncProviderState);
+      toggle.addEventListener('change', () => {
+        syncProviderState();
+        saveNow().catch(() => {});
+      });
     });
     syncProviderState();
   }
@@ -114,14 +137,21 @@ document.addEventListener('DOMContentLoaded', function () {
     els.extraReply.value = extra.reply || '';
     els.voiceSamples.value = prefs.voiceSamples || '';
     applyI18n();
+    rememberSaved();
+    ready = true;
   }
 
-  async function save() {
+  function collectKeys() {
     const keys = {};
     RB.PROVIDERS.forEach((provider) => {
       keys[provider.value] = keyInputs[provider.value].value;
     });
-    await RB.saveKeysAndPrefs(keys, {
+    return keys;
+  }
+
+  function signature() {
+    return JSON.stringify({
+      keys: collectKeys(),
       uiLanguage: els.language.value,
       extraInstructions: {
         rewrite: els.extraRewrite.value,
@@ -131,20 +161,73 @@ document.addEventListener('DOMContentLoaded', function () {
       voiceSamples: els.voiceSamples.value,
       enabledProviders: enabledProvidersFromUI()
     });
-    RB.dailySkip.clearAll();
-    applyI18n();
-    setMessage(RB.t('settings.saved'));
   }
 
+  function keysSignature() {
+    return JSON.stringify({
+      keys: collectKeys(),
+      enabledProviders: enabledProvidersFromUI()
+    });
+  }
+
+  function rememberSaved() {
+    lastSignature = signature();
+    lastKeysSignature = keysSignature();
+  }
+
+  function scheduleSave() {
+    if (!ready) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      save().catch((err) => setMessage(RB.t('options.saveError', err.message || err)));
+    }, 600);
+  }
+
+  function saveNow() {
+    if (!ready) return Promise.resolve();
+    clearTimeout(saveTimer);
+    return save().catch((err) => {
+      setMessage(RB.t('options.saveError', err.message || err));
+      throw err;
+    });
+  }
+
+  async function save() {
+    if (!ready) return;
+    const next = signature();
+    if (next === lastSignature) return;
+    const keysChanged = keysSignature() !== lastKeysSignature;
+    await RB.saveKeysAndPrefs(collectKeys(), {
+      uiLanguage: els.language.value,
+      extraInstructions: {
+        rewrite: els.extraRewrite.value,
+        format: els.extraFormat.value,
+        reply: els.extraReply.value
+      },
+      voiceSamples: els.voiceSamples.value,
+      enabledProviders: enabledProvidersFromUI()
+    });
+    rememberSaved();
+    if (keysChanged) RB.dailySkip.clearAll();
+  }
+
+  bindTabs();
   renderProviders();
 
   els.language.addEventListener('change', () => {
     RB.setLanguage(els.language.value);
     applyI18n();
+    saveNow().catch(() => {});
   });
 
-  els.save.addEventListener('click', () => {
-    save().catch((err) => setMessage(RB.t('options.saveError', err.message || err)));
+  [els.extraRewrite, els.extraFormat, els.extraReply, els.voiceSamples].forEach((field) => {
+    field.addEventListener('input', scheduleSave);
+    field.addEventListener('blur', () => saveNow().catch(() => {}));
+  });
+  els.providers.addEventListener('input', scheduleSave);
+  els.providers.addEventListener('focusout', () => saveNow().catch(() => {}));
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) saveNow().catch(() => {});
   });
 
   els.test.addEventListener('click', async () => {
@@ -152,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setMessage(RB.t('settings.testing'));
     els.results.innerHTML = '';
     try {
-      await save();
+      await saveNow();
       const results = await RB.testAllKeys();
       if (!results.length) {
         setMessage(RB.t('error.missingKey'));
