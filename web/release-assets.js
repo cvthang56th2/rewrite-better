@@ -76,6 +76,14 @@
     return date.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
   }
 
+  function fillReleaseBanner(template, { tag, date } = {}) {
+    let out = String(template || "").replace(/\{tag\}/g, tag || "");
+    const when = String(date || "").trim();
+    if (when) out = out.replace(/\{date\}/g, when);
+    else out = out.replace(/\s*[·•|]\s*\{date\}/g, "").replace(/\{date\}/g, "");
+    return out.replace(/\s+/g, " ").trim();
+  }
+
   function escapeHtml(value) {
     return String(value ?? "")
       .replace(/&/g, "&amp;")
@@ -167,6 +175,7 @@
     releaseDownloadUrls,
     shouldShowReleaseBanner,
     formatReleaseDate,
+    fillReleaseBanner,
     escapeHtml,
     renderReleaseNotes,
     readReleaseCache,

@@ -16,6 +16,7 @@ const {
   shouldShowReleaseBanner,
   releaseDownloadUrls,
   formatReleaseDate,
+  fillReleaseBanner,
   renderReleaseNotes,
   readReleaseCache,
   writeReleaseCache,
@@ -137,6 +138,11 @@ assert.strictEqual(row.win, 'https://github.com/cvthang56th2/rewrite-better/rele
 
 assert.ok(formatReleaseDate('2026-09-18T00:00:00Z', 'en').includes('2026'));
 assert.strictEqual(formatReleaseDate('not-a-date', 'en'), '');
+assert.strictEqual(
+  fillReleaseBanner('{tag} is out · {date}', { tag: 'v1.0.6', date: '18 Sep 2026' }),
+  'v1.0.6 is out · 18 Sep 2026',
+);
+assert.strictEqual(fillReleaseBanner('{tag} is out · {date}', { tag: 'v1.0.6', date: '' }), 'v1.0.6 is out');
 
 const notes = renderReleaseNotes(
   '## What\'s Changed\n* Fix banner by @thang in https://github.com/cvthang56th2/rewrite-better/pull/1\n\n**Full Changelog**: https://example.com/compare',

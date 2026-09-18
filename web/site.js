@@ -129,7 +129,7 @@ const COPY = {
     "rel.github": "Open GitHub Releases",
     "rel.empty": "No published releases yet.",
     "rel.notesEmpty": "No notes for this release.",
-    "rel.banner": "{tag} is out",
+    "rel.banner": "{tag} is out · {date}",
     "rel.bannerLink": "What's new",
     "rel.dismiss": "Dismiss",
   },
@@ -263,7 +263,7 @@ const COPY = {
     "rel.github": "Mở GitHub Releases",
     "rel.empty": "Chưa có bản phát hành.",
     "rel.notesEmpty": "Bản này chưa có ghi chú.",
-    "rel.banner": "{tag} đã ra mắt",
+    "rel.banner": "{tag} đã ra mắt · {date}",
     "rel.bannerLink": "Có gì mới",
     "rel.dismiss": "Đóng",
   },
@@ -493,13 +493,16 @@ function copyFor(lang) {
 }
 
 function refreshReleaseBanner() {
+  const api = window.RewriteBetterWeb;
   const banner = document.querySelector("[data-release-banner]");
   const tag = banner?.dataset.tag;
-  if (!banner || banner.hidden || !tag) return;
-  const dict = copyFor(document.documentElement.lang || "en");
+  if (!api || !banner || banner.hidden || !tag) return;
+  const lang = document.documentElement.lang || "en";
+  const dict = copyFor(lang);
+  const date = api.formatReleaseDate(banner.dataset.published, lang);
   const title = banner.querySelector("[data-release-banner-title]");
   const link = banner.querySelector("[data-release-banner-link]");
-  if (title) title.textContent = dict["rel.banner"].replace("{tag}", tag);
+  if (title) title.textContent = api.fillReleaseBanner(dict["rel.banner"], { tag, date });
   if (link) link.textContent = dict["rel.bannerLink"];
 }
 
@@ -511,6 +514,7 @@ function showReleaseBanner(release) {
   const dismissed = localStorage.getItem(api.DISMISSED_RELEASE_KEY);
   if (!api.shouldShowReleaseBanner(tag, dismissed)) return;
   banner.dataset.tag = tag;
+  banner.dataset.published = release.published_at || release.created_at || "";
   banner.hidden = false;
   refreshReleaseBanner();
 }
