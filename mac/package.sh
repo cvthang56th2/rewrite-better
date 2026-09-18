@@ -10,7 +10,11 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 PROJECT="$ROOT/RewriteBetter/RewriteBetter.xcodeproj"
 DERIVED="$ROOT/RewriteBetter/DerivedData"
 APP_NAME="RewriteBetter"
-VERSION="${VERSION:-1.0}"
+if [[ -z "${VERSION:-}" && -f "$ROOT/../scripts/release-version.js" ]]; then
+  VERSION="$(node "$ROOT/../scripts/release-version.js")"
+fi
+VERSION="${VERSION#v}"
+VERSION="${VERSION:-1.0.0}"
 DIST="$ROOT/dist"
 STAGE="$DIST/dmg-stage"
 DMG="$DIST/RewriteBetter-${VERSION}.dmg"
@@ -50,6 +54,8 @@ xcodebuild \
   -configuration Release \
   -destination 'generic/platform=macOS' \
   -derivedDataPath "$DERIVED" \
+  MARKETING_VERSION="$VERSION" \
+  CURRENT_PROJECT_VERSION="$VERSION" \
   CODE_SIGN_IDENTITY="-" \
   CODE_SIGNING_REQUIRED=NO \
   DEVELOPMENT_TEAM="" \

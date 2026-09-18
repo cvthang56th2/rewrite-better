@@ -47,7 +47,7 @@ Kill, rebuild, and relaunch in one step:
 ./mac/package.sh
 ```
 
-Output: `mac/dist/RewriteBetter-1.0.dmg`
+Output: `mac/dist/RewriteBetter-<version>.dmg` (version comes from `VERSION`, or the `v*` git tag).
 
 The script generates the app icon from `Resources/icon.png`, builds Release, and makes a DMG.
 

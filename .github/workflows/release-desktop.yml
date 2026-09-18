@@ -32,9 +32,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Build installer
         working-directory: win
+        shell: bash
         run: |
+          VERSION="$(node ../scripts/release-version.js)"
           npm ci
-          npm run build
+          npx tauri build --config "{\"version\":\"$VERSION\"}"
       - uses: actions/upload-artifact@v4
         with:
           name: win-setup
@@ -74,3 +76,10 @@ jobs:
               --generate-notes \
               --latest
           fi
+          version="${tag#v}"
+          while IFS= read -r name; do
+            [[ -z "$name" ]] && continue
+            if [[ "$name" == *.dmg || "$name" == *.exe ]] && [[ "$name" != *"$version"* ]]; then
+              gh release delete-asset "$tag" "$name" --yes --repo "${GITHUB_REPOSITORY}"
+            fi
+          done < <(gh release view "$tag" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name')

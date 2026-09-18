@@ -62,6 +62,13 @@
     return tag !== String(dismissedTag || "").trim();
   }
 
+  function shouldUseReleaseCache(cached, latest) {
+    const cachedTag = (publishedReleases(cached)[0] || {}).tag_name;
+    const latestTag = latest && latest.tag_name;
+    if (!cachedTag || !latestTag) return false;
+    return String(cachedTag).trim() === String(latestTag).trim();
+  }
+
   function formatReleaseDate(iso, lang) {
     const date = new Date(iso);
     if (!iso || Number.isNaN(date.getTime())) return "";
@@ -164,6 +171,7 @@
     renderReleaseNotes,
     readReleaseCache,
     writeReleaseCache,
+    shouldUseReleaseCache,
   };
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;

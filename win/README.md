@@ -41,9 +41,9 @@ npm run icon
 npm run build
 ```
 
-Installer: `src-tauri/target/release/bundle/nsis/Rewrite Better_1.0.0_x64-setup.exe`
+Installer: `src-tauri/target/release/bundle/nsis/Rewrite Better_<version>_x64-setup.exe`
 
-For the public site / GitHub Release, the Windows installer can keep the Tauri name (`Rewrite Better_1.0.0_x64-setup.exe`). The download site picks the `.exe` from the latest GitHub Release automatically.
+CI sets that version from the `v*` git tag. The download site picks the `.exe` from the latest GitHub Release automatically.
 
 Or copy it to `web/downloads/RewriteBetter-setup.exe` before a Vercel deploy.
 

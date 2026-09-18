@@ -19,6 +19,7 @@ const {
   renderReleaseNotes,
   readReleaseCache,
   writeReleaseCache,
+  shouldUseReleaseCache,
   RELEASE_CACHE_KEY,
   RELEASE_CACHE_TTL_MS,
   DISMISSED_RELEASE_KEY,
@@ -167,6 +168,17 @@ writeReleaseCache(storage, payload, 1000);
 assert.deepStrictEqual(JSON.parse(JSON.stringify(readReleaseCache(storage, 1000))), payload);
 assert.ok(storage.getItem(RELEASE_CACHE_KEY));
 assert.strictEqual(readReleaseCache(storage, 1000 + RELEASE_CACHE_TTL_MS + 1), null);
+
+assert.strictEqual(
+  shouldUseReleaseCache([{ tag_name: 'v1.0.5', draft: false, prerelease: false }], { tag_name: 'v1.0.5' }),
+  true,
+);
+assert.strictEqual(
+  shouldUseReleaseCache([{ tag_name: 'v1.0.5', draft: false, prerelease: false }], { tag_name: 'v1.0.6' }),
+  false,
+);
+assert.strictEqual(shouldUseReleaseCache(null, { tag_name: 'v1.0.6' }), false);
+assert.strictEqual(shouldUseReleaseCache([{ tag_name: 'v1.0.6' }], null), false);
 
 const releasesPage = fs.readFileSync(path.join(__dirname, 'releases.html'), 'utf8');
 assert.ok(releasesPage.includes('data-release-list'));

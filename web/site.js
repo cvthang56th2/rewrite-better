@@ -471,15 +471,20 @@ async function loadReleasePayload() {
   const api = window.RewriteBetterWeb;
   if (!api) return null;
   const cached = api.readReleaseCache(sessionStorage);
-  if (cached) return cached;
   try {
+    const latestRes = await fetch(`${RELEASE.api}/latest`);
+    const latest = latestRes.ok ? await latestRes.json() : null;
+    if (cached && api.shouldUseReleaseCache(cached, latest)) return cached;
     const all = await fetch(RELEASE.api);
-    if (!all.ok) return null;
-    const payload = await all.json();
-    api.writeReleaseCache(sessionStorage, payload);
-    return payload;
+    if (all.ok) {
+      const payload = await all.json();
+      api.writeReleaseCache(sessionStorage, payload);
+      return payload;
+    }
+    if (cached) return cached;
+    return latest ? [latest] : null;
   } catch {
-    return null;
+    return cached || null;
   }
 }
 
