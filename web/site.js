@@ -2,6 +2,7 @@ const COPY = {
   en: {
     "nav.download": "Download",
     "nav.privacy": "Privacy",
+    "nav.releases": "Releases",
     "nav.feedback": "Feedback",
     "nav.skip": "Skip to content",
     "nav.shots": "Screenshots",
@@ -121,10 +122,21 @@ const COPY = {
     "p.fact1": "No account, no backend of ours. We never receive the text you rewrite.",
     "p.fact2": "Chrome, Mac, and Windows keep your key locally. This website never asks for it.",
     "p.fact3": "Selected text goes from your device to the AI provider you configured. This website never sees it.",
+    "rel.h1": "Releases",
+    "rel.lede": "Desktop builds from GitHub. The Chrome zip stays on the homepage download section.",
+    "rel.loading": "Loading releases…",
+    "rel.error": "Couldn't load releases.",
+    "rel.github": "Open GitHub Releases",
+    "rel.empty": "No published releases yet.",
+    "rel.notesEmpty": "No notes for this release.",
+    "rel.banner": "{tag} is out",
+    "rel.bannerLink": "What's new",
+    "rel.dismiss": "Dismiss",
   },
   vi: {
     "nav.download": "Tải về",
     "nav.privacy": "Quyền riêng tư",
+    "nav.releases": "Bản phát hành",
     "nav.feedback": "Góp ý",
     "nav.skip": "Bỏ qua đến nội dung",
     "nav.shots": "Ảnh chụp",
@@ -244,6 +256,16 @@ const COPY = {
     "p.fact1": "Không tài khoản, không backend của chúng tôi. Chúng tôi không nhận đoạn text bạn viết lại.",
     "p.fact2": "Chrome, Mac, và Windows giữ key trên máy. Website này không hỏi key.",
     "p.fact3": "Text đang chọn đi từ máy bạn tới nhà cung cấp AI bạn cấu hình. Website này không thấy nội dung đó.",
+    "rel.h1": "Bản phát hành",
+    "rel.lede": "Bản desktop từ GitHub. File zip Chrome vẫn nằm ở mục tải trên trang chủ.",
+    "rel.loading": "Đang tải bản phát hành…",
+    "rel.error": "Không tải được danh sách bản phát hành.",
+    "rel.github": "Mở GitHub Releases",
+    "rel.empty": "Chưa có bản phát hành.",
+    "rel.notesEmpty": "Bản này chưa có ghi chú.",
+    "rel.banner": "{tag} đã ra mắt",
+    "rel.bannerLink": "Có gì mới",
+    "rel.dismiss": "Đóng",
   },
 };
 
@@ -352,6 +374,8 @@ function applyLang(lang) {
     }
   }
   refreshShotCopy(lang);
+  refreshReleaseBanner();
+  if (releasePayload !== undefined) renderReleaseList(releasePayload);
 }
 
 function renderChips(mode, lang) {
@@ -441,18 +465,119 @@ async function existingLocalUrl(path) {
   return null;
 }
 
-async function fetchPublishedRelease() {
+let releasePayload;
+
+async function loadReleasePayload() {
   const api = window.RewriteBetterWeb;
   if (!api) return null;
+  const cached = api.readReleaseCache(sessionStorage);
+  if (cached) return cached;
   try {
-    const latest = await fetch(`${RELEASE.api}/latest`);
-    if (latest.ok) return api.latestPublishedRelease(await latest.json());
     const all = await fetch(RELEASE.api);
-    if (all.ok) return api.latestPublishedRelease(await all.json());
+    if (!all.ok) return null;
+    const payload = await all.json();
+    api.writeReleaseCache(sessionStorage, payload);
+    return payload;
   } catch {
-    /* use fallback */
+    return null;
   }
-  return null;
+}
+
+function copyFor(lang) {
+  return COPY[lang] || COPY.en;
+}
+
+function refreshReleaseBanner() {
+  const banner = document.querySelector("[data-release-banner]");
+  const tag = banner?.dataset.tag;
+  if (!banner || banner.hidden || !tag) return;
+  const dict = copyFor(document.documentElement.lang || "en");
+  const title = banner.querySelector("[data-release-banner-title]");
+  const link = banner.querySelector("[data-release-banner-link]");
+  if (title) title.textContent = dict["rel.banner"].replace("{tag}", tag);
+  if (link) link.textContent = dict["rel.bannerLink"];
+}
+
+function showReleaseBanner(release) {
+  const api = window.RewriteBetterWeb;
+  const banner = document.querySelector("[data-release-banner]");
+  if (!api || !banner || !release) return;
+  const tag = String(release.tag_name || "").trim();
+  const dismissed = localStorage.getItem(api.DISMISSED_RELEASE_KEY);
+  if (!api.shouldShowReleaseBanner(tag, dismissed)) return;
+  banner.dataset.tag = tag;
+  banner.hidden = false;
+  refreshReleaseBanner();
+}
+
+function initReleaseBanner() {
+  const banner = document.querySelector("[data-release-banner]");
+  const api = window.RewriteBetterWeb;
+  if (!banner || !api) return;
+  banner.querySelector("[data-release-dismiss]")?.addEventListener("click", () => {
+    const tag = banner.dataset.tag;
+    if (tag) localStorage.setItem(api.DISMISSED_RELEASE_KEY, tag);
+    banner.hidden = true;
+  });
+}
+
+const DOWNLOAD_ICON =
+  '<span class="btn-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,2.34a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,103a8,8,0,0,0-11.32,11.32Z"/></svg></span>';
+
+function renderReleaseList(payload) {
+  const api = window.RewriteBetterWeb;
+  const list = document.querySelector("[data-release-list]");
+  const status = document.querySelector("[data-release-status]");
+  if (!api || !list) return;
+  const dict = copyFor(document.documentElement.lang || "en");
+  const releases = api.publishedReleases(payload);
+  if (!payload) {
+    if (status) {
+      status.hidden = false;
+      status.removeAttribute("data-i18n");
+      status.innerHTML = `${api.escapeHtml(dict["rel.error"])} <a href="${api.GITHUB_RELEASES_LATEST}">${api.escapeHtml(dict["rel.github"])}</a>`;
+    }
+    list.hidden = true;
+    list.innerHTML = "";
+    return;
+  }
+  if (!releases.length) {
+    if (status) {
+      status.hidden = false;
+      status.removeAttribute("data-i18n");
+      status.textContent = dict["rel.empty"];
+    }
+    list.hidden = true;
+    list.innerHTML = "";
+    return;
+  }
+  if (status) status.hidden = true;
+  list.hidden = false;
+  list.innerHTML = releases
+    .map((release) => {
+      const urls = api.releaseDownloadUrls(release);
+      const iso = release.published_at || release.created_at || "";
+      const date = api.formatReleaseDate(iso, document.documentElement.lang || "en");
+      const title = api.escapeHtml(release.name || release.tag_name || dict["rel.h1"]);
+      const tag = api.escapeHtml(release.tag_name || "");
+      const notes = api.renderReleaseNotes(release.body) || `<p>${api.escapeHtml(dict["rel.notesEmpty"])}</p>`;
+      return `<article class="release">
+        <header class="release-head">
+          <p class="release-tag">${tag}</p>
+          <div>
+            <h2>${title}</h2>
+            ${date ? `<time datetime="${api.escapeHtml(iso)}">${api.escapeHtml(date)}</time>` : ""}
+          </div>
+        </header>
+        <div class="release-actions">
+          <a class="btn btn-primary" data-download="mac" href="${api.escapeHtml(urls.mac)}"><span>${api.escapeHtml(dict["cta.mac"])}</span>${DOWNLOAD_ICON}</a>
+          <a class="btn btn-secondary" data-download="win" href="${api.escapeHtml(urls.win)}"><span>${api.escapeHtml(dict["cta.win"])}</span>${DOWNLOAD_ICON}</a>
+        </div>
+        <div class="prose release-notes">${notes}</div>
+      </article>`;
+    })
+    .join("");
+  if (typeof api.bindDownloadClicks === "function") api.bindDownloadClicks(list);
 }
 
 function styleHeroCtas(os) {
@@ -809,18 +934,34 @@ initVideoStage();
 initShots();
 initReveals();
 
-if (window.RewriteBetterWeb && document.getElementById("macDownload")) {
-  Promise.all([
-    existingLocalUrl(RELEASE.macLocal),
-    existingLocalUrl(RELEASE.winLocal),
-    fetchPublishedRelease(),
-  ]).then(([localMac, localWin, remote]) => {
-    const urls = window.RewriteBetterWeb.desktopDownloadUrls({ localMac, localWin, remote });
-    document.querySelectorAll("#macDownload, #macDownload2").forEach((a) => {
-      a.href = urls.mac;
-    });
-    document.querySelectorAll("#winDownload, #winDownload2").forEach((a) => {
-      a.href = urls.win;
-    });
+initReleaseBanner();
+
+if (window.RewriteBetterWeb && (document.getElementById("macDownload") || document.querySelector("[data-release-list]"))) {
+  const payloadPromise = loadReleasePayload().then((payload) => {
+    releasePayload = payload;
+    return payload;
   });
+
+  if (document.getElementById("macDownload")) {
+    Promise.all([
+      existingLocalUrl(RELEASE.macLocal),
+      existingLocalUrl(RELEASE.winLocal),
+      payloadPromise,
+    ]).then(([localMac, localWin, payload]) => {
+      const api = window.RewriteBetterWeb;
+      const remote = api.latestPublishedRelease(payload);
+      const urls = api.desktopDownloadUrls({ localMac, localWin, remote });
+      document.querySelectorAll("#macDownload, #macDownload2").forEach((a) => {
+        a.href = urls.mac;
+      });
+      document.querySelectorAll("#winDownload, #winDownload2").forEach((a) => {
+        a.href = urls.win;
+      });
+      showReleaseBanner(api.publishedReleases(payload)[0]);
+    });
+  }
+
+  if (document.querySelector("[data-release-list]")) {
+    payloadPromise.then((payload) => renderReleaseList(payload));
+  }
 }
