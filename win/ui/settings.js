@@ -37,10 +37,17 @@
       const input = keyInputs[provider.value];
       if (input) {
         input.placeholder = RB.t('settings.placeholder.' + provider.value);
-        const summary = input.closest('.rb-provider').querySelector('.rb-provider-summary');
+        const card = input.closest('.rb-provider');
+        const summary = card.querySelector('.rb-provider-summary');
         if (summary) summary.textContent = RB.t('provider.' + provider.value + '.summary');
-        const label = input.closest('.rb-provider').querySelector('.rb-provider-name');
+        const label = card.querySelector('.rb-provider-name');
         if (label) label.textContent = provider.displayName;
+        const toggleLabel = card.querySelector('.rb-switch-label');
+        if (toggleLabel) toggleLabel.textContent = RB.t('settings.providerEnabled');
+        const toggle = card.querySelector('[data-enabled]');
+        if (toggle) {
+          toggle.setAttribute('aria-label', RB.t('settings.providerEnabled') + ' ' + provider.displayName);
+        }
       }
     });
     els.hotkey.textContent = currentHotkey;
@@ -51,8 +58,15 @@
     els.providers.innerHTML = RB.PROVIDERS.map((provider) => {
       return `<div class="rb-provider">
         <div class="rb-provider-head">
-          <span class="rb-provider-name">${provider.displayName}</span>
-          <a href="${provider.helpURL}" target="_blank" rel="noreferrer">${provider.helpURL.replace(/^https?:\/\//, '')}</a>
+          <div class="rb-provider-title">
+            <span class="rb-provider-name">${provider.displayName}</span>
+            <a href="${provider.helpURL}" target="_blank" rel="noreferrer">${provider.helpURL.replace(/^https?:\/\//, '')}</a>
+          </div>
+          <label class="rb-switch">
+            <input type="checkbox" data-enabled="${provider.value}" checked>
+            <span class="rb-switch-track" aria-hidden="true"></span>
+            <span class="rb-switch-label">${RB.t('settings.providerEnabled')}</span>
+          </label>
         </div>
         <p class="rb-hint rb-provider-summary">${RB.t('provider.' + provider.value + '.summary')}</p>
         <textarea data-provider="${provider.value}" rows="2" spellcheck="false"></textarea>
@@ -60,6 +74,27 @@
     }).join('');
     RB.PROVIDERS.forEach((provider) => {
       keyInputs[provider.value] = els.providers.querySelector(`[data-provider="${provider.value}"]`);
+    });
+    els.providers.querySelectorAll('[data-enabled]').forEach((toggle) => {
+      toggle.addEventListener('change', syncProviderState);
+    });
+    syncProviderState();
+  }
+
+  function enabledProvidersFromUI() {
+    const enabled = {};
+    RB.PROVIDERS.forEach((provider) => {
+      const toggle = els.providers.querySelector(`[data-enabled="${provider.value}"]`);
+      enabled[provider.value] = !toggle || toggle.checked;
+    });
+    return enabled;
+  }
+
+  function syncProviderState() {
+    RB.PROVIDERS.forEach((provider) => {
+      const toggle = els.providers.querySelector(`[data-enabled="${provider.value}"]`);
+      const card = toggle && toggle.closest('.rb-provider');
+      if (card) card.classList.toggle('is-disabled', !toggle.checked);
     });
   }
 
@@ -93,7 +128,10 @@
     els.language.value = RB.uiLanguage;
     RB.PROVIDERS.forEach((provider) => {
       keyInputs[provider.value].value = keys[provider.value] || '';
+      const toggle = els.providers.querySelector(`[data-enabled="${provider.value}"]`);
+      if (toggle) toggle.checked = RB.normalizeEnabledProviders(prefs.enabledProviders)[provider.value];
     });
+    syncProviderState();
     els.login.checked = !!autostart;
     currentHotkey = prefs.hotkey || DEFAULT_HOTKEY;
     const extra = prefs.extraInstructions || {};
@@ -118,7 +156,8 @@
           format: els.extraFormat.value,
           reply: els.extraReply.value
         },
-        voiceSamples: els.voiceSamples.value
+        voiceSamples: els.voiceSamples.value,
+        enabledProviders: enabledProvidersFromUI()
       }
     });
     try {

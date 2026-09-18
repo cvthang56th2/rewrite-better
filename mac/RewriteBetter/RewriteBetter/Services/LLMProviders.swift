@@ -165,9 +165,19 @@ enum LLMProviders {
         return false
     }
 
-    static func resolveChatBackends(keysByProvider: [ChatProvider: String]) -> [ChatBackend] {
-        var chain = fallbackOrder.flatMap { buildBackends($0, raw: keysByProvider[$0] ?? "") }
-        let openai = buildBackends(.openai, raw: keysByProvider[.openai] ?? "")
+    static func resolveChatBackends(
+        keysByProvider: [ChatProvider: String],
+        enabledProviders: [ChatProvider: Bool] = [:]
+    ) -> [ChatBackend] {
+        func isEnabled(_ provider: ChatProvider) -> Bool {
+            enabledProviders[provider] ?? true
+        }
+
+        let chain = fallbackOrder.flatMap { provider -> [ChatBackend] in
+            guard isEnabled(provider) else { return [] }
+            return buildBackends(provider, raw: keysByProvider[provider] ?? "")
+        }
+        let openai = isEnabled(.openai) ? buildBackends(.openai, raw: keysByProvider[.openai] ?? "") : []
         if !chain.isEmpty {
             return openai.isEmpty ? chain : chain + openai
         }

@@ -1,0 +1,56 @@
+---
+description: Keep Chrome, macOS, and Windows app behavior in sync on every change
+alwaysApply: true
+---
+
+# Cross-platform parity (Chrome, Mac, Windows)
+
+Rewrite Better ships the **same writing panel** on three platforms. Any product change in the app must land on **all three** in the same change:
+
+| Platform | Root |
+|----------|------|
+| Chrome extension | `chrome/` |
+| macOS (SwiftUI) | `mac/` |
+| Windows (Tauri) | `win/` |
+
+Do not finish a feature, bugfix, copy, prompt, option, or UI change on only one platform.
+
+## Shared logic map
+
+Port the same behavior. Chrome `shared/` and Windows `ui/` are JS; Mac is Swift.
+
+| Concern | Chrome | Windows | macOS |
+|---------|--------|---------|-------|
+| Panel UI / flow | `chrome/shared/panel.js` | `win/ui/panel.js` | `Views/PanelView.swift`, `Services/PanelController.swift` |
+| Prompts | `chrome/shared/prompts.js` | `win/ui/prompts.js` | `Services/PromptBuilder.swift`, `WritingAssistPrompts.swift` |
+| Options / tones / formats | `chrome/shared/options.js` | `win/ui/options.js` | `Models/Options.swift` |
+| i18n (EN / VI) | `chrome/shared/i18n.js` | `win/ui/i18n.js` | `Models/L10n.swift` |
+| LLM providers / failover | `chrome/shared/llm-providers.js` | `win/ui/llm-providers.js` | `Services/LLMProviders.swift` |
+| Diff | `chrome/shared/diff.js` | `win/ui/diff.js` | `Services/ResultDiff.swift` |
+| Writing assist | `chrome/shared/writing-assist.js` | `win/ui/writing-assist.js` | `WritingAssistController.swift` |
+| Daily key skip | `chrome/shared/daily-skip.js` | `win/ui/daily-skip.js` | `Services/DailyKeySkipStore.swift` |
+| Settings UI | `chrome/options.html`, `options.js` | `win/ui/settings.html`, `settings.js` | `Views/SettingsView.swift` |
+| Styles (Chrome / Win) | `chrome/styles.css` | `win/ui/styles.css` | SwiftUI views |
+
+If you add a string, option, prompt, or panel control, add it in **all three** columns.
+
+## Platform-only (do not copy blindly)
+
+Keep native where the OS requires it. Still document the equivalent if the **user-visible** behavior should match.
+
+- **Chrome only:** `manifest.json`, content/popup shells, `chrome.storage`, context menu, in-page replace
+- **macOS only:** Accessibility capture, Keychain, menu bar, Carbon hotkey, paste-back
+- **Windows only:** Tauri tray/hotkey, `win/src-tauri/`, local key storage, paste-back
+
+`web/` is the marketing site, not a fourth app. Update it only when downloads, screenshots, or public copy must match the product.
+
+## Done when
+
+1. Behavior, copy, prompts, and settings match on Chrome, Mac, and Windows (except true OS constraints).
+2. Tests for that logic are updated on each platform that has them (`chrome/shared/*.test.js`, `win/ui/*.test.js`, `mac/.../RewriteBetterTests`).
+3. The change is not left as a TODO on another platform.
+
+```text
+❌ BAD: add a rewrite tone in chrome/shared/options.js and ship
+✅ GOOD: same tone in chrome/shared/options.js, win/ui/options.js, and mac Options.swift (plus i18n / L10n)
+```

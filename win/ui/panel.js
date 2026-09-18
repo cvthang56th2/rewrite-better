@@ -635,8 +635,9 @@
     async function refreshApiStatus() {
       if (!apiStatusEl) return;
       try {
-        const keys = await RB.getKeysByProvider();
-        const backends = RB.resolveChatBackends(keys);
+        const backends = RB.resolveActiveBackends
+          ? await RB.resolveActiveBackends()
+          : RB.resolveChatBackends(await RB.getKeysByProvider());
         if (backends.length) {
           apiStatusEl.hidden = true;
           apiStatusEl.className = 'rb-api-status';

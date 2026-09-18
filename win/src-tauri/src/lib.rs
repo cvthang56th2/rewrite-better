@@ -35,6 +35,7 @@ fn save_prefs(app: AppHandle, prefs: Prefs) -> Result<(), String> {
     current.ui_language = prefs.ui_language;
     current.extra_instructions = prefs.extra_instructions;
     current.voice_samples = prefs.voice_samples;
+    current.enabled_providers = prefs.enabled_providers;
     store::save_prefs(&app, &current)
 }
 

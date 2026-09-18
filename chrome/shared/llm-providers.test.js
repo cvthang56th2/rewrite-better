@@ -58,6 +58,40 @@ assert.deepStrictEqual(
   ['openai']
 );
 
+assert.deepStrictEqual(hostArray(RB.normalizeEnabledProviders(undefined)), {
+  gemini: true,
+  groq: true,
+  cerebras: true,
+  openai: true
+});
+assert.deepStrictEqual(hostArray(RB.normalizeEnabledProviders({ groq: false, gemini: 'no' })), {
+  gemini: true,
+  groq: false,
+  cerebras: true,
+  openai: true
+});
+
+const skippedGroq = hostArray(
+  RB.resolveChatBackends(
+    {
+      openai: 'sk-last',
+      groq: 'gsk_mid',
+      gemini: 'AIza-first',
+      cerebras: 'csk_third'
+    },
+    { groq: false }
+  )
+);
+assert.deepStrictEqual(
+  skippedGroq.map((b) => b.provider),
+  ['gemini', 'cerebras', 'openai']
+);
+
+const allDisabled = hostArray(
+  RB.resolveChatBackends({ gemini: 'AIza', openai: 'sk-last' }, { gemini: false, openai: false })
+);
+assert.deepStrictEqual(allDisabled, []);
+
 assert.strictEqual(RB.isQuotaError({ status: 429, message: 'slow down' }), true);
 assert.strictEqual(RB.isQuotaError({ status: 402, message: 'pay' }), true);
 assert.strictEqual(RB.isQuotaError({ status: 500, message: 'resource exhausted' }), true);

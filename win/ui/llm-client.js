@@ -118,9 +118,20 @@
     }
   }
 
-  RB.complete = async function (prompt, options) {
+  RB.resolveActiveBackends = async function () {
     const keys = await RB.getKeysByProvider();
-    const backends = RB.resolveChatBackends(keys);
+    let enabled;
+    try {
+      const prefs = await RB.getPrefs();
+      enabled = prefs && prefs.enabledProviders;
+    } catch (e) {
+      enabled = undefined;
+    }
+    return RB.resolveChatBackends(keys, enabled);
+  };
+
+  RB.complete = async function (prompt, options) {
+    const backends = await RB.resolveActiveBackends();
     const skipped = RB.dailySkip.activeSkipIds();
     try {
       const text = await RB.callWithQuotaFallback(backends, skipped, (backend) =>
@@ -135,8 +146,7 @@
   };
 
   RB.testAllKeys = async function () {
-    const keys = await RB.getKeysByProvider();
-    const backends = RB.resolveChatBackends(keys);
+    const backends = await RB.resolveActiveBackends();
     const results = [];
     for (const backend of backends) {
       const hint =

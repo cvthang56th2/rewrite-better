@@ -68,6 +68,34 @@ final class LLMProvidersTests: XCTestCase {
         XCTAssertFalse(skipped.contains("a"))
     }
 
+    func testDisabledProviderIsOmittedFromChain() {
+        let backends = LLMProviders.resolveChatBackends(
+            keysByProvider: [
+                .gemini: "AIza-first",
+                .groq: "gsk_mid",
+                .cerebras: "csk_third",
+                .openai: "sk-last"
+            ],
+            enabledProviders: [.groq: false]
+        )
+        XCTAssertEqual(backends.map(\.provider), [.gemini, .cerebras, .openai])
+    }
+
+    func testDisabledProvidersWithKeysYieldEmptyChain() {
+        let backends = LLMProviders.resolveChatBackends(
+            keysByProvider: [.gemini: "AIza", .openai: "sk-last"],
+            enabledProviders: [.gemini: false, .openai: false]
+        )
+        XCTAssertTrue(backends.isEmpty)
+    }
+
+    func testMissingEnabledFlagDefaultsToOn() {
+        let backends = LLMProviders.resolveChatBackends(
+            keysByProvider: [.gemini: "AIza", .openai: "sk-last"]
+        )
+        XCTAssertEqual(backends.map(\.provider), [.gemini, .openai])
+    }
+
     private func backend(_ skipId: String) -> ChatBackend {
         ChatBackend(
             id: skipId,

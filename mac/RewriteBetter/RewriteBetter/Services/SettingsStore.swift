@@ -33,8 +33,30 @@ final class SettingsStore {
         Dictionary(uniqueKeysWithValues: ChatProvider.allCases.map { ($0, keys(for: $0)) })
     }
 
+    func isProviderEnabled(_ provider: ChatProvider) -> Bool {
+        let defaults = UserDefaults.standard
+        let key = enabledKey(for: provider)
+        guard defaults.object(forKey: key) != nil else { return true }
+        return defaults.bool(forKey: key)
+    }
+
+    func setProviderEnabled(_ enabled: Bool, for provider: ChatProvider) {
+        UserDefaults.standard.set(enabled, forKey: enabledKey(for: provider))
+    }
+
+    func enabledByProvider() -> [ChatProvider: Bool] {
+        Dictionary(uniqueKeysWithValues: ChatProvider.allCases.map { ($0, isProviderEnabled($0)) })
+    }
+
     func resolveBackends() -> [ChatBackend] {
-        LLMProviders.resolveChatBackends(keysByProvider: keysByProvider())
+        LLMProviders.resolveChatBackends(
+            keysByProvider: keysByProvider(),
+            enabledProviders: enabledByProvider()
+        )
+    }
+
+    private func enabledKey(for provider: ChatProvider) -> String {
+        "providerEnabled.\(provider.rawValue)"
     }
 
     // MARK: - Legacy

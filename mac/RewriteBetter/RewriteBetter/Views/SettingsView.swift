@@ -6,6 +6,10 @@ struct SettingsView: View {
     @State private var groqKeys = SettingsStore.shared.keys(for: .groq)
     @State private var cerebrasKeys = SettingsStore.shared.keys(for: .cerebras)
     @State private var openaiKeys = SettingsStore.shared.keys(for: .openai)
+    @State private var geminiEnabled = SettingsStore.shared.isProviderEnabled(.gemini)
+    @State private var groqEnabled = SettingsStore.shared.isProviderEnabled(.groq)
+    @State private var cerebrasEnabled = SettingsStore.shared.isProviderEnabled(.cerebras)
+    @State private var openaiEnabled = SettingsStore.shared.isProviderEnabled(.openai)
     @State private var message = ""
     @State private var keyTestResults: [LLMClient.KeyTestResult] = []
     @State private var isTesting = false
@@ -31,10 +35,10 @@ struct SettingsView: View {
 
             Section {
                 APIKeyDisclaimer()
-                ProviderKeyField(provider: .gemini, text: $geminiKeys)
-                ProviderKeyField(provider: .groq, text: $groqKeys)
-                ProviderKeyField(provider: .cerebras, text: $cerebrasKeys)
-                ProviderKeyField(provider: .openai, text: $openaiKeys)
+                ProviderKeyField(provider: .gemini, text: $geminiKeys, enabled: $geminiEnabled)
+                ProviderKeyField(provider: .groq, text: $groqKeys, enabled: $groqEnabled)
+                ProviderKeyField(provider: .cerebras, text: $cerebrasKeys, enabled: $cerebrasEnabled)
+                ProviderKeyField(provider: .openai, text: $openaiKeys, enabled: $openaiEnabled)
             } header: {
                 Text(lang.t("settings.keysTitle"))
             } footer: {
@@ -193,6 +197,10 @@ struct SettingsView: View {
             groqKeys = SettingsStore.shared.keys(for: .groq)
             cerebrasKeys = SettingsStore.shared.keys(for: .cerebras)
             openaiKeys = SettingsStore.shared.keys(for: .openai)
+            geminiEnabled = SettingsStore.shared.isProviderEnabled(.gemini)
+            groqEnabled = SettingsStore.shared.isProviderEnabled(.groq)
+            cerebrasEnabled = SettingsStore.shared.isProviderEnabled(.cerebras)
+            openaiEnabled = SettingsStore.shared.isProviderEnabled(.openai)
             rewriteExtra = SettingsStore.shared.extraInstructions(for: .rewrite)
             formatExtra = SettingsStore.shared.extraInstructions(for: .format)
             replyExtra = SettingsStore.shared.extraInstructions(for: .reply)
@@ -205,8 +213,11 @@ struct SettingsView: View {
     }
 
     private var hasAnyDraftKey: Bool {
-        [geminiKeys, groqKeys, cerebrasKeys, openaiKeys]
-            .contains { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        zip(
+            [geminiKeys, groqKeys, cerebrasKeys, openaiKeys],
+            [geminiEnabled, groqEnabled, cerebrasEnabled, openaiEnabled]
+        )
+        .contains { !$0.0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && $0.1 }
     }
 
     private func saveKeys() {
@@ -214,6 +225,10 @@ struct SettingsView: View {
         SettingsStore.shared.setKeys(groqKeys, for: .groq)
         SettingsStore.shared.setKeys(cerebrasKeys, for: .cerebras)
         SettingsStore.shared.setKeys(openaiKeys, for: .openai)
+        SettingsStore.shared.setProviderEnabled(geminiEnabled, for: .gemini)
+        SettingsStore.shared.setProviderEnabled(groqEnabled, for: .groq)
+        SettingsStore.shared.setProviderEnabled(cerebrasEnabled, for: .cerebras)
+        SettingsStore.shared.setProviderEnabled(openaiEnabled, for: .openai)
         SettingsStore.shared.setExtraInstructions(rewriteExtra, for: .rewrite)
         SettingsStore.shared.setExtraInstructions(formatExtra, for: .format)
         SettingsStore.shared.setExtraInstructions(replyExtra, for: .reply)
@@ -318,6 +333,7 @@ private struct APIKeyDisclaimer: View {
 private struct ProviderKeyField: View {
     let provider: ChatProvider
     @Binding var text: String
+    @Binding var enabled: Bool
     @State private var showingHelp = false
     @State private var revealed = false
     @ObservedObject private var lang = LanguageStore.shared
@@ -344,6 +360,13 @@ private struct ProviderKeyField: View {
 
                 Spacer(minLength: 0)
 
+                Toggle(lang.t("settings.providerEnabled"), isOn: $enabled)
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .labelsHidden()
+                    .help(lang.t("settings.providerEnabled"))
+                    .accessibilityLabel(lang.t("settings.providerEnabled"))
+
                 if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     Button {
                         revealed.toggle()
@@ -357,29 +380,32 @@ private struct ProviderKeyField: View {
                 }
             }
 
-            if revealed || text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                TextEditor(text: $text)
-                    .font(.system(.body, design: .monospaced))
-                    .frame(minHeight: 44, maxHeight: 72)
-                    .overlay(alignment: .topLeading) {
-                        if text.isEmpty {
-                            Text(provider.placeholder(lang.language))
-                                .font(.system(.caption, design: .monospaced))
-                                .foregroundStyle(.tertiary)
-                                .padding(.top, 8)
-                                .padding(.leading, 5)
-                                .allowsHitTesting(false)
+            Group {
+                if revealed || text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    TextEditor(text: $text)
+                        .font(.system(.body, design: .monospaced))
+                        .frame(minHeight: 44, maxHeight: 72)
+                        .overlay(alignment: .topLeading) {
+                            if text.isEmpty {
+                                Text(provider.placeholder(lang.language))
+                                    .font(.system(.caption, design: .monospaced))
+                                    .foregroundStyle(.tertiary)
+                                    .padding(.top, 8)
+                                    .padding(.leading, 5)
+                                    .allowsHitTesting(false)
+                            }
                         }
-                    }
-            } else {
-                Text(String(repeating: "•", count: min(max(text.count, 8), 28)))
-                    .font(.system(.body, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                    .contentShape(Rectangle())
-                    .onTapGesture { revealed = true }
-                    .accessibilityLabel(lang.t("settings.showKeys"))
+                } else {
+                    Text(String(repeating: "•", count: min(max(text.count, 8), 28)))
+                        .font(.system(.body, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .contentShape(Rectangle())
+                        .onTapGesture { revealed = true }
+                        .accessibilityLabel(lang.t("settings.showKeys"))
+                }
             }
+            .opacity(enabled ? 1 : 0.45)
         }
         .onAppear {
             revealed = text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty

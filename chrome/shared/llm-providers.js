@@ -68,10 +68,22 @@
     }));
   }
 
-  RB.resolveChatBackends = function (keysByProvider) {
+  RB.normalizeEnabledProviders = function (raw) {
+    const out = { gemini: true, groq: true, cerebras: true, openai: true };
+    if (!raw || typeof raw !== 'object') return out;
+    Object.keys(out).forEach((key) => {
+      if (raw[key] === false) out[key] = false;
+    });
+    return out;
+  };
+
+  RB.resolveChatBackends = function (keysByProvider, enabledProviders) {
     const source = keysByProvider || {};
-    const chain = RB.FALLBACK_ORDER.flatMap((provider) => buildBackends(provider, source[provider] || ''));
-    const openai = buildBackends('openai', source.openai || '');
+    const enabled = RB.normalizeEnabledProviders(enabledProviders);
+    const chain = RB.FALLBACK_ORDER.flatMap((provider) =>
+      enabled[provider] ? buildBackends(provider, source[provider] || '') : []
+    );
+    const openai = enabled.openai ? buildBackends('openai', source.openai || '') : [];
     if (chain.length) {
       return openai.length ? chain.concat(openai) : chain;
     }

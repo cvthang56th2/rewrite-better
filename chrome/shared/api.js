@@ -60,7 +60,7 @@
         reject(new Error('Chrome storage API is not available. Please check extension permissions.'));
         return;
       }
-      chrome.storage.sync.get(['uiLanguage', 'extraInstructions', 'voiceSamples'], (result) => {
+      chrome.storage.sync.get(['uiLanguage', 'extraInstructions', 'voiceSamples', 'enabledProviders'], (result) => {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
           return;
@@ -68,7 +68,8 @@
         resolve({
           uiLanguage: result.uiLanguage,
           extraInstructions: result.extraInstructions || { rewrite: '', format: '', reply: '' },
-          voiceSamples: result.voiceSamples || ''
+          voiceSamples: result.voiceSamples || '',
+          enabledProviders: RB.normalizeEnabledProviders(result.enabledProviders)
         });
       });
     });
@@ -88,7 +89,8 @@
           reply: ''
         },
         voiceSamples: (prefs && prefs.voiceSamples) || '',
-        uiLanguage: RB.setLanguage(prefs && prefs.uiLanguage)
+        uiLanguage: RB.setLanguage(prefs && prefs.uiLanguage),
+        enabledProviders: RB.normalizeEnabledProviders(prefs && prefs.enabledProviders)
       };
       if (payload.apiKeys.groq) payload.groqApiKey = payload.apiKeys.groq;
       chrome.storage.sync.set(payload, () => {
@@ -202,13 +204,24 @@
     });
   }
 
+  RB.resolveActiveBackends = async function () {
+    const keys = await RB.getKeysByProvider();
+    let enabled;
+    try {
+      const prefs = await RB.getPrefs();
+      enabled = prefs && prefs.enabledProviders;
+    } catch (e) {
+      enabled = undefined;
+    }
+    return RB.resolveChatBackends(keys, enabled);
+  };
+
   RB.complete = async function (prompt, options) {
     if (!isExtensionDocument() && typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
       return sendRuntime({ type: 'rb-complete', prompt, options });
     }
     await skipReady;
-    const keys = await RB.getKeysByProvider();
-    const backends = RB.resolveChatBackends(keys);
+    const backends = await RB.resolveActiveBackends();
     const skipped = RB.dailySkip.activeSkipIds();
     try {
       const text = await RB.callWithQuotaFallback(backends, skipped, (backend) =>
@@ -226,8 +239,7 @@
     if (!isExtensionDocument() && typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
       return sendRuntime({ type: 'rb-test-keys' });
     }
-    const keys = await RB.getKeysByProvider();
-    const backends = RB.resolveChatBackends(keys);
+    const backends = await RB.resolveActiveBackends();
     const results = [];
     for (const backend of backends) {
       const hint =

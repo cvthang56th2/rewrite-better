@@ -41,6 +41,8 @@ pub struct Prefs {
     pub extra_instructions: ExtraInstructions,
     #[serde(default)]
     pub voice_samples: String,
+    #[serde(default)]
+    pub enabled_providers: HashMap<String, bool>,
 }
 
 impl Default for Prefs {
@@ -50,6 +52,7 @@ impl Default for Prefs {
             hotkey: default_hotkey(),
             extra_instructions: ExtraInstructions::default(),
             voice_samples: String::new(),
+            enabled_providers: HashMap::new(),
         }
     }
 }
