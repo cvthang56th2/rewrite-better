@@ -117,6 +117,11 @@ enum L10n {
         "panel.apply": "Apply",
         "panel.emptyInput": "Enter some text to rewrite.",
         "panel.emptyReply": "Paste a received message or add notes.",
+        "panel.refine": "Adjust this version",
+        "panel.refinePlaceholder": "Shorter, warmer, add a greeting…",
+        "panel.chatYou": "You",
+        "panel.chatAi": "AI",
+        "panel.emptyRefine": "Enter how you want this version changed.",
         "panel.emptyResponse": "Could not process the text. Try again.",
         "panel.processing": "Working…",
 
@@ -126,6 +131,7 @@ enum L10n {
         "action.rewrite": "Rewrite",
         "action.format": "Format",
         "action.reply": "Draft Reply",
+        "action.refine": "Adjust",
 
         "tone.friendly": "Friendly",
         "tone.professional": "Professional",
@@ -335,6 +341,11 @@ enum L10n {
         "panel.apply": "Áp dụng",
         "panel.emptyInput": "Nhập văn bản cần viết lại.",
         "panel.emptyReply": "Dán tin nhắn nhận được hoặc thêm ghi chú.",
+        "panel.refine": "Chỉnh bản này",
+        "panel.refinePlaceholder": "Ngắn hơn, thân mật hơn, thêm lời chào…",
+        "panel.chatYou": "Bạn",
+        "panel.chatAi": "AI",
+        "panel.emptyRefine": "Nhập cách bạn muốn chỉnh bản này.",
         "panel.emptyResponse": "Không thể xử lý văn bản. Thử lại.",
         "panel.processing": "Đang xử lý…",
 
@@ -344,6 +355,7 @@ enum L10n {
         "action.rewrite": "Viết lại",
         "action.format": "Định dạng",
         "action.reply": "Soạn trả lời",
+        "action.refine": "Chỉnh",
 
         "tone.friendly": "Thân thiện",
         "tone.professional": "Chuyên nghiệp",

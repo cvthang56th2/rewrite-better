@@ -322,6 +322,14 @@
             <div class="rb-field-label">${escapeHtml(RB.t('panel.result'))}</div>
             <div class="rb-variants" data-role="variants" hidden></div>
             <div class="rb-result" data-role="result"></div>
+            <div class="rb-refine" data-role="refine-wrap" hidden>
+              <div class="rb-field-label">${escapeHtml(RB.t('panel.refine'))}</div>
+              <div class="rb-refine-thread" data-role="refine-thread" hidden></div>
+              <div class="rb-refine-row">
+                <textarea class="rb-refine-input" data-role="refine" rows="2" placeholder="${escapeHtml(RB.t('panel.refinePlaceholder'))}" aria-label="${escapeHtml(RB.t('panel.refine'))}"></textarea>
+                <button type="button" class="rb-text-btn" data-role="refine-send">${escapeHtml(RB.t('action.refine'))}</button>
+              </div>
+            </div>
             <div class="rb-diff" data-role="diff" hidden></div>
             <p class="rb-hint" data-role="result-hint">${escapeHtml(RB.t('panel.resultHint'))}</p>
           </div>
@@ -367,6 +375,10 @@
     const pasteBtn = root.querySelector('[data-role="paste"]');
     const resultEl = root.querySelector('[data-role="result"]');
     const resultHint = root.querySelector('[data-role="result-hint"]');
+    const refineWrap = root.querySelector('[data-role="refine-wrap"]');
+    const refineEl = root.querySelector('[data-role="refine"]');
+    const refineSend = root.querySelector('[data-role="refine-send"]');
+    const refineThread = root.querySelector('[data-role="refine-thread"]');
     const statusEl = root.querySelector('[data-role="status"]');
     const translateToggle = root.querySelector('[data-role="enable-translate"]');
     const translateOptions = root.querySelector('[data-role="translate-options"]');
@@ -387,6 +399,7 @@
     let variants = [];
     let variantIndex = 0;
     let diffSource = '';
+    let refineHistories = [];
     let copyResetTimer = null;
 
     function extraFor(mode) {
@@ -402,10 +415,15 @@
       statusEl.classList.toggle('is-error', !!isError);
     }
 
+    function resetRefineHistories(count) {
+      refineHistories = RB.emptyRefineHistories ? RB.emptyRefineHistories(count) : [];
+    }
+
     function showResult(text) {
       variants = String(text || '').trim() ? [String(text)] : [];
       variantIndex = 0;
       diffSource = '';
+      resetRefineHistories(variants.length);
       renderOutput();
     }
 
@@ -413,6 +431,7 @@
       variants = (list || []).filter((item) => String(item || '').trim());
       variantIndex = 0;
       diffSource = sourceText || '';
+      resetRefineHistories(variants.length);
       renderOutput();
     }
 
@@ -421,8 +440,10 @@
       resultEl.textContent = text;
       resultHint.hidden = !!text.trim();
       copyBtn.hidden = !text.trim();
+      if (refineWrap) refineWrap.hidden = !text.trim();
       root.classList.toggle('has-result', !!text.trim());
       renderVariantChips();
+      renderRefineThread();
       renderDiff();
       refreshPasteButton();
       RB.retainFocusIn(root, inputEl);
@@ -449,6 +470,31 @@
           })
           .join('') +
         `</div>`;
+    }
+
+    function renderRefineThread() {
+      if (!refineThread) return;
+      const turns = RB.refineHistoryForVariant
+        ? RB.refineHistoryForVariant(refineHistories, variantIndex)
+        : [];
+      if (!turns.length) {
+        refineThread.hidden = true;
+        refineThread.innerHTML = '';
+        return;
+      }
+      refineThread.hidden = false;
+      refineThread.innerHTML = turns
+        .map((turn) => {
+          const isUser = turn && turn.role === 'user';
+          const label = RB.t(isUser ? 'panel.chatYou' : 'panel.chatAi');
+          const kind = isUser ? 'user' : 'ai';
+          return `<div class="rb-chat-turn rb-chat-turn--${kind}">
+            <div class="rb-chat-role">${escapeHtml(label)}</div>
+            <div class="rb-chat-text">${escapeHtml((turn && turn.text) || '')}</div>
+          </div>`;
+        })
+        .join('');
+      refineThread.scrollTop = refineThread.scrollHeight;
     }
 
     function renderDiff() {
@@ -634,6 +680,10 @@
       }
       if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
         event.preventDefault();
+        if (refineEl && (event.target === refineEl || (refineEl.contains && refineEl.contains(event.target)))) {
+          if (refineSend && !refineSend.disabled) refineSend.click();
+          return;
+        }
         if (!processBtn.disabled) processBtn.click();
       }
     });
@@ -662,6 +712,85 @@
       }, 2000);
     });
 
+    async function copyCurrentResult() {
+      const text = currentResultText();
+      if (!text.trim() || !RB.copyText) return;
+      try {
+        await RB.copyText(text);
+        copyBtn.textContent = RB.t('panel.copied');
+        copyBtn.classList.add('is-copied');
+        copyBtn.hidden = false;
+        clearTimeout(copyResetTimer);
+        copyResetTimer = setTimeout(() => {
+          copyBtn.textContent = RB.t('panel.copy');
+          copyBtn.classList.remove('is-copied');
+        }, 2000);
+      } catch (e) {
+        /* keep copy button available */
+      }
+    }
+
+    function setBusy(on) {
+      processBtn.disabled = on;
+      if (refineSend) refineSend.disabled = on;
+      if (refineEl) refineEl.disabled = on;
+    }
+
+    async function runRefine() {
+      const current = currentResultText();
+      const instruction = refineEl ? refineEl.value : '';
+      if (!current.trim()) return;
+      const history = RB.refineHistoryForVariant
+        ? RB.refineHistoryForVariant(refineHistories, variantIndex)
+        : [];
+      const prompt = RB.buildRefinePrompt
+        ? RB.buildRefinePrompt(current, instruction, voiceSamples, history)
+        : null;
+      if (!prompt) {
+        setStatus(RB.t('panel.emptyRefine'), true);
+        return;
+      }
+
+      setBusy(true);
+      if (refineSend) {
+        refineSend.innerHTML = `<span class="rb-spinner" aria-hidden="true"></span>${escapeHtml(RB.t('panel.processing'))}`;
+      }
+      setStatus(RB.t('panel.processing'));
+
+      try {
+        const raw = await RB.complete(prompt);
+        const refined = RB.parseRefineText ? RB.parseRefineText(raw) : String(raw || '').trim();
+        if (!refined) {
+          setStatus(RB.t('panel.emptyResponse'), true);
+          return;
+        }
+        const next = RB.replaceSelectedVariant
+          ? RB.replaceSelectedVariant(variants, variantIndex, refined)
+          : variants.slice();
+        if (!RB.replaceSelectedVariant && next[variantIndex] != null) next[variantIndex] = refined;
+        variants = next;
+        refineHistories = RB.appendRefineTurn
+          ? RB.appendRefineTurn(refineHistories, variantIndex, instruction, refined)
+          : refineHistories;
+        if (refineEl) refineEl.value = '';
+        setStatus('');
+        renderOutput();
+        await copyCurrentResult();
+      } catch (error) {
+        console.error('Error:', error);
+        setStatus(RB.formatCompleteError ? RB.formatCompleteError(error) : RB.t('panel.error', error.message || ''), true);
+      } finally {
+        setBusy(false);
+        if (refineSend) refineSend.textContent = RB.t('action.refine');
+      }
+    }
+
+    if (refineSend) {
+      refineSend.addEventListener('click', () => {
+        runRefine();
+      });
+    }
+
     pasteBtn.addEventListener('click', async () => {
       const text = currentResultText();
       if (!text.trim()) return;
@@ -681,6 +810,7 @@
       const notes = notesEl.value;
       copyBtn.hidden = true;
       pasteBtn.hidden = true;
+      if (refineEl) refineEl.value = '';
       showResult('');
       setStatus('');
 
@@ -736,7 +866,7 @@
         }
       }
 
-      processBtn.disabled = true;
+      setBusy(true);
       processBtn.innerHTML = `<span class="rb-spinner" aria-hidden="true"></span>${escapeHtml(RB.t('panel.processing'))}`;
       setStatus(RB.t('panel.processing'));
 
@@ -756,27 +886,13 @@
         }
         setStatus('');
         showVariants(parsed, currentMode === 'rewrite' ? input : '');
-        if (RB.copyText) {
-          try {
-            await RB.copyText(currentResultText());
-            copyBtn.textContent = RB.t('panel.copied');
-            copyBtn.classList.add('is-copied');
-            copyBtn.hidden = false;
-            clearTimeout(copyResetTimer);
-            copyResetTimer = setTimeout(() => {
-              copyBtn.textContent = RB.t('panel.copy');
-              copyBtn.classList.remove('is-copied');
-            }, 2000);
-          } catch (e) {
-            /* keep copy button available */
-          }
-        }
+        await copyCurrentResult();
       } catch (error) {
         console.error('Error:', error);
         showResult('');
         setStatus(RB.formatCompleteError ? RB.formatCompleteError(error) : RB.t('panel.error', error.message || ''), true);
       } finally {
-        processBtn.disabled = false;
+        setBusy(false);
         processBtn.textContent = RB.t('action.' + currentMode) || RB.t('action.process');
       }
     });
@@ -838,6 +954,7 @@
       },
       setInput(text) {
         inputEl.value = text || '';
+        if (refineEl) refineEl.value = '';
         showResult('');
         setStatus('');
         inputAssist.dismissGhost();

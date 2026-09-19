@@ -164,4 +164,69 @@ final class PromptBuilderTests: XCTestCase {
 
         XCTAssertEqual(withBlank, without)
     }
+
+    func testRefineAsksForSingleRevisedText() throws {
+        let prompt = try XCTUnwrap(PromptBuilder.buildRefine(
+            currentText: "Hello there.",
+            instruction: "Make it shorter."
+        ))
+
+        XCTAssertTrue(prompt.contains("Hello there."))
+        XCTAssertTrue(prompt.contains("Make it shorter."))
+        let instructionIndex = prompt.range(of: "Make it shorter.")!.lowerBound
+        let textIndex = prompt.range(of: "Hello there.", options: .backwards)!.lowerBound
+        XCTAssertLessThan(instructionIndex, textIndex)
+        XCTAssertFalse(prompt.contains("{\"variants\":["))
+        XCTAssertTrue(prompt.lowercased().contains("return only the revised text"))
+        XCTAssertFalse(prompt.contains("Writer's voice"))
+    }
+
+    func testRefineReturnsNilForBlankInputs() {
+        XCTAssertNil(PromptBuilder.buildRefine(currentText: "Hello there.", instruction: "   \n"))
+        XCTAssertNil(PromptBuilder.buildRefine(currentText: "  ", instruction: "Make it shorter."))
+        XCTAssertNil(PromptBuilder.buildRefine(currentText: "", instruction: "Make it shorter."))
+    }
+
+    func testRefineAttachesVoiceSamplesBeforeText() throws {
+        let prompt = try XCTUnwrap(PromptBuilder.buildRefine(
+            currentText: "Hello there.",
+            instruction: "Make it shorter.",
+            voiceSamples: "hey can you send that when you get a chance? thanks!"
+        ))
+
+        XCTAssertTrue(prompt.contains("Writer's voice"))
+        XCTAssertTrue(prompt.contains("hey can you send that when you get a chance? thanks!"))
+        let voiceIndex = prompt.range(of: "hey can you send that")!.lowerBound
+        let textIndex = prompt.range(of: "Hello there.", options: .backwards)!.lowerBound
+        XCTAssertLessThan(voiceIndex, textIndex)
+    }
+
+    func testRefineIncludesPriorConversationBeforeNewInstruction() throws {
+        let prompt = try XCTUnwrap(PromptBuilder.buildRefine(
+            currentText: "Hello.",
+            instruction: "Add a greeting.",
+            history: [
+                RefineTurn(role: "user", text: "Make it shorter."),
+                RefineTurn(role: "assistant", text: "Hi.")
+            ]
+        ))
+
+        XCTAssertTrue(prompt.contains("--- Conversation ---"))
+        XCTAssertTrue(prompt.contains("User: Make it shorter."))
+        XCTAssertTrue(prompt.contains("Assistant: Hi."))
+        XCTAssertTrue(prompt.contains("Add a greeting."))
+        let priorIndex = prompt.range(of: "Make it shorter.")!.lowerBound
+        let newIndex = prompt.range(of: "Add a greeting.")!.lowerBound
+        let textIndex = prompt.range(of: "Hello.", options: .backwards)!.lowerBound
+        XCTAssertLessThan(priorIndex, newIndex)
+        XCTAssertLessThan(newIndex, textIndex)
+    }
+
+    func testRefineOmitsConversationWhenHistoryIsEmpty() throws {
+        let prompt = try XCTUnwrap(PromptBuilder.buildRefine(
+            currentText: "Hello there.",
+            instruction: "Make it shorter."
+        ))
+        XCTAssertFalse(prompt.contains("--- Conversation ---"))
+    }
 }

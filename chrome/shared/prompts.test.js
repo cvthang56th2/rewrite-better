@@ -127,4 +127,39 @@ assert.strictEqual(
   null
 );
 
+const refine = RB.buildRefinePrompt('Hello there.', 'Make it shorter.');
+assert.ok(refine, 'refine prompt should be built when text and instruction exist');
+assert.ok(refine.includes('Hello there.'));
+assert.ok(refine.includes('Make it shorter.'));
+assert.ok(refine.indexOf('Make it shorter.') < refine.lastIndexOf('Hello there.'));
+assert.ok(!refine.includes('{"variants":['), 'refine must not ask for three variants');
+assert.ok(/return only the revised text/i.test(refine));
+assert.ok(!refine.includes("Writer's voice"));
+
+assert.strictEqual(RB.buildRefinePrompt('Hello there.', '   \n'), null);
+assert.strictEqual(RB.buildRefinePrompt('  ', 'Make it shorter.'), null);
+assert.strictEqual(RB.buildRefinePrompt('', 'Make it shorter.'), null);
+
+const refineVoice = RB.buildRefinePrompt(
+  'Hello there.',
+  'Make it shorter.',
+  'hey can you send that when you get a chance? thanks!'
+);
+assert.ok(refineVoice.includes("Writer's voice"));
+assert.ok(refineVoice.includes('hey can you send that when you get a chance? thanks!'));
+assert.ok(refineVoice.indexOf('hey can you send that') < refineVoice.lastIndexOf('Hello there.'));
+
+assert.ok(!refine.includes('--- Conversation ---'));
+
+const refineWithHistory = RB.buildRefinePrompt('Hello.', 'Add a greeting.', '', [
+  { role: 'user', text: 'Make it shorter.' },
+  { role: 'assistant', text: 'Hi.' }
+]);
+assert.ok(refineWithHistory.includes('--- Conversation ---'));
+assert.ok(refineWithHistory.includes('User: Make it shorter.'));
+assert.ok(refineWithHistory.includes('Assistant: Hi.'));
+assert.ok(refineWithHistory.includes('Add a greeting.'));
+assert.ok(refineWithHistory.indexOf('Make it shorter.') < refineWithHistory.indexOf('Add a greeting.'));
+assert.ok(refineWithHistory.indexOf('Add a greeting.') < refineWithHistory.lastIndexOf('Hello.'));
+
 console.log('ok — prompts request variants and attach voice samples');

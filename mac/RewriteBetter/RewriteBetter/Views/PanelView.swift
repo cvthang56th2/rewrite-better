@@ -6,6 +6,8 @@ final class PanelViewModel: ObservableObject {
     @Published var inputText = ""
     @Published var notes = ""
     @Published var resultText = ""
+    @Published var refineInstruction = ""
+    @Published var refineHistories: [[RefineTurn]] = []
     @Published var variants: [String] = []
     @Published var variantIndex = 0
     @Published var diffSource = ""
@@ -53,6 +55,8 @@ final class PanelViewModel: ObservableObject {
         statusMessage = ""
         statusKind = .info
         copyFeedback = false
+        refineInstruction = ""
+        refineHistories = []
         Task { await refreshApiStatus() }
     }
 
@@ -68,6 +72,8 @@ final class PanelViewModel: ObservableObject {
         statusMessage = ""
         statusKind = .info
         copyFeedback = false
+        refineInstruction = ""
+        refineHistories = []
 
         if mode == .reply {
             if inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -145,6 +151,7 @@ final class PanelViewModel: ObservableObject {
             variantIndex = 0
             resultText = parsed[0]
             diffSource = mode == .rewrite ? inputText : ""
+            refineHistories = ResultDiff.emptyRefineHistories(count: parsed.count)
             statusMessage = ""
             TextCaptureService.copyToClipboard(resultText)
             copyFeedback = true
@@ -155,6 +162,63 @@ final class PanelViewModel: ObservableObject {
             variants = []
             variantIndex = 0
             diffSource = ""
+            refineHistories = []
+        }
+    }
+
+    func refine() async {
+        let current = resultText
+        let history = ResultDiff.refineHistory(refineHistories, index: variantIndex)
+        guard let prompt = PromptBuilder.buildRefine(
+            currentText: current,
+            instruction: refineInstruction,
+            voiceSamples: SettingsStore.shared.voiceSamples,
+            history: history
+        ) else {
+            statusKind = .error
+            statusMessage = LanguageStore.shared.t("panel.emptyRefine")
+            return
+        }
+
+        guard SettingsStore.shared.hasAnyApiKey else {
+            statusKind = .error
+            statusMessage = LLMError.missingKey.localizedDescription
+            return
+        }
+
+        isLoading = true
+        statusKind = .info
+        statusMessage = LanguageStore.shared.t("panel.processing")
+        defer { isLoading = false }
+
+        do {
+            let raw = try await LLMClient.shared.complete(prompt: prompt)
+            let refined = ResultDiff.parseRefineText(raw)
+            guard !refined.isEmpty else {
+                statusKind = .error
+                statusMessage = LanguageStore.shared.t("panel.emptyResponse")
+                return
+            }
+            variants = ResultDiff.replaceSelectedVariant(variants, index: variantIndex, with: refined)
+            if variants.indices.contains(variantIndex) {
+                resultText = variants[variantIndex]
+            } else {
+                resultText = refined
+            }
+            refineHistories = ResultDiff.appendRefineTurn(
+                refineHistories,
+                index: variantIndex,
+                userText: refineInstruction,
+                assistantText: refined
+            )
+            refineInstruction = ""
+            statusMessage = ""
+            statusKind = .info
+            TextCaptureService.copyToClipboard(resultText)
+            copyFeedback = true
+        } catch {
+            statusKind = .error
+            statusMessage = error.localizedDescription
         }
     }
 
@@ -163,6 +227,10 @@ final class PanelViewModel: ObservableObject {
         variantIndex = index
         resultText = variants[index]
         copyFeedback = false
+    }
+
+    var currentRefineHistory: [RefineTurn] {
+        ResultDiff.refineHistory(refineHistories, index: variantIndex)
     }
 
     var diffParts: [DiffOp] {
@@ -200,6 +268,7 @@ struct PanelView: View {
     @StateObject private var vm = PanelViewModel()
     @StateObject private var inputAssist = WritingAssistController()
     @StateObject private var notesAssist = WritingAssistController()
+    @FocusState private var refineFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -222,6 +291,8 @@ struct PanelView: View {
             vm.statusMessage = ""
             vm.statusKind = .info
             vm.copyFeedback = false
+            vm.refineInstruction = ""
+            vm.refineHistories = []
             inputAssist.dismissGhost()
         }
     }
@@ -574,7 +645,7 @@ struct PanelView: View {
                     Text(vm.mode.buttonLabel(lang.language))
                 }
             }
-            .keyboardShortcut(.return, modifiers: .command)
+            .keyboardShortcut(.return, modifiers: refineFocused ? [.command, .shift] : .command)
             .disabled(vm.isLoading)
             .buttonStyle(.borderedProminent)
 
@@ -656,6 +727,62 @@ struct PanelView: View {
                         .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.line))
                         .cornerRadius(Theme.radius)
 
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(lang.t("panel.refine"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        if !vm.currentRefineHistory.isEmpty {
+                            ScrollView {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    ForEach(Array(vm.currentRefineHistory.enumerated()), id: \.offset) { _, turn in
+                                        chatTurnView(turn)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .frame(maxHeight: 180)
+                            .padding(8)
+                            .background(Theme.editor)
+                            .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.line))
+                            .cornerRadius(Theme.radius)
+                        }
+                        HStack(alignment: .bottom, spacing: 8) {
+                            TextField(lang.t("panel.refinePlaceholder"), text: $vm.refineInstruction, axis: .vertical)
+                                .textFieldStyle(.plain)
+                                .lineLimit(2...4)
+                                .padding(8)
+                                .background(Theme.editor)
+                                .overlay(RoundedRectangle(cornerRadius: Theme.radius).stroke(Theme.line))
+                                .cornerRadius(Theme.radius)
+                                .focused($refineFocused)
+                                .disabled(vm.isLoading)
+                                .accessibilityLabel(lang.t("panel.refine"))
+                                .onSubmit {
+                                    Task { await vm.refine() }
+                                }
+                            Button(lang.t("action.refine")) {
+                                Task { await vm.refine() }
+                            }
+                            .controlSize(.regular)
+                            .disabled(
+                                vm.isLoading
+                                    || vm.refineInstruction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                            )
+                        }
+                    }
+                    .background {
+                        Button("") {
+                            Task { await vm.refine() }
+                        }
+                        .keyboardShortcut(.return, modifiers: .command)
+                        .disabled(
+                            !refineFocused
+                                || vm.isLoading
+                                || vm.refineInstruction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        )
+                        .hidden()
+                    }
+
                     if ResultDiff.hasVisibleDiff(vm.diffParts) {
                         HStack(spacing: 6) {
                             Image(systemName: "text.redaction")
@@ -683,6 +810,26 @@ struct PanelView: View {
                     .padding(.top, 4)
             }
         }
+    }
+
+    private func chatTurnView(_ turn: RefineTurn) -> some View {
+        let isUser = turn.role == "user"
+        return VStack(alignment: isUser ? .trailing : .leading, spacing: 2) {
+            Text(lang.t(isUser ? "panel.chatYou" : "panel.chatAi"))
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Text(turn.text)
+                .font(.callout)
+                .textSelection(.enabled)
+                .padding(8)
+                .background(isUser ? Color.accentColor.opacity(0.18) : Theme.fill)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Theme.line)
+                )
+                .cornerRadius(8)
+        }
+        .frame(maxWidth: .infinity, alignment: isUser ? .trailing : .leading)
     }
 
     private func diffAttributed(_ parts: [DiffOp]) -> AttributedString {

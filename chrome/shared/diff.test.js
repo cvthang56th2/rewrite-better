@@ -56,4 +56,37 @@ assert.strictEqual(html, 'send <del>file</del><ins>docs</ins>');
 assert.ok(RB.hasVisibleDiff(swapped));
 assert.ok(!RB.hasVisibleDiff(equal));
 
+assert.strictEqual(RB.parseRefineText('just a rewrite'), 'just a rewrite');
+assert.strictEqual(RB.parseRefineText('{"variants":["A","B","C"]}'), 'A');
+assert.strictEqual(RB.parseRefineText('```\nhello\n```'), 'hello');
+assert.strictEqual(RB.parseRefineText('  '), '');
+
+const originalVariants = ['one', 'two', 'three'];
+assert.deepStrictEqual(RB.replaceSelectedVariant(originalVariants, 1, 'TWO'), ['one', 'TWO', 'three']);
+assert.deepStrictEqual(originalVariants, ['one', 'two', 'three'], 'must not mutate the input array');
+assert.deepStrictEqual(RB.replaceSelectedVariant(['one', 'two'], 0, '  '), ['one', 'two']);
+assert.deepStrictEqual(RB.replaceSelectedVariant(['one'], 4, 'x'), ['one']);
+
+function host(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+const emptyThreads = host(RB.emptyRefineHistories(3));
+assert.strictEqual(emptyThreads.length, 3);
+assert.deepStrictEqual(emptyThreads[0], []);
+assert.deepStrictEqual(host(RB.refineHistoryForVariant(emptyThreads, 1)), []);
+
+const afterOne = host(RB.appendRefineTurn(RB.emptyRefineHistories(3), 1, 'Make it shorter.', 'Hi.'));
+assert.deepStrictEqual(host(RB.refineHistoryForVariant(RB.emptyRefineHistories(3), 1)), []);
+assert.deepStrictEqual(afterOne[0], []);
+assert.deepStrictEqual(afterOne[1], [
+  { role: 'user', text: 'Make it shorter.' },
+  { role: 'assistant', text: 'Hi.' }
+]);
+assert.deepStrictEqual(afterOne[2], []);
+
+const afterTwo = host(RB.appendRefineTurn(afterOne, 1, 'Add a greeting.', 'Hi there.'));
+assert.strictEqual(afterTwo[1].length, 4);
+assert.strictEqual(afterOne[1].length, 2);
+
 console.log('ok — parse variants and word-level diff');

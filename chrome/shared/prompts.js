@@ -158,4 +158,32 @@ ${variantsFormat()}`;
     }
     return prompt;
   };
+
+  RB.buildRefinePrompt = function (currentText, instruction, voiceSamples, history) {
+    const text = String(currentText || '').trim();
+    const note = String(instruction || '').trim();
+    if (!text || !note) return null;
+    const convo = formatRefineConversation(history);
+    let body = `Revise the following text according to the writer's instruction.
+Keep the same language unless the instruction asks otherwise.
+Honor the conversation below if present — it is previous adjustments to this same draft.
+Return ONLY the revised text — no quotes, no JSON, no commentary, no numbering.`;
+    if (convo) {
+      body += `\n\n--- Conversation ---\n${convo}`;
+    }
+    body += `\n\n--- Instruction ---\n${note}`;
+    return withUserContent(text, '', body, voiceSamples);
+  };
+
+  function formatRefineConversation(history) {
+    const turns = Array.isArray(history) ? history : [];
+    const lines = [];
+    turns.forEach((turn) => {
+      const text = String((turn && turn.text) || '').trim();
+      if (!text) return;
+      const role = turn && turn.role === 'assistant' ? 'Assistant' : 'User';
+      lines.push(role + ': ' + text);
+    });
+    return lines.join('\n');
+  };
 })(typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : globalThis);

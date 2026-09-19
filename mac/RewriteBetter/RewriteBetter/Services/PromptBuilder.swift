@@ -130,6 +130,38 @@ enum PromptBuilder {
         return prompt
     }
 
+    static func buildRefine(
+        currentText: String,
+        instruction: String,
+        voiceSamples: String = "",
+        history: [RefineTurn] = []
+    ) -> String? {
+        let text = currentText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let note = instruction.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, !note.isEmpty else { return nil }
+        var body = """
+        Revise the following text according to the writer's instruction.
+        Keep the same language unless the instruction asks otherwise.
+        Honor the conversation below if present — it is previous adjustments to this same draft.
+        Return ONLY the revised text — no quotes, no JSON, no commentary, no numbering.
+        """
+        let convo = formatRefineConversation(history)
+        if !convo.isEmpty {
+            body += "\n\n--- Conversation ---\n\(convo)"
+        }
+        body += "\n\n--- Instruction ---\n\(note)"
+        return withUserContent(text, extraInstructions: "", voiceSamples: voiceSamples, attachedTo: body)
+    }
+
+    private static func formatRefineConversation(_ history: [RefineTurn]) -> String {
+        history.compactMap { turn in
+            let text = turn.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty else { return nil }
+            let role = turn.role == "assistant" ? "Assistant" : "User"
+            return "\(role): \(text)"
+        }.joined(separator: "\n")
+    }
+
     static func appendVoiceProfile(_ voiceSamples: String, to prompt: String) -> String {
         let samples = voiceSamples.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !samples.isEmpty else { return prompt }

@@ -109,6 +109,52 @@
     return uniqueTrimmed([text]);
   };
 
+  function stripCodeFence(text) {
+    let s = String(text || '').trim();
+    if (s.indexOf('```') !== 0) return s;
+    s = s.replace(/^```[a-zA-Z0-9]*\s*/, '').replace(/```$/, '').trim();
+    return s;
+  }
+
+  RB.parseRefineText = function (raw) {
+    const parsed = RB.parseVariants(raw);
+    return parsed.length ? stripCodeFence(parsed[0]) : '';
+  };
+
+  RB.replaceSelectedVariant = function (variants, index, text) {
+    const next = Array.isArray(variants) ? variants.slice() : [];
+    const refined = String(text || '').trim();
+    if (!refined || index < 0 || index >= next.length) return next;
+    next[index] = refined;
+    return next;
+  };
+
+  RB.emptyRefineHistories = function (count) {
+    const n = Math.max(0, Number(count) || 0);
+    const out = [];
+    for (let i = 0; i < n; i += 1) out.push([]);
+    return out;
+  };
+
+  RB.refineHistoryForVariant = function (histories, index) {
+    const list = Array.isArray(histories) ? histories : [];
+    const i = Number(index) || 0;
+    return Array.isArray(list[i]) ? list[i].slice() : [];
+  };
+
+  RB.appendRefineTurn = function (histories, index, userText, assistantText) {
+    const i = Number(index) || 0;
+    const next = Array.isArray(histories)
+      ? histories.map((thread) => (Array.isArray(thread) ? thread.slice() : []))
+      : [];
+    while (next.length <= i) next.push([]);
+    const user = String(userText || '').trim();
+    const assistant = String(assistantText || '').trim();
+    if (user) next[i].push({ role: 'user', text: user });
+    if (assistant) next[i].push({ role: 'assistant', text: assistant });
+    return next;
+  };
+
   function tokenize(text) {
     return String(text || '')
       .split(/(\s+)/)

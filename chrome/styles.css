@@ -397,7 +397,8 @@ body.rb-popup-body .rb-root {
 .rb-paste-btn:focus-visible,
 .rb-text-btn:focus-visible,
 .rb-chip:focus-visible,
-.rb-mode-chip:focus-visible {
+.rb-mode-chip:focus-visible,
+.rb-refine-input:focus-visible {
   outline: 2px solid var(--rb-accent);
   outline-offset: 2px;
 }
@@ -709,7 +710,8 @@ body.rb-popup-body .rb-root {
 
 .rb-paste-btn[hidden],
 .rb-issues[hidden],
-.rb-notes-field[hidden] {
+.rb-notes-field[hidden],
+.rb-refine[hidden] {
   display: none !important;
 }
 
@@ -777,6 +779,109 @@ body.rb-popup-body .rb-root {
   gap: 4px;
   min-height: 0;
   flex: 1 0 auto;
+}
+
+.rb-refine {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.rb-refine-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid var(--rb-result-border);
+  border-radius: 6px;
+  background: var(--rb-result-bg);
+}
+
+.rb-refine-thread[hidden] {
+  display: none !important;
+}
+
+.rb-chat-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 92%;
+}
+
+.rb-chat-turn--user {
+  align-self: flex-end;
+}
+
+.rb-chat-turn--ai {
+  align-self: flex-start;
+}
+
+.rb-chat-role {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rb-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.rb-chat-turn--user .rb-chat-role {
+  text-align: right;
+}
+
+.rb-chat-text {
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.rb-chat-turn--user .rb-chat-text {
+  background: var(--rb-chip-active-bg);
+  color: var(--rb-chip-active-text);
+}
+
+.rb-chat-turn--ai .rb-chat-text {
+  background: var(--rb-chip-bg);
+  color: var(--rb-text);
+  border: 1px solid var(--rb-border);
+}
+
+.rb-refine-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.rb-refine-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  max-height: 88px;
+  border: 2px solid var(--rb-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  resize: vertical;
+  background: var(--rb-input-bg);
+  color: var(--rb-text);
+  margin: 0;
+}
+
+.rb-refine-input:focus {
+  outline: none;
+  border-color: var(--rb-accent);
+}
+
+.rb-refine-row .rb-text-btn {
+  flex: 0 0 auto;
+  min-height: 36px;
 }
 
 .rb-inline-shell .rb-root {

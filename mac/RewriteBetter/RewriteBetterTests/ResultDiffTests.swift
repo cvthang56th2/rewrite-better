@@ -43,4 +43,41 @@ final class ResultDiffTests: XCTestCase {
         XCTAssertTrue(swapped.contains { if case .insert(let text) = $0 { return text.contains("docs") } else { return false } })
         XCTAssertTrue(ResultDiff.hasVisibleDiff(swapped))
     }
+
+    func testParseRefineTextTakesFirstVariantOrPlainText() {
+        XCTAssertEqual(ResultDiff.parseRefineText("just a rewrite"), "just a rewrite")
+        XCTAssertEqual(ResultDiff.parseRefineText("{\"variants\":[\"A\",\"B\",\"C\"]}"), "A")
+        XCTAssertEqual(ResultDiff.parseRefineText("```\nhello\n```"), "hello")
+        XCTAssertEqual(ResultDiff.parseRefineText("  "), "")
+    }
+
+    func testReplaceSelectedVariantLeavesOthersUnchanged() {
+        let original = ["one", "two", "three"]
+        XCTAssertEqual(ResultDiff.replaceSelectedVariant(original, index: 1, with: "TWO"), ["one", "TWO", "three"])
+        XCTAssertEqual(original, ["one", "two", "three"])
+        XCTAssertEqual(ResultDiff.replaceSelectedVariant(["one", "two"], index: 0, with: "  "), ["one", "two"])
+        XCTAssertEqual(ResultDiff.replaceSelectedVariant(["one"], index: 4, with: "x"), ["one"])
+    }
+
+    func testRefineHistoriesStayPerVariant() {
+        let empty = ResultDiff.emptyRefineHistories(count: 3)
+        XCTAssertEqual(empty.count, 3)
+        XCTAssertEqual(ResultDiff.refineHistory(empty, index: 1), [])
+
+        let afterOne = ResultDiff.appendRefineTurn(empty, index: 1, userText: "Make it shorter.", assistantText: "Hi.")
+        XCTAssertEqual(ResultDiff.refineHistory(empty, index: 1), [])
+        XCTAssertEqual(ResultDiff.refineHistory(afterOne, index: 0), [])
+        XCTAssertEqual(
+            ResultDiff.refineHistory(afterOne, index: 1),
+            [
+                RefineTurn(role: "user", text: "Make it shorter."),
+                RefineTurn(role: "assistant", text: "Hi.")
+            ]
+        )
+        XCTAssertEqual(ResultDiff.refineHistory(afterOne, index: 2), [])
+
+        let afterTwo = ResultDiff.appendRefineTurn(afterOne, index: 1, userText: "Add a greeting.", assistantText: "Hi there.")
+        XCTAssertEqual(ResultDiff.refineHistory(afterTwo, index: 1).count, 4)
+        XCTAssertEqual(ResultDiff.refineHistory(afterOne, index: 1).count, 2)
+    }
 }

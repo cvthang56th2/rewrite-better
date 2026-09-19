@@ -1,5 +1,10 @@
 import Foundation
 
+struct RefineTurn: Equatable {
+    let role: String
+    let text: String
+}
+
 enum DiffOp: Equatable {
     case equal(String)
     case insert(String)
@@ -28,6 +33,49 @@ enum ResultDiff {
         }
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         return text.isEmpty ? [] : uniqueTrimmed([text])
+    }
+
+    static func parseRefineText(_ raw: String) -> String {
+        let parsed = parseVariants(raw)
+        guard let first = parsed.first else { return "" }
+        return stripCodeFence(first)
+    }
+
+    static func replaceSelectedVariant(_ variants: [String], index: Int, with text: String) -> [String] {
+        let refined = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !refined.isEmpty, variants.indices.contains(index) else { return variants }
+        var next = variants
+        next[index] = refined
+        return next
+    }
+
+    static func emptyRefineHistories(count: Int) -> [[RefineTurn]] {
+        Array((0..<max(0, count)).map { _ in [RefineTurn]() })
+    }
+
+    static func refineHistory(_ histories: [[RefineTurn]], index: Int) -> [RefineTurn] {
+        guard histories.indices.contains(index) else { return [] }
+        return histories[index]
+    }
+
+    static func appendRefineTurn(
+        _ histories: [[RefineTurn]],
+        index: Int,
+        userText: String,
+        assistantText: String
+    ) -> [[RefineTurn]] {
+        var next = histories
+        if index < 0 { return next }
+        while next.count <= index { next.append([]) }
+        let user = userText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let assistant = assistantText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !user.isEmpty {
+            next[index].append(RefineTurn(role: "user", text: user))
+        }
+        if !assistant.isEmpty {
+            next[index].append(RefineTurn(role: "assistant", text: assistant))
+        }
+        return next
     }
 
     static func hasVisibleDiff(_ parts: [DiffOp]) -> Bool {
@@ -202,6 +250,23 @@ enum ResultDiff {
             if out.count == 3 { break }
         }
         return out
+    }
+
+    private static func stripCodeFence(_ text: String) -> String {
+        var s = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard s.hasPrefix("```") else { return s }
+        if let newline = s.firstIndex(of: "\n") {
+            let marker = s[..<newline]
+            if marker.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "`" }) {
+                s.removeSubrange(..<s.index(after: newline))
+            }
+        } else {
+            s.removeFirst(3)
+        }
+        if s.hasSuffix("```") {
+            s.removeLast(3)
+        }
+        return s.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private static func tokenize(_ text: String) -> [String] {
