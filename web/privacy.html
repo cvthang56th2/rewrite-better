@@ -7,7 +7,13 @@
   <meta name="description" content="Rewrite Better does not operate a backend. API keys stay on your device. Text is sent only to the AI provider you configure." />
   <link rel="icon" href="icon.png" />
   <link rel="stylesheet" href="styles.css" />
-  <script defer src="/_vercel/insights/script.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YH6PG7WBWS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-YH6PG7WBWS');
+  </script>
 </head>
 <body>
   <a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
@@ -69,7 +75,7 @@
       <p data-i18n="p.s5wb">The Windows app captures selected text with a Ctrl+C probe, then restores the previous clipboard. It does not require a special Accessibility toggle. Elevated windows may not be readable unless Rewrite Better is also elevated.</p>
 
       <h2 data-i18n="p.s6">This website</h2>
-      <p data-i18n="p.s6b">The download site is static files on Vercel. Language preference is stored in your browser (localStorage). We use Vercel Web Analytics for page views and download-button clicks. That data stays with Vercel; we do not use it for ads.</p>
+      <p data-i18n="p.s6b">The download site is static files on Vercel. Language preference is stored in your browser (localStorage). We use Google Analytics 4 for page views and download-button clicks. That data is processed by Google; we do not use it for ads.</p>
 
       <h2 data-i18n="p.s7">Contact</h2>
       <p data-i18n="p.s7b">Email me, or open a GitHub issue for a bug, a feature idea, or a question.</p>

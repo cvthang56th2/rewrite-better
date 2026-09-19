@@ -1,13 +1,14 @@
 (function (root) {
-  root.va =
-    root.va ||
+  root.dataLayer = root.dataLayer || [];
+  root.gtag =
+    root.gtag ||
     function () {
-      (root.vaq = root.vaq || []).push(arguments);
+      root.dataLayer.push(arguments);
     };
 
   function track(name) {
     if (!name) return;
-    root.va("event", { name });
+    root.gtag("event", name);
   }
 
   function bindDownloadClicks(rootEl) {

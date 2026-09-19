@@ -33,7 +33,7 @@ The Windows app captures selected text with a `Ctrl+C` probe, then restores the 
 
 ## This website
 
-The public download site uses [Vercel Web Analytics](https://vercel.com/docs/analytics) for page views and download-button clicks. That data stays with Vercel. We do not use it for advertising.
+The public download site uses [Google Analytics 4](https://support.google.com/analytics/answer/6004245) for page views and download-button clicks. That data is processed by Google. We do not use it for advertising.
 
 The Chrome, macOS, and Windows apps do not include this.
 
