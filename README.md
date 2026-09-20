@@ -2,7 +2,7 @@
 
 A writing panel on **Chrome**, **macOS 13+**, and **Windows 10+**. Rewrite, format, reply, and get writing assist without leaving the page or app. Bring your own Gemini, Groq, Cerebras, or OpenAI key — there is no Rewrite Better account or backend.
 
-Public site: [`web/`](web/) (Vercel). Desktop installers come from [GitHub Releases](https://github.com/cvthang56th2/rewrite-better/releases/latest). Chrome is a zip until the extension is on the Chrome Web Store.
+Public site: [rewrite-better-ai.vercel.app](https://rewrite-better-ai.vercel.app/) (source in [`web/`](web/)). Desktop installers come from [GitHub Releases](https://github.com/cvthang56th2/rewrite-better/releases/latest). Chrome is a zip until the extension is on the Chrome Web Store.
 
 Platform details: [`chrome/README.md`](chrome/README.md) · [`mac/README.md`](mac/README.md) · [`win/README.md`](win/README.md)
 
@@ -26,7 +26,7 @@ You need at least one API key. Requests go from your device to the provider you 
 |----------|-----|
 | **macOS** | [Latest Release](https://github.com/cvthang56th2/rewrite-better/releases/latest) `.dmg`. Menu bar app, no Dock icon. Grant Accessibility when asked. If Gatekeeper blocks the first open, right-click → **Open** |
 | **Windows** | [Latest Release](https://github.com/cvthang56th2/rewrite-better/releases/latest) `.exe` (NSIS). Lives in the system tray. SmartScreen may warn on unsigned builds: **More info → Run anyway** |
-| **Chrome** | Download `rewrite-better-chrome.zip` from the site (or zip `chrome/` yourself). Unzip → `chrome://extensions` → Developer mode → **Load unpacked** → select the folder that contains `manifest.json` |
+| **Chrome** | Download `rewrite-better-chrome.zip` from [the site](https://rewrite-better-ai.vercel.app/) (or zip `chrome/` yourself). Unzip → `chrome://extensions` → Developer mode → **Load unpacked** → select the folder that contains `manifest.json` |
 
 Shortcut: `Cmd+Shift+E` (Mac) or `Ctrl+Shift+E` (Windows / Linux). Mac can change the hotkey in Settings.
 
@@ -79,6 +79,8 @@ rewrite-better/
 ```
 
 ## Website (Vercel)
+
+Live: [https://rewrite-better-ai.vercel.app/](https://rewrite-better-ai.vercel.app/)
 
 The download landing lives in `web/`. From the repo root:
 
