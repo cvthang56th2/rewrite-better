@@ -69,6 +69,7 @@ jobs:
     if: always() && (needs.macos.result == 'success' || needs.windows.result == 'success')
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -104,3 +105,43 @@ jobs:
               gh release delete-asset "$tag" "$name" --yes --repo "${GITHUB_REPOSITORY}"
             fi
           done < <(gh release view "$tag" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name')
+      - name: Update Homebrew cask
+        env:
+          HOMEBREW_TAP_SSH_KEY: ${{ secrets.HOMEBREW_TAP_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          shopt -s globstar nullglob
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="1.0.0"
+          fi
+          dmg=(artifacts/**/RewriteBetter-"${version}".dmg)
+          if [[ ! -f "${dmg[0]:-}" ]]; then
+            echo "No Mac DMG for ${version}; Homebrew cask unchanged."
+            exit 0
+          fi
+          if [[ -z "${HOMEBREW_TAP_SSH_KEY}" ]]; then
+            echo "Set the HOMEBREW_TAP_SSH_KEY repository secret so the Homebrew cask stays current." >&2
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOMEBREW_TAP_SSH_KEY" > ~/.ssh/homebrew_tap
+          chmod 600 ~/.ssh/homebrew_tap
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/homebrew_tap -o IdentitiesOnly=yes"
+          git clone git@github.com:cvthang56th2/homebrew-rewrite-better.git tap
+          node scripts/homebrew-cask.js \
+            --version "$version" \
+            --dmg "${dmg[0]}" \
+            --out tap/Casks/rewrite-better.rb
+          git -C tap add Casks/rewrite-better.rb
+          if git -C tap diff --cached --quiet; then
+            echo "Homebrew cask already matches ${version}."
+            exit 0
+          fi
+          git -C tap -c user.name="github-actions[bot]" \
+            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Update Rewrite Better to ${version}"
+          git -C tap push

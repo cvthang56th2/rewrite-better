@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Rewrite Better for Windows",
   "scripts": {
-    "test": "node ui/i18n.test.js && node ui/settings-form.test.js && node ui/llm-providers.test.js && node ui/prompts.test.js && node ui/diff.test.js && node ui/daily-skip.test.js && node ui/writing-assist.test.js && node ../scripts/windows-updater-manifest.test.js && node ../scripts/release-version.test.js && node ../scripts/facebook-release-post.test.js",
+    "test": "node ui/i18n.test.js && node ui/settings-form.test.js && node ui/llm-providers.test.js && node ui/prompts.test.js && node ui/diff.test.js && node ui/daily-skip.test.js && node ui/writing-assist.test.js && node ../scripts/windows-updater-manifest.test.js && node ../scripts/release-version.test.js && node ../scripts/homebrew-cask.test.js && node ../scripts/facebook-release-post.test.js",
     "tauri": "tauri",
     "dev": "tauri dev",
     "build": "tauri build",

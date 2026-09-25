@@ -1039,6 +1039,21 @@ a:hover {
   padding-top: 3px;
 }
 
+.brew-label {
+  margin: 16px 0 6px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.brew-cmd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .warn {
   margin: 18px 0 0;
   font-size: 14px;

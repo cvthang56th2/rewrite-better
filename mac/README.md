@@ -41,6 +41,16 @@ Kill, rebuild, and relaunch in one step:
 ./mac/restart.sh
 ```
 
+## Homebrew
+
+```bash
+brew tap cvthang56th2/rewrite-better
+brew trust cvthang56th2/rewrite-better
+brew install --cask rewrite-better
+```
+
+Later versions: `brew upgrade --cask rewrite-better`. Homebrew asks you to trust this tap once because it is not an official Homebrew tap. The first open can still require right-click → **Open** until the app is notarized.
+
 ## Share with friends
 
 ```bash

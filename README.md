@@ -24,7 +24,7 @@ You need at least one API key. Requests go from your device to the provider you 
 
 | Platform | How |
 |----------|-----|
-| **macOS** | [Latest Release](https://github.com/cvthang56th2/rewrite-better/releases/latest) `.dmg`. Menu bar app, no Dock icon. Grant Accessibility when asked. If Gatekeeper blocks the first open, right-click → **Open** |
+| **macOS** | `brew tap cvthang56th2/rewrite-better`, then `brew trust cvthang56th2/rewrite-better`, then `brew install --cask rewrite-better`. Later: `brew upgrade --cask rewrite-better`. Or use the [Latest Release](https://github.com/cvthang56th2/rewrite-better/releases/latest) `.dmg`. Menu bar app, no Dock icon. Grant Accessibility when asked. If Gatekeeper blocks the first open, right-click → **Open** |
 | **Windows** | [Latest Release](https://github.com/cvthang56th2/rewrite-better/releases/latest) `.exe` (NSIS). Lives in the system tray. After this updater-enabled build is installed once, later versions prompt inside the app. SmartScreen may warn on unsigned builds: **More info → Run anyway** |
 | **Chrome** | Download `rewrite-better-chrome.zip` from [the site](https://rewrite-better-ai.vercel.app/) (or zip `chrome/` yourself). Unzip → `chrome://extensions` → Developer mode → **Load unpacked** → select the folder that contains `manifest.json` |
 
