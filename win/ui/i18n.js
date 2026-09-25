@@ -172,8 +172,17 @@
       'paste.previousApp': 'the previous app',
       'menu.openPanel': 'Open Panel',
       'menu.openEmptyPanel': 'Open Empty Panel',
+      'menu.checkForUpdates': 'Check for Updates…',
       'menu.settings': 'Settings…',
-      'menu.quit': 'Quit Rewrite Better'
+      'menu.quit': 'Quit Rewrite Better',
+      'settings.checkForUpdates': 'Check for updates',
+      'settings.checkForUpdatesHelp': 'Downloads the latest Windows installer and installs it over this app. Settings and API keys stay on this PC.',
+      'updater.checking': 'Checking for updates…',
+      'updater.available': 'Version %@ is available. Install it now?',
+      'updater.update': 'Update',
+      'updater.later': 'Later',
+      'updater.upToDate': 'You’re up to date.',
+      'updater.failed': 'Could not check for updates.'
     },
     vi: {
       'settings.save': 'Lưu',
@@ -343,8 +352,17 @@
       'paste.previousApp': 'app trước đó',
       'menu.openPanel': 'Mở bảng',
       'menu.openEmptyPanel': 'Mở bảng trống',
+      'menu.checkForUpdates': 'Kiểm tra cập nhật…',
       'menu.settings': 'Cài đặt…',
-      'menu.quit': 'Thoát Rewrite Better'
+      'menu.quit': 'Thoát Rewrite Better',
+      'settings.checkForUpdates': 'Kiểm tra cập nhật',
+      'settings.checkForUpdatesHelp': 'Tải bản cài Windows mới nhất và cài đè app hiện tại. Cài đặt và API key vẫn ở máy này.',
+      'updater.checking': 'Đang kiểm tra cập nhật…',
+      'updater.available': 'Đã có phiên bản %@. Cài ngay?',
+      'updater.update': 'Cập nhật',
+      'updater.later': 'Để sau',
+      'updater.upToDate': 'Bạn đang dùng bản mới nhất.',
+      'updater.failed': 'Không kiểm tra được cập nhật.'
     }
   };
 

@@ -25,5 +25,10 @@ const enKeys = Object.keys(RB.I18N.en).sort();
 const viKeys = Object.keys(RB.I18N.vi).sort();
 assert.deepStrictEqual(enKeys, viKeys, 'en and vi catalogs must have the same keys');
 assert.ok(enKeys.length > 10, 'catalog should include UI strings');
+for (const key of ['menu.checkForUpdates', 'settings.checkForUpdates', 'updater.available', 'updater.upToDate']) {
+  assert.ok(enKeys.includes(key), `missing ${key}`);
+}
+assert.strictEqual(RB.t('menu.checkForUpdates', 'en'), 'Check for Updates…');
+assert.strictEqual(RB.t('menu.checkForUpdates', 'vi'), 'Kiểm tra cập nhật…');
 
 console.log(`ok — ${enKeys.length} keys, default English, vi lookup, fallback`);

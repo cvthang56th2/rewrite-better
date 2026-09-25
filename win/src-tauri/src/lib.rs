@@ -1,13 +1,15 @@
 mod capture;
 mod chat;
+mod l10n;
 mod store;
+mod updater;
 
 use std::collections::HashMap;
 
 use serde::Serialize;
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter, Manager, Wry};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 
@@ -36,7 +38,19 @@ fn save_prefs(app: AppHandle, prefs: Prefs) -> Result<(), String> {
     current.extra_instructions = prefs.extra_instructions;
     current.voice_samples = prefs.voice_samples;
     current.enabled_providers = prefs.enabled_providers;
-    store::save_prefs(&app, &current)
+    store::save_prefs(&app, &current)?;
+    if let Some(items) = app.try_state::<TrayMenuItems>() {
+        apply_tray_language(items.inner(), &current.ui_language);
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn check_for_updates(app: AppHandle) {
+    #[cfg(windows)]
+    updater::spawn_check(app, updater::CheckMode::Manual);
+    #[cfg(not(windows))]
+    let _ = app;
 }
 
 #[tauri::command]
@@ -147,8 +161,34 @@ fn open_panel(app: &AppHandle, empty: bool) {
     }
 }
 
+struct TrayMenuItems {
+    open: MenuItem<Wry>,
+    empty: MenuItem<Wry>,
+    updates: Option<MenuItem<Wry>>,
+    settings: MenuItem<Wry>,
+    quit: MenuItem<Wry>,
+}
+
+fn apply_tray_language(items: &TrayMenuItems, lang: &str) {
+    let _ = items
+        .open
+        .set_text(l10n::t("menu.openPanel", lang, &[]));
+    let _ = items
+        .empty
+        .set_text(l10n::t("menu.openEmptyPanel", lang, &[]));
+    if let Some(updates) = &items.updates {
+        let _ = updates.set_text(l10n::t("menu.checkForUpdates", lang, &[]));
+    }
+    let _ = items
+        .settings
+        .set_text(l10n::t("menu.settings", lang, &[]));
+    let _ = items.quit.set_text(l10n::t("menu.quit", lang, &[]));
+}
+
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
             None,
@@ -168,19 +208,59 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
-            let handle = app.handle();
-            let prefs = store::load_prefs(handle);
-            if let Err(err) = register_hotkey(handle, &prefs.hotkey) {
+            let handle = app.handle().clone();
+            let prefs = store::load_prefs(&handle);
+            if let Err(err) = register_hotkey(&handle, &prefs.hotkey) {
                 eprintln!("failed to register hotkey {}: {err}", prefs.hotkey);
                 let fallback = store::default_hotkey();
-                let _ = register_hotkey(handle, &fallback);
+                let _ = register_hotkey(&handle, &fallback);
             }
 
-            let open = MenuItem::with_id(app, "open", "Open Panel", true, None::<&str>)?;
-            let empty = MenuItem::with_id(app, "empty", "Open Empty Panel", true, None::<&str>)?;
-            let settings = MenuItem::with_id(app, "settings", "Settings…", true, None::<&str>)?;
-            let quit = MenuItem::with_id(app, "quit", "Quit Rewrite Better", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&open, &empty, &settings, &quit])?;
+            let lang = prefs.ui_language.as_str();
+            let open = MenuItem::with_id(
+                app,
+                "open",
+                l10n::t("menu.openPanel", lang, &[]),
+                true,
+                None::<&str>,
+            )?;
+            let empty = MenuItem::with_id(
+                app,
+                "empty",
+                l10n::t("menu.openEmptyPanel", lang, &[]),
+                true,
+                None::<&str>,
+            )?;
+            let updates = if cfg!(windows) {
+                Some(MenuItem::with_id(
+                    app,
+                    "updates",
+                    l10n::t("menu.checkForUpdates", lang, &[]),
+                    true,
+                    None::<&str>,
+                )?)
+            } else {
+                None
+            };
+            let settings = MenuItem::with_id(
+                app,
+                "settings",
+                l10n::t("menu.settings", lang, &[]),
+                true,
+                None::<&str>,
+            )?;
+            let quit = MenuItem::with_id(
+                app,
+                "quit",
+                l10n::t("menu.quit", lang, &[]),
+                true,
+                None::<&str>,
+            )?;
+            let menu = if let Some(updates_item) = updates.as_ref() {
+                Menu::with_items(app, &[&open, &empty, updates_item, &settings, &quit])?
+            } else {
+                Menu::with_items(app, &[&open, &empty, &settings, &quit])?
+            };
 
             let mut tray = TrayIconBuilder::new()
                 .menu(&menu)
@@ -189,6 +269,7 @@ pub fn run() {
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "open" => open_panel(app, false),
                     "empty" => open_panel(app, true),
+                    "updates" => updater::spawn_check(app.clone(), updater::CheckMode::Manual),
                     "settings" => show_settings(app),
                     "quit" => app.exit(0),
                     _ => {}
@@ -197,6 +278,21 @@ pub fn run() {
                 tray = tray.icon(icon.clone());
             }
             tray.build(app)?;
+            app.manage(TrayMenuItems {
+                open,
+                empty,
+                updates,
+                settings,
+                quit,
+            });
+            #[cfg(windows)]
+            {
+                let delayed = handle.clone();
+                std::thread::spawn(move || {
+                    std::thread::sleep(std::time::Duration::from_secs(3));
+                    updater::spawn_check(delayed, updater::CheckMode::Launch);
+                });
+            }
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -218,7 +314,8 @@ pub fn run() {
             probe_api_key,
             get_autostart,
             set_autostart,
-            set_hotkey
+            set_hotkey,
+            check_for_updates
         ])
         .run(tauri::generate_context!())
         .expect("error while running Rewrite Better");

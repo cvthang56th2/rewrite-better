@@ -48,3 +48,18 @@ CI sets that version from the `v*` git tag. The download site picks the `.exe` f
 Or copy it to `web/downloads/RewriteBetter-setup.exe` before a Vercel deploy.
 
 SmartScreen may warn on unsigned builds — choose **More info → Run anyway**.
+
+## Auto-update
+
+The Windows app checks GitHub Releases for a newer installer. It prompts on launch if a new version is available, and from **Check for Updates…** in the tray or Settings → General.
+
+Release builds must be signed with the updater key:
+
+1. Private key: `~/.tauri/rewrite-better.key` (never commit this file)
+2. GitHub Actions secrets:
+   - `TAURI_SIGNING_PRIVATE_KEY` — contents of the `.key` file
+   - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — leave empty unless the key has a password
+
+`tauri dev` and unsigned local `npm run build` do not need the key. CI sets `createUpdaterArtifacts` and uploads `latest.json` plus the `.sig` next to the installer.
+
+If you lose the private key, already-installed apps cannot verify future updates. Generate a new keypair only as a last resort; those users would have to install the new build by hand once.

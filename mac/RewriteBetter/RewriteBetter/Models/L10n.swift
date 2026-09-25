@@ -49,6 +49,7 @@ enum L10n {
     private static let english: [String: String] = [
         "menu.openPanel": "Open Panel",
         "menu.openEmptyPanel": "Open Empty Panel",
+        "menu.checkForUpdates": "Check for Updates…",
         "menu.welcome": "Welcome…",
         "menu.settings": "Settings…",
         "menu.privacy": "Privacy…",
@@ -189,6 +190,8 @@ enum L10n {
         "settings.openAtLoginOn": "Will open when you log in",
         "settings.openAtLoginOff": "Won’t open at login",
         "settings.openAtLoginFail": "Could not enable Open at login",
+        "settings.checkForUpdates": "Check for updates",
+        "settings.checkForUpdatesHelp": "Downloads the latest Windows installer and installs it over this app. Settings and API keys stay on this PC.",
         "settings.shortcut": "Open panel shortcut",
         "settings.reset": "Reset",
         "settings.shortcutHelp": "Click the shortcut, then press a new combo. Include ⌘, ⌥, or ⌃. Esc cancels.",
@@ -273,6 +276,7 @@ enum L10n {
     private static let vietnamese: [String: String] = [
         "menu.openPanel": "Mở bảng",
         "menu.openEmptyPanel": "Mở bảng trống",
+        "menu.checkForUpdates": "Kiểm tra cập nhật…",
         "menu.welcome": "Chào mừng…",
         "menu.settings": "Cài đặt…",
         "menu.privacy": "Quyền riêng tư…",
@@ -413,6 +417,8 @@ enum L10n {
         "settings.openAtLoginOn": "Sẽ mở khi bạn đăng nhập",
         "settings.openAtLoginOff": "Không mở khi đăng nhập",
         "settings.openAtLoginFail": "Không bật được Mở khi đăng nhập",
+        "settings.checkForUpdates": "Kiểm tra cập nhật",
+        "settings.checkForUpdatesHelp": "Tải bản cài Windows mới nhất và cài đè app hiện tại. Cài đặt và API key vẫn ở máy này.",
         "settings.shortcut": "Phím tắt mở bảng",
         "settings.reset": "Đặt lại",
         "settings.shortcutHelp": "Bấm phím tắt, rồi nhấn tổ hợp mới. Cần có ⌘, ⌥ hoặc ⌃. Esc để hủy.",

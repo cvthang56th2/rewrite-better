@@ -17,6 +17,9 @@
     test: document.getElementById('testBtn'),
     message: document.getElementById('message'),
     generalMessage: document.getElementById('generalMessage'),
+    checkUpdates: document.getElementById('checkUpdatesBtn'),
+    updateRow: document.getElementById('updateRow'),
+    updateHelp: document.getElementById('updateHelp'),
     results: document.getElementById('testResults')
   };
 
@@ -56,6 +59,10 @@
     });
     els.hotkey.textContent = currentHotkey;
     els.hotkey.title = RB.t('settings.changeShortcut');
+  }
+
+  function isWindowsApp() {
+    return /Windows/i.test(navigator.userAgent);
   }
 
   function bindTabs() {
@@ -168,6 +175,10 @@
     els.extraReply.value = extra.reply || '';
     els.voiceSamples.value = prefs.voiceSamples || '';
     applyI18n();
+    if (isWindowsApp()) {
+      els.updateRow.hidden = false;
+      els.updateHelp.hidden = false;
+    }
     rememberSaved();
     ready = true;
   }
@@ -254,6 +265,19 @@
 
   bindTabs();
   renderProviders();
+
+  els.checkUpdates.addEventListener('click', async () => {
+    els.checkUpdates.disabled = true;
+    setGeneralMessage(RB.t('updater.checking'));
+    try {
+      await RB.invoke('check_for_updates');
+      setGeneralMessage('');
+    } catch (err) {
+      setGeneralMessage(RB.formatCompleteError(err));
+    } finally {
+      els.checkUpdates.disabled = false;
+    }
+  });
 
   els.language.addEventListener('change', () => {
     RB.setLanguage(els.language.value);

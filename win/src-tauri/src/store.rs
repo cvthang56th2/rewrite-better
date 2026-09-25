@@ -43,6 +43,8 @@ pub struct Prefs {
     pub voice_samples: String,
     #[serde(default)]
     pub enabled_providers: HashMap<String, bool>,
+    #[serde(default)]
+    pub dismissed_update_version: String,
 }
 
 impl Default for Prefs {
@@ -53,6 +55,7 @@ impl Default for Prefs {
             extra_instructions: ExtraInstructions::default(),
             voice_samples: String::new(),
             enabled_providers: HashMap::new(),
+            dismissed_update_version: String::new(),
         }
     }
 }

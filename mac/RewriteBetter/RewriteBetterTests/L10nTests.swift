@@ -34,7 +34,7 @@ final class L10nTests: XCTestCase {
     func testEnglishAndVietnameseCatalogsHaveTheSameKeys() {
         XCTAssertEqual(L10n.keys(for: .en), L10n.keys(for: .vi))
         XCTAssertFalse(L10n.keys(for: .en).isEmpty)
-        for key in ["onboarding.title", "privacy.title", "menu.privacy", "menu.welcome"] {
+        for key in ["onboarding.title", "privacy.title", "menu.privacy", "menu.welcome", "menu.checkForUpdates"] {
             XCTAssertTrue(L10n.keys(for: .en).contains(key), "missing \(key)")
         }
     }

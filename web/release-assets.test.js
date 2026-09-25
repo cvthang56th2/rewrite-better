@@ -61,6 +61,15 @@ const prefersSetup = pickDesktopAssets({
 });
 assert.strictEqual(prefersSetup.win, 'https://example/setup.exe');
 
+const ignoresUpdaterSidecars = pickDesktopAssets({
+  assets: [
+    asset('latest.json', 'https://example/latest.json'),
+    asset('Rewrite Better_1.2.0_x64-setup.exe.sig', 'https://example/setup.exe.sig'),
+    asset('Rewrite Better_1.2.0_x64-setup.exe', 'https://example/setup.exe'),
+  ],
+});
+assert.strictEqual(ignoresUpdaterSidecars.win, 'https://example/setup.exe');
+
 assert.strictEqual(latestPublishedRelease(null), null);
 assert.strictEqual(
   latestPublishedRelease({ tag_name: 'v1', draft: false, prerelease: false }).tag_name,
