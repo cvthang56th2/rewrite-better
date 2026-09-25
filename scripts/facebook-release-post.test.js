@@ -17,10 +17,18 @@ const message = buildReleaseMessage({
   releaseUrl,
 });
 
-assert.ok(message.startsWith("Rewrite Better 1.2.3 đã có. / Rewrite Better 1.2.3 is available."));
-assert.ok(message.includes(`Tải về / Download: ${siteUrl}`));
-assert.ok(message.includes(`Ghi chú phiên bản / Release notes: ${releaseUrl}`));
-assert.ok(message.includes("Thay đổi / Changes:\n### Features\n\n- Fix the panel on Windows"));
+assert.ok(message.startsWith("Rewrite Better 1.2.3 đã có. (English below)\n"));
+assert.ok(message.includes(`Tải về: ${siteUrl}`));
+assert.ok(message.includes(`Ghi chú phiên bản: ${releaseUrl}`));
+assert.ok(message.includes("Thay đổi:\n### Features\n\n- Fix the panel on Windows"));
+assert.equal(message.includes("\n\nEnglish below\n\n"), false);
+assert.ok(message.includes("Rewrite Better 1.2.3 is available."));
+assert.ok(message.includes(`Download: ${siteUrl}`));
+assert.ok(message.includes(`Release notes: ${releaseUrl}`));
+assert.ok(message.indexOf("(English below)") < message.indexOf("Thay đổi:"));
+assert.ok(message.includes("\n\n---------\n\n"));
+assert.ok(message.indexOf("Thay đổi:") < message.indexOf("\n\n---------\n\n"));
+assert.ok(message.indexOf("\n\n---------\n\n") < message.indexOf("Rewrite Better 1.2.3 is available."));
 
 const withoutNotes = buildReleaseMessage({
   version: "1.2.3",
@@ -28,7 +36,22 @@ const withoutNotes = buildReleaseMessage({
   siteUrl,
   releaseUrl,
 });
-assert.equal(withoutNotes.includes("Thay đổi / Changes:"), false);
+assert.equal(withoutNotes.includes("Thay đổi:"), false);
+assert.equal(withoutNotes.includes("Changes:"), false);
+assert.ok(withoutNotes.startsWith("Rewrite Better 1.2.3 đã có. (English below)\n"));
+
+const bilingual = buildReleaseMessage({
+  version: "1.2.3",
+  notes: "- Chỉnh tiếp một bản viết ngay trong panel. / Adjust a draft in the panel.",
+  siteUrl,
+  releaseUrl,
+});
+assert.ok(bilingual.startsWith("Rewrite Better 1.2.3 đã có. (English below)\n"));
+assert.ok(bilingual.includes("Thay đổi:\n- Chỉnh tiếp một bản viết ngay trong panel."));
+assert.ok(bilingual.includes("Changes:\n- Adjust a draft in the panel."));
+assert.ok(bilingual.includes("\n\n---------\n\n"));
+assert.ok(bilingual.indexOf("Thay đổi:") < bilingual.indexOf("\n\n---------\n\n"));
+assert.ok(bilingual.indexOf("\n\n---------\n\n") < bilingual.indexOf("Changes:"));
 
 assert.equal(
   postAlreadyExists([{ message: "Rewrite Better 1.2.3 đã có.\n\nTải về: https://example.com" }], {
@@ -103,9 +126,11 @@ async function runPublishCases() {
   const body = JSON.parse(postCall.options.body);
   assert.equal(body.link, releaseUrl);
   assert.equal(body.access_token, token);
-  assert.ok(body.message.includes("Rewrite Better 1.2.3 đã có. / Rewrite Better 1.2.3 is available."));
-  assert.ok(body.message.includes("Tải về / Download:"));
-  assert.ok(body.message.includes("Thay đổi / Changes:\n### Features\n\n- Ship it"));
+  assert.ok(body.message.includes("Rewrite Better 1.2.3 đã có."));
+  assert.ok(body.message.includes("Tải về:"));
+  assert.ok(body.message.includes("Thay đổi:\n### Features\n\n- Ship it"));
+  assert.ok(body.message.includes("English below"));
+  assert.ok(body.message.includes("Rewrite Better 1.2.3 is available."));
   assert.ok(String(postCall.url).includes("/v25.0/111/feed"));
 
   await assert.rejects(

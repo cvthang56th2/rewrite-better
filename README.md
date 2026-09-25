@@ -97,7 +97,7 @@ To publish Mac and Windows builds:
 
 That workflow builds the Mac DMG (`./mac/package.sh`) and the Windows NSIS installer, then uploads them to the GitHub Release. After it finishes, the Download buttons on the site point at those files.
 
-A successful tag push then starts [Post Facebook release](.github/workflows/facebook-release.yml). That file has to be on the default branch. It posts once to the [Rewrite Better Facebook Page](https://www.facebook.com/people/Rewrite-Better/61594555839619/): a bilingual announcement, the site link, the release-notes link, and a bilingual summary of the commits since the previous tag. If that version is already on the Page, the workflow skips. Running the desktop workflow by hand does not post, because that run is not a version tag.
+A successful tag push then starts [Post Facebook release](.github/workflows/facebook-release.yml). That file has to be on the default branch. It posts once to the [Rewrite Better Facebook Page](https://www.facebook.com/people/Rewrite-Better/61594555839619/). The Vietnamese title ends with "(English below)". A line of dashes separates that part from the English version. If that version is already on the Page, the workflow skips. Running the desktop workflow by hand does not post, because that run is not a version tag.
 
 Groq writes the summary with `openai/gpt-oss-20b`. `GROQ_API_KEY` can hold several keys, separated by commas or newlines. A key that is out of quota, unauthorized, or does not return one bilingual bullet per line is skipped. If every key fails, the post uses the GitHub release description instead. An empty description omits the changes section.
 

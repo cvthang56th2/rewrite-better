@@ -167,18 +167,59 @@ async function summarizeWithKey({ fetchImpl, key, subjects, sleep, maxAttempts, 
   return { ok: false, reason: "failed" };
 }
 
-function buildReleaseMessage({ version, notes, siteUrl, releaseUrl }) {
-  const lines = [
-    `Rewrite Better ${version} đã có. / Rewrite Better ${version} is available.`,
-    "",
-    `Tải về / Download: ${siteUrl}`,
-    `Ghi chú phiên bản / Release notes: ${releaseUrl}`,
-  ];
-  const changelog = String(notes || "").trim();
-  if (changelog) {
-    lines.push("", "Thay đổi / Changes:", changelog);
+function splitBilingualNotes(notes) {
+  const raw = String(notes || "").trim();
+  if (!raw) return { vi: "", en: "" };
+  const vi = [];
+  const en = [];
+  let pairs = 0;
+  let other = 0;
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const match = trimmed.match(/^-\s+(.+)$/);
+    const sides = match ? match[1].split(/\s+\/\s+/).map((part) => part.trim()).filter(Boolean) : [];
+    if (sides.length >= 2) {
+      pairs += 1;
+      vi.push(`- ${sides[0]}`);
+      en.push(`- ${sides.slice(1).join(" / ")}`);
+    } else {
+      other += 1;
+    }
   }
+  if (pairs > 0 && other === 0) return { vi: vi.join("\n"), en: en.join("\n") };
+  return { vi: raw, en: "" };
+}
+
+function postSection({ title, downloadLabel, notesLabel, siteUrl, releaseUrl, changesLabel, changes }) {
+  const lines = [title, "", `${downloadLabel}: ${siteUrl}`, `${notesLabel}: ${releaseUrl}`];
+  if (changes) lines.push("", `${changesLabel}:`, changes);
   return lines.join("\n");
+}
+
+function buildReleaseMessage({ version, notes, siteUrl, releaseUrl }) {
+  const { vi, en } = splitBilingualNotes(notes);
+  return [
+    postSection({
+      title: `Rewrite Better ${version} đã có. (English below)`,
+      downloadLabel: "Tải về",
+      notesLabel: "Ghi chú phiên bản",
+      siteUrl,
+      releaseUrl,
+      changesLabel: "Thay đổi",
+      changes: vi,
+    }),
+    "---------",
+    postSection({
+      title: `Rewrite Better ${version} is available.`,
+      downloadLabel: "Download",
+      notesLabel: "Release notes",
+      siteUrl,
+      releaseUrl,
+      changesLabel: "Changes",
+      changes: en,
+    }),
+  ].join("\n\n");
 }
 
 function containsBounded(message, needle) {
