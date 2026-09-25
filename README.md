@@ -157,7 +157,7 @@ See [PRIVACY.md](PRIVACY.md). Short version:
 
 ## Feedback
 
-Email [cvthang56th2@gmail.com](mailto:cvthang56th2@gmail.com), or open a [GitHub issue](https://github.com/cvthang56th2/rewrite-better/issues/new).
+Email [cvthang56th2@gmail.com](mailto:cvthang56th2@gmail.com), message the [Rewrite Better Facebook page](https://www.facebook.com/people/Rewrite-Better/61594555839619/), or open a [GitHub issue](https://github.com/cvthang56th2/rewrite-better/issues/new).
 
 ## License
 
