@@ -128,7 +128,7 @@ async function runPublishCases() {
   const postCall = calls.find((call) => String(call.url).endsWith("/feed"));
   assert.ok(postCall, "expected a feed post");
   const body = JSON.parse(postCall.options.body);
-  assert.equal(body.link, updateUrl);
+  assert.equal(body.link, releaseUrl);
   assert.ok(body.message.includes(`Cách cập nhật: ${updateUrl}`));
   assert.ok(body.message.includes(`How to update: ${updateUrl}`));
   assert.equal(body.access_token, token);

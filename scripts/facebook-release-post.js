@@ -319,7 +319,6 @@ async function publishReleasePost({
   const version = versionFromTag(tag);
   const releaseUrl = releasePageUrl(repo, version);
   const pageUrl = siteUrl || DEFAULT_SITE_URL;
-  const updateUrl = updateGuideUrl(pageUrl);
   const postsUrl = new URL(`https://graph.facebook.com/${graphVersion}/${encodeURIComponent(id)}/posts`);
   postsUrl.searchParams.set("fields", "message");
   postsUrl.searchParams.set("limit", "50");
@@ -346,7 +345,7 @@ async function publishReleasePost({
     method: "POST",
     body: {
       message,
-      link: updateUrl,
+      link: releaseUrl,
       access_token: token,
     },
   });
