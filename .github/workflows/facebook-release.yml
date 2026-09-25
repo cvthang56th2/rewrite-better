@@ -1,0 +1,63 @@
+name: Post Facebook release
+
+# Release desktop apps creates the GitHub Release with the default
+# GITHUB_TOKEN, which does not start a workflow on `release: published`.
+# workflow_run is the trigger that still runs after that workflow finishes.
+on:
+  workflow_run:
+    workflows: ["Release desktop apps"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag, for example v1.2.3
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       startsWith(github.event.workflow_run.head_branch, 'v'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Resolve release notes
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            tag="$INPUT_TAG"
+          else
+            tag="$HEAD_BRANCH"
+          fi
+          if [[ "$tag" != v* ]]; then
+            echo "Expected a v* release tag, got: ${tag}" >&2
+            exit 1
+          fi
+          body="$(gh release view "$tag" --repo "${GITHUB_REPOSITORY}" --json body --jq '.body // ""')"
+          printf '%s' "$body" > release-notes.txt
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Post to Facebook
+        env:
+          FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
+          FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_NOTES_FILE: release-notes.txt
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/facebook-release-post.js

@@ -97,6 +97,24 @@ To publish Mac and Windows builds:
 
 That workflow builds the Mac DMG (`./mac/package.sh`) and the Windows NSIS installer, then uploads them to the GitHub Release. After it finishes, the Download buttons on the site point at those files.
 
+A successful tag push then starts [Post Facebook release](.github/workflows/facebook-release.yml). That file has to be on the default branch. It posts once to the [Rewrite Better Facebook Page](https://www.facebook.com/people/Rewrite-Better/61594555839619/): a Vietnamese announcement, the site link, the release-notes link, and the GitHub changelog unchanged. If that version is already on the Page, the workflow skips. Running the desktop workflow by hand does not post, because that run is not a version tag.
+
+The Facebook workflow needs two repository secrets:
+
+| Secret | Value |
+|---|---|
+| `FACEBOOK_PAGE_ID` | Page ID from `GET /me/accounts` |
+| `FACEBOOK_PAGE_ACCESS_TOKEN` | Long-lived Page access token |
+
+One-time setup in [Meta for Developers](https://developers.facebook.com/apps/):
+
+1. Create an app and, in the [Graph API Explorer](https://developers.facebook.com/tools/explorer/), request `pages_show_list`, `pages_manage_posts`, and `pages_read_engagement`.
+2. Exchange that user token for a [long-lived user token](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived), then call `GET /me/accounts` again and copy the Page `id` and Page `access_token`. A Page token taken from a long-lived user token does not expire.
+3. Switch the app to **Live** so people without a role on the app can see the posts.
+4. Add both secrets under **Settings → Secrets and variables → Actions**.
+
+The number in the Page URL is not always the API Page ID. If the Facebook step fails, the GitHub Release stays up. Re-run **Actions → Post Facebook release** and pass the tag (for example `v1.2.3`). A missing secret fails that workflow and prints the setup steps.
+
 You can still copy local builds into `web/downloads/` (`RewriteBetter.dmg`, `RewriteBetter-setup.exe`) if you want the site to serve them directly; those files are gitignored.
 
 Mac packaging: `./mac/package.sh` (CI) or `./scripts/package-mac-dmg.sh` (also copies into `web/downloads/`)  
