@@ -27,6 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -51,6 +54,12 @@ jobs:
           fi
           body="$(gh release view "$tag" --repo "${GITHUB_REPOSITORY}" --json body --jq '.body // ""')"
           printf '%s' "$body" > release-notes.txt
+          prev="$(git tag -l 'v*' --sort=-v:refname | awk -v current="$tag" 'found { print; exit } $0 == current { found = 1 }')"
+          if [[ -n "$prev" ]]; then
+            git log --format='%s' "${prev}..${tag}" > commits.txt
+          else
+            git log --format='%s' -n 20 "$tag" > commits.txt
+          fi
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
 
       - name: Post to Facebook
@@ -59,5 +68,7 @@ jobs:
           FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
           RELEASE_NOTES_FILE: release-notes.txt
+          RELEASE_COMMITS_FILE: commits.txt
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: node scripts/facebook-release-post.js

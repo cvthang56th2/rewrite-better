@@ -3,6 +3,7 @@ const {
   buildReleaseMessage,
   postAlreadyExists,
   publishReleasePost,
+  summarizeReleaseChanges,
   MISSING_SECRETS_MESSAGE,
 } = require("./facebook-release-post");
 
@@ -16,10 +17,10 @@ const message = buildReleaseMessage({
   releaseUrl,
 });
 
-assert.ok(message.startsWith("Rewrite Better 1.2.3 đã có."));
-assert.ok(message.includes(`Tải về: ${siteUrl}`));
-assert.ok(message.includes(`Ghi chú phiên bản: ${releaseUrl}`));
-assert.ok(message.includes("Thay đổi:\n### Features\n\n- Fix the panel on Windows"));
+assert.ok(message.startsWith("Rewrite Better 1.2.3 đã có. / Rewrite Better 1.2.3 is available."));
+assert.ok(message.includes(`Tải về / Download: ${siteUrl}`));
+assert.ok(message.includes(`Ghi chú phiên bản / Release notes: ${releaseUrl}`));
+assert.ok(message.includes("Thay đổi / Changes:\n### Features\n\n- Fix the panel on Windows"));
 
 const withoutNotes = buildReleaseMessage({
   version: "1.2.3",
@@ -27,7 +28,7 @@ const withoutNotes = buildReleaseMessage({
   siteUrl,
   releaseUrl,
 });
-assert.equal(withoutNotes.includes("Thay đổi:"), false);
+assert.equal(withoutNotes.includes("Thay đổi / Changes:"), false);
 
 assert.equal(
   postAlreadyExists([{ message: "Rewrite Better 1.2.3 đã có.\n\nTải về: https://example.com" }], {
@@ -102,8 +103,9 @@ async function runPublishCases() {
   const body = JSON.parse(postCall.options.body);
   assert.equal(body.link, releaseUrl);
   assert.equal(body.access_token, token);
-  assert.ok(body.message.startsWith("Rewrite Better 1.2.3 đã có."));
-  assert.ok(body.message.includes("Thay đổi:\n### Features\n\n- Ship it"));
+  assert.ok(body.message.includes("Rewrite Better 1.2.3 đã có. / Rewrite Better 1.2.3 is available."));
+  assert.ok(body.message.includes("Tải về / Download:"));
+  assert.ok(body.message.includes("Thay đổi / Changes:\n### Features\n\n- Ship it"));
   assert.ok(String(postCall.url).includes("/v25.0/111/feed"));
 
   await assert.rejects(
@@ -168,7 +170,110 @@ async function runPublishCases() {
   );
 }
 
+function groqReply(content, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () =>
+      status >= 200 && status < 300
+        ? { choices: [{ message: { content } }] }
+        : { error: { message: content } },
+  };
+}
+
+async function runSummaryCases() {
+  const fallback = "**Full Changelog**: https://github.com/cvthang56th2/rewrite-better/compare/v1.0.7...v1.0.8";
+  const commits = "Implement refine in the panel\nMerge branch 'main'\nAdd the release banner";
+  const sleep = async () => {};
+
+  const noKeys = await summarizeReleaseChanges({
+    commits,
+    apiKeys: "",
+    fallbackNotes: fallback,
+    fetchImpl: async () => {
+      throw new Error("Groq should not be called");
+    },
+    sleep,
+  });
+  assert.equal(noKeys.source, "release");
+  assert.equal(noKeys.notes, fallback);
+
+  const tried = [];
+  const failover = await summarizeReleaseChanges({
+    commits,
+    apiKeys: "key-one, key-two",
+    fallbackNotes: fallback,
+    sleep,
+    fetchImpl: async (url, options) => {
+      const auth = options.headers.Authorization;
+      tried.push(auth);
+      if (auth.endsWith("key-one")) return groqReply("rate limit", 429);
+      const body = JSON.parse(options.body);
+      assert.equal(body.model, "openai/gpt-oss-20b");
+      assert.equal(String(url).includes("api.groq.com/openai/v1/chat/completions"), true);
+      assert.equal(body.messages[1].content.includes("Merge branch"), false);
+      assert.ok(body.messages[1].content.includes("Implement refine in the panel"));
+      assert.ok(body.messages[1].content.includes("Add the release banner"));
+      return groqReply(
+        "- Chỉnh tiếp một bản viết ngay trong panel. / Adjust a draft in the panel.\n- Trang web có banner phiên bản mới. / The site shows a banner for the new version.",
+      );
+    },
+  });
+  assert.deepEqual(tried, ["Bearer key-one", "Bearer key-two"]);
+  assert.equal(failover.source, "groq");
+  assert.equal(
+    failover.notes,
+    "- Chỉnh tiếp một bản viết ngay trong panel. / Adjust a draft in the panel.\n- Trang web có banner phiên bản mới. / The site shows a banner for the new version.",
+  );
+
+  let attempts = 0;
+  const exhausted = await summarizeReleaseChanges({
+    commits,
+    apiKeys: "key-one\nkey-two",
+    fallbackNotes: fallback,
+    sleep,
+    fetchImpl: async () => {
+      attempts += 1;
+      return groqReply("unavailable", 503);
+    },
+  });
+  assert.equal(attempts, 6);
+  assert.equal(exhausted.source, "release");
+  assert.equal(exhausted.notes, fallback);
+
+  const skippedProse = [];
+  const afterProse = await summarizeReleaseChanges({
+    commits,
+    apiKeys: "key-one;key-two",
+    fallbackNotes: fallback,
+    sleep,
+    fetchImpl: async (_url, options) => {
+      const auth = options.headers.Authorization;
+      skippedProse.push(auth);
+      if (auth.endsWith("key-one")) return groqReply("- Settings chia ba tab.");
+      return groqReply("- Settings chia ba tab. / Settings are split into three tabs.");
+    },
+  });
+  assert.deepEqual(skippedProse, ["Bearer key-one", "Bearer key-two"]);
+  assert.equal(afterProse.notes, "- Settings chia ba tab. / Settings are split into three tabs.");
+
+  const redacted = await summarizeReleaseChanges({
+    commits,
+    apiKeys: "secret-groq-key",
+    fallbackNotes: fallback,
+    sleep,
+    maxAttempts: 1,
+    fetchImpl: async () => {
+      throw new Error("network while using secret-groq-key");
+    },
+  });
+  assert.equal(redacted.source, "release");
+  assert.equal(redacted.notes, fallback);
+  assert.equal(JSON.stringify(redacted).includes("secret-groq-key"), false);
+}
+
 runPublishCases()
+  .then(() => runSummaryCases())
   .then(() => {
     console.log("scripts/facebook-release-post.test.js ok");
   })
