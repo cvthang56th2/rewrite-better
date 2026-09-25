@@ -20,14 +20,15 @@ const message = buildReleaseMessage({
 assert.ok(message.startsWith("Rewrite Better 1.2.3 đã có. (English below)\n"));
 assert.ok(message.includes(`Tải về: ${siteUrl}`));
 assert.ok(message.includes(`Ghi chú phiên bản: ${releaseUrl}`));
-assert.ok(message.includes("Thay đổi:\n### Features\n\n- Fix the panel on Windows"));
+assert.equal(message.includes("Thay đổi:"), false);
+assert.ok(message.includes("Changes:\n### Features\n\n- Fix the panel on Windows"));
 assert.equal(message.includes("\n\nEnglish below\n\n"), false);
 assert.ok(message.includes("Rewrite Better 1.2.3 is available."));
 assert.ok(message.includes(`Download: ${siteUrl}`));
 assert.ok(message.includes(`Release notes: ${releaseUrl}`));
-assert.ok(message.indexOf("(English below)") < message.indexOf("Thay đổi:"));
+assert.ok(message.indexOf("(English below)") < message.indexOf("Changes:"));
 assert.ok(message.includes("\n\n---------\n\n"));
-assert.ok(message.indexOf("Thay đổi:") < message.indexOf("\n\n---------\n\n"));
+assert.ok(message.indexOf("Changes:") > message.indexOf("\n\n---------\n\n"));
 assert.ok(message.indexOf("\n\n---------\n\n") < message.indexOf("Rewrite Better 1.2.3 is available."));
 
 const withoutNotes = buildReleaseMessage({
@@ -128,7 +129,8 @@ async function runPublishCases() {
   assert.equal(body.access_token, token);
   assert.ok(body.message.includes("Rewrite Better 1.2.3 đã có."));
   assert.ok(body.message.includes("Tải về:"));
-  assert.ok(body.message.includes("Thay đổi:\n### Features\n\n- Ship it"));
+  assert.ok(body.message.includes("Changes:\n### Features\n\n- Ship it"));
+  assert.equal(body.message.includes("Thay đổi:"), false);
   assert.ok(body.message.includes("English below"));
   assert.ok(body.message.includes("Rewrite Better 1.2.3 is available."));
   assert.ok(String(postCall.url).includes("/v25.0/111/feed"));
@@ -275,12 +277,15 @@ async function runSummaryCases() {
     fetchImpl: async (_url, options) => {
       const auth = options.headers.Authorization;
       skippedProse.push(auth);
-      if (auth.endsWith("key-one")) return groqReply("- Settings chia ba tab.");
-      return groqReply("- Settings chia ba tab. / Settings are split into three tabs.");
+      if (auth.endsWith("key-one")) return groqReply("- Auto update on Windows. / Windows updates itself.");
+      return groqReply("- Windows tự cập nhật khi có bản mới. / Windows updates itself when a new version is ready.");
     },
   });
   assert.deepEqual(skippedProse, ["Bearer key-one", "Bearer key-two"]);
-  assert.equal(afterProse.notes, "- Settings chia ba tab. / Settings are split into three tabs.");
+  assert.equal(
+    afterProse.notes,
+    "- Windows tự cập nhật khi có bản mới. / Windows updates itself when a new version is ready.",
+  );
 
   const redacted = await summarizeReleaseChanges({
     commits,

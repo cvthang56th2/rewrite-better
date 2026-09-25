@@ -69,10 +69,14 @@ function normalizeSummary(text) {
     const match = line.match(/^(?:[-*•]\s+)(.+)$/);
     if (!match) return "";
     const sides = match[1].split(/\s+\/\s+/).map((part) => part.trim()).filter(Boolean);
-    if (sides.length < 2) return "";
+    if (sides.length < 2 || !looksVietnamese(sides[0])) return "";
     bullets.push(`- ${sides[0]} / ${sides.slice(1).join(" / ")}`);
   }
   return bullets.join("\n");
+}
+
+function looksVietnamese(text) {
+  return /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i.test(text);
 }
 
 function isStickyGroqFailure(status, message) {
@@ -179,7 +183,7 @@ function splitBilingualNotes(notes) {
     if (!trimmed) continue;
     const match = trimmed.match(/^-\s+(.+)$/);
     const sides = match ? match[1].split(/\s+\/\s+/).map((part) => part.trim()).filter(Boolean) : [];
-    if (sides.length >= 2) {
+    if (sides.length >= 2 && looksVietnamese(sides[0])) {
       pairs += 1;
       vi.push(`- ${sides[0]}`);
       en.push(`- ${sides.slice(1).join(" / ")}`);
@@ -188,7 +192,7 @@ function splitBilingualNotes(notes) {
     }
   }
   if (pairs > 0 && other === 0) return { vi: vi.join("\n"), en: en.join("\n") };
-  return { vi: raw, en: "" };
+  return { vi: "", en: raw };
 }
 
 function postSection({ title, downloadLabel, notesLabel, siteUrl, releaseUrl, changesLabel, changes }) {
