@@ -21,6 +21,18 @@
 <body>
   <a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
 
+  <div class="release-banner" hidden data-release-banner>
+    <div class="release-banner-inner wrap">
+      <a class="release-banner-msg" href="releases.html">
+        <strong data-release-banner-title></strong>
+        <span data-release-banner-link></span>
+      </a>
+      <button type="button" class="release-banner-x" data-release-dismiss data-i18n-aria="rel.dismiss" aria-label="Dismiss">
+        <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg>
+      </button>
+    </div>
+  </div>
+
   <div class="nav-shell">
     <nav class="nav" aria-label="Primary">
       <a class="brand" href="./">
@@ -92,6 +104,7 @@ brew install --cask rewrite-better</code></pre>
   </footer>
 
   <script src="analytics.js"></script>
+  <script src="release-assets.js"></script>
   <script src="site.js"></script>
 </body>
 </html>

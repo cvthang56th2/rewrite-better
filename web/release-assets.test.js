@@ -116,8 +116,13 @@ assert.ok(
   'download buttons should not hardcode GitHub asset filenames that 404',
 );
 assert.ok(html.includes('release-assets.js'));
-assert.ok(html.includes('data-release-banner'));
 assert.ok(html.includes('releases.html'));
+for (const page of ['index.html', 'releases.html', 'privacy.html', 'update.html']) {
+  const pageHtml = fs.readFileSync(path.join(__dirname, page), 'utf8');
+  assert.ok(pageHtml.includes('release-banner-inner'), `${page} should include the release banner`);
+  assert.ok(pageHtml.includes('data-release-banner'), `${page} should include the release banner hook`);
+  assert.ok(pageHtml.includes('release-assets.js'), `${page} should load release data`);
+}
 assert.strictEqual(DISMISSED_RELEASE_KEY, 'rb-dismissed-release');
 
 const listed = publishedReleases([

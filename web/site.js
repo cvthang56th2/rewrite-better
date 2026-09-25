@@ -991,7 +991,12 @@ initReveals();
 
 initReleaseBanner();
 
-if (window.RewriteBetterWeb && (document.getElementById("macDownload") || document.querySelector("[data-release-list]"))) {
+if (
+  window.RewriteBetterWeb &&
+  (document.getElementById("macDownload") ||
+    document.querySelector("[data-release-list]") ||
+    document.querySelector("[data-release-banner]"))
+) {
   const payloadPromise = loadReleasePayload().then((payload) => {
     releasePayload = payload;
     return payload;
@@ -1012,7 +1017,12 @@ if (window.RewriteBetterWeb && (document.getElementById("macDownload") || docume
       document.querySelectorAll("#winDownload, #winDownload2").forEach((a) => {
         a.href = urls.win;
       });
-      showReleaseBanner(api.publishedReleases(payload)[0]);
+    });
+  }
+
+  if (document.querySelector("[data-release-banner]")) {
+    payloadPromise.then((payload) => {
+      showReleaseBanner(window.RewriteBetterWeb.publishedReleases(payload)[0]);
     });
   }
 
