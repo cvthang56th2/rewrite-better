@@ -126,10 +126,11 @@ fn register_hotkey(app: &AppHandle, shortcut: &str) -> Result<(), String> {
 }
 
 fn show_settings(app: &AppHandle) {
-    if let Some(win) = app.get_webview_window("settings") {
+    if let Some(win) = app.get_webview_window("panel") {
         let _ = win.show();
         let _ = win.unminimize();
         let _ = win.set_focus();
+        let _ = win.emit("panel-show-settings", ());
     }
 }
 

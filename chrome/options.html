@@ -7,65 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="rb-settings-body">
-  <div class="rb-settings">
-    <header class="rb-settings-header">
-      <h1 data-i18n="options.title">Rewrite Better Settings</h1>
-      <p data-i18n="options.subtitle">Configure API keys to rewrite text on any webpage</p>
-    </header>
-
-    <nav class="rb-settings-tabs" role="tablist" aria-label="Settings">
-      <button type="button" role="tab" id="tab-keys" data-tab="keys" aria-controls="panel-keys" aria-selected="true" data-i18n="settings.tab.keys">Keys</button>
-      <button type="button" role="tab" id="tab-writing" data-tab="writing" aria-controls="panel-writing" aria-selected="false" tabindex="-1" data-i18n="settings.tab.writing">Writing</button>
-      <button type="button" role="tab" id="tab-general" data-tab="general" aria-controls="panel-general" aria-selected="false" tabindex="-1" data-i18n="settings.tab.general">General</button>
-    </nav>
-
-    <section id="panel-keys" class="rb-settings-panel" role="tabpanel" data-tab-panel="keys" aria-labelledby="tab-keys">
-      <p class="rb-disclaimer" data-i18n="settings.disclaimer"></p>
-      <p class="rb-hint" data-i18n="settings.failoverOrder"></p>
-
-      <div id="providerFields"></div>
-      <div class="rb-settings-actions">
-        <button type="button" id="testBtn" class="rb-primary-btn" data-i18n="settings.testKeys">Test keys</button>
-      </div>
-      <p id="message" class="rb-hint"></p>
-      <div id="testResults"></div>
-      <p class="rb-hint" data-i18n="settings.multipleKeys"></p>
-    </section>
-
-    <section id="panel-writing" class="rb-settings-panel" role="tabpanel" data-tab-panel="writing" aria-labelledby="tab-writing" hidden>
-      <h2 data-i18n="settings.extraTitle">Extra instructions</h2>
-      <p class="rb-hint" data-i18n="settings.extraHelp"></p>
-      <label class="rb-field">
-        <span class="rb-field-label" data-i18n="mode.rewrite">Rewrite</span>
-        <textarea id="extraRewrite" rows="2"></textarea>
-      </label>
-      <label class="rb-field">
-        <span class="rb-field-label" data-i18n="mode.format">Format</span>
-        <textarea id="extraFormat" rows="2"></textarea>
-      </label>
-      <label class="rb-field">
-        <span class="rb-field-label" data-i18n="mode.reply">Reply</span>
-        <textarea id="extraReply" rows="2"></textarea>
-      </label>
-
-      <h2 data-i18n="settings.voiceTitle">Voice profile</h2>
-      <p class="rb-hint" data-i18n="settings.voiceHelp"></p>
-      <label class="rb-field">
-        <span class="rb-field-label" data-i18n="settings.voiceTitle">Voice profile</span>
-        <textarea id="voiceSamples" rows="5"></textarea>
-      </label>
-    </section>
-
-    <section id="panel-general" class="rb-settings-panel" role="tabpanel" data-tab-panel="general" aria-labelledby="tab-general" hidden>
-      <label class="rb-field">
-        <span class="rb-field-label" data-i18n="settings.language">Interface language</span>
-        <select id="uiLanguage">
-          <option value="en">English</option>
-          <option value="vi">Tiếng Việt</option>
-        </select>
-      </label>
-    </section>
-  </div>
+  <div class="rb-settings" id="settingsRoot"></div>
   <script src="shared/i18n.js"></script>
   <script src="shared/options.js"></script>
   <script src="shared/llm-providers.js"></script>

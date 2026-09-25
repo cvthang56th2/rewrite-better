@@ -83,6 +83,7 @@ enum L10n {
 
         "panel.title": "Rewrite Better",
         "panel.settings": "Settings",
+        "panel.back": "Back",
         "panel.close": "Close",
         "panel.input": "Input",
         "panel.receivedMessage": "Received message",
@@ -310,6 +311,7 @@ enum L10n {
 
         "panel.title": "Rewrite Better",
         "panel.settings": "Cài đặt",
+        "panel.back": "Quay lại",
         "panel.close": "Đóng",
         "panel.input": "Văn bản",
         "panel.receivedMessage": "Tin nhắn nhận được",

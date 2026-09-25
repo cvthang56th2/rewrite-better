@@ -13,7 +13,6 @@ final class PanelController: ObservableObject {
     @Published var pasteBackTarget: PasteBackTarget?
 
     private var panel: NSPanel?
-    private var settingsWindow: NSWindow?
     private var welcomeWindow: NSWindow?
     private var privacyWindow: NSWindow?
     private var pasteBackElement: AXUIElement?
@@ -45,6 +44,7 @@ final class PanelController: ObservableObject {
     }
 
     func openWithCapturedText() {
+        showSettings = false
         // Capture while the previous app still owns focus whenever possible.
         needsAccessibility = !TextCaptureService.hasAccessibilityPermission
         let capture = TextCaptureService.captureSelection()
@@ -54,6 +54,7 @@ final class PanelController: ObservableObject {
     }
 
     func openEmpty() {
+        showSettings = false
         needsAccessibility = !TextCaptureService.hasAccessibilityPermission
         let source = TextCaptureService.currentSourceApp()
         let element = source.flatMap { TextCaptureService.focusedTextElement(inAppPID: $0.pid) }
@@ -122,27 +123,26 @@ final class PanelController: ObservableObject {
     }
 
     func openSettings() {
-        if settingsWindow == nil {
-            let view = SettingsView()
-            let hosting = NSHostingController(rootView: view)
-            let window = NSWindow(contentViewController: hosting)
-            window.title = LanguageStore.shared.t("settings.windowTitle")
-            window.styleMask = [.titled, .closable, .resizable]
-            window.setContentSize(NSSize(width: 560, height: 640))
-            window.minSize = NSSize(width: 520, height: 400)
-            window.isReleasedWhenClosed = false
-            window.center()
-            settingsWindow = window
+        showSettings = true
+        if isPresented, let panel {
+            NSApp.activate(ignoringOtherApps: true)
+            panel.makeKeyAndOrderFront(nil)
+            return
         }
-        settingsWindow?.title = LanguageStore.shared.t("settings.windowTitle")
-        NSApp.activate(ignoringOtherApps: true)
-        settingsWindow?.makeKeyAndOrderFront(nil)
+        show()
+    }
+
+    func closeSettings() {
+        showSettings = false
     }
 
     func openWelcome() {
         if welcomeWindow == nil {
             let view = WelcomeView(
-                onAddKey: { [weak self] in self?.openSettings() },
+                onAddKey: { [weak self] in
+                    self?.welcomeWindow?.orderOut(nil)
+                    self?.openSettings()
+                },
                 onPrivacy: { [weak self] in self?.openPrivacy() },
                 onDone: { [weak self] in self?.welcomeWindow?.orderOut(nil) }
             )

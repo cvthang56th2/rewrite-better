@@ -29,6 +29,7 @@
         "shared/llm-providers.js",
         "shared/daily-skip.js",
         "shared/api.js",
+        "options.js",
         "shared/writing-assist.js",
         "shared/panel.js",
         "content.js"

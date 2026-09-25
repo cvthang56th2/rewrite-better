@@ -920,6 +920,38 @@ body.rb-settings-body {
   gap: 12px;
 }
 
+.rb-settings[hidden],
+.rb-writing[hidden],
+.rb-icon-btn[hidden] {
+  display: none !important;
+}
+
+.rb-header-leading {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rb-writing {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.rb-settings.rb-settings--embedded {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 0 2px 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
 .rb-settings-header h1 {
   margin: 0 0 4px;
   font-size: 22px;

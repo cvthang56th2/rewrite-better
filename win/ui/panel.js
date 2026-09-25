@@ -19,7 +19,7 @@
       .join('');
     return `
       <div class="rb-field">
-        ${label ? `<div class="rb-field-label">${escapeHtml(label)}</div>` : ''}
+        ${label ? `<div class="rb-field-label" data-i18n="${escapeHtml(label)}">${escapeHtml(RB.t(label))}</div>` : ''}
         <div class="rb-chip-group" data-chip-group="${name}" role="group">${chips}</div>
       </div>`;
   }
@@ -105,7 +105,12 @@
 
     const headerHtml = showHeader
       ? `<div class="rb-header" data-tauri-drag-region>
-          <h1 class="rb-title">${escapeHtml(RB.t('panel.title'))}</h1>
+          <div class="rb-header-leading">
+            <button type="button" class="rb-icon-btn" data-action="settings-back" hidden title="${escapeHtml(RB.t('panel.back'))}" aria-label="${escapeHtml(RB.t('panel.back'))}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+            </button>
+            <h1 class="rb-title" data-role="header-title">${escapeHtml(RB.t('panel.title'))}</h1>
+          </div>
           <div class="rb-header-actions">
             ${showSettings ? `<button type="button" class="rb-icon-btn" data-action="settings" title="${escapeHtml(RB.t('panel.settings'))}" aria-label="${escapeHtml(RB.t('panel.settings'))}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M3 12h2M19 12h2M5.6 18.4l1.4-1.4M17 7l1.4-1.4"/></svg>
@@ -128,6 +133,7 @@
 
     root.innerHTML = `
       ${headerHtml}
+      <div class="rb-writing" data-role="writing">
       <div class="rb-mode-selector" role="tablist">${modeChips}</div>
       ${apiStatusHtml}
       <div class="rb-columns">
@@ -194,30 +200,32 @@
         <div class="rb-right">
           <div class="rb-mode-scroll">
             <div class="rb-mode-panel" data-mode-panel="rewrite">
-              ${chipGroupHtml('tone', RB.localizeOptions(RB.TONES, 'tone'), 'friendly', RB.t('panel.tone'))}
+              ${chipGroupHtml('tone', RB.localizeOptions(RB.TONES, 'tone'), 'friendly', 'panel.tone')}
               <label class="rb-check">
                 <input type="checkbox" data-role="enable-translate" />
                 <span>${escapeHtml(RB.t('panel.enableTranslation'))}</span>
               </label>
               <div class="rb-translate" data-role="translate-options" hidden>
-                ${chipGroupHtml('fromLanguage', RB.LANGUAGES, 'auto', RB.t('panel.from'))}
-                ${chipGroupHtml('toLanguage', RB.OUTPUT_LANGUAGES, 'en', RB.t('panel.to'))}
+                ${chipGroupHtml('fromLanguage', RB.LANGUAGES, 'auto', 'panel.from')}
+                ${chipGroupHtml('toLanguage', RB.OUTPUT_LANGUAGES, 'en', 'panel.to')}
               </div>
             </div>
             <div class="rb-mode-panel" data-mode-panel="format" hidden>
-              ${chipGroupHtml('formatType', RB.localizeOptions(RB.FORMAT_TYPES, 'format'), 'markdown', RB.t('panel.format'))}
+              ${chipGroupHtml('formatType', RB.localizeOptions(RB.FORMAT_TYPES, 'format'), 'markdown', 'panel.format')}
             </div>
             <div class="rb-mode-panel" data-mode-panel="reply" hidden>
-              ${chipGroupHtml('channel', RB.localizeOptions(RB.CHANNELS, 'channel'), 'message', RB.t('panel.type'))}
-              ${chipGroupHtml('intent', RB.localizeOptions(RB.INTENTS, 'intent'), 'general', RB.t('panel.intent'))}
-              ${chipGroupHtml('tone', RB.localizeOptions(RB.TONES, 'tone'), 'professional', RB.t('panel.tone'))}
-              ${chipGroupHtml('length', RB.localizeOptions(RB.LENGTHS, 'length'), 'medium', RB.t('panel.length'))}
-              ${chipGroupHtml('outputLanguage', RB.OUTPUT_LANGUAGES, 'en', RB.t('panel.language'))}
+              ${chipGroupHtml('channel', RB.localizeOptions(RB.CHANNELS, 'channel'), 'message', 'panel.type')}
+              ${chipGroupHtml('intent', RB.localizeOptions(RB.INTENTS, 'intent'), 'general', 'panel.intent')}
+              ${chipGroupHtml('tone', RB.localizeOptions(RB.TONES, 'tone'), 'professional', 'panel.tone')}
+              ${chipGroupHtml('length', RB.localizeOptions(RB.LENGTHS, 'length'), 'medium', 'panel.length')}
+              ${chipGroupHtml('outputLanguage', RB.OUTPUT_LANGUAGES, 'en', 'panel.language')}
               <p class="rb-hint">${escapeHtml(RB.t('panel.replyHint'))}</p>
             </div>
           </div>
         </div>
       </div>
+      </div>
+      <div class="rb-settings rb-settings--embedded" data-role="settings-view" hidden></div>
     `;
 
     container.appendChild(root);
@@ -478,6 +486,103 @@
       assistEnabledEl.checked = activeAssist.snapshot().assistEnabled;
     }
 
+    let settingsApi = null;
+    const writingEl = root.querySelector('[data-role="writing"]');
+    const settingsEl = root.querySelector('[data-role="settings-view"]');
+    const titleEl = root.querySelector('[data-role="header-title"]');
+    const settingsBtn = root.querySelector('[data-action="settings"]');
+    const backBtn = root.querySelector('[data-action="settings-back"]');
+
+    function relabelPanel() {
+      if (titleEl) {
+        titleEl.textContent = root.classList.contains('is-settings')
+          ? RB.t('panel.settings')
+          : RB.t('panel.title');
+      }
+      if (backBtn) {
+        backBtn.title = RB.t('panel.back');
+        backBtn.setAttribute('aria-label', RB.t('panel.back'));
+      }
+      if (settingsBtn) {
+        settingsBtn.title = RB.t('panel.settings');
+        settingsBtn.setAttribute('aria-label', RB.t('panel.settings'));
+      }
+      if (writingEl) {
+        writingEl.querySelectorAll('[data-i18n]').forEach((node) => {
+          node.textContent = RB.t(node.getAttribute('data-i18n'));
+        });
+      }
+      if (RB.localizeOptions && RB.MODES) {
+        const modes = RB.localizeOptions(RB.MODES, 'mode');
+        root.querySelectorAll('.rb-mode-chip').forEach((btn) => {
+          const match = modes.find((item) => item.value === btn.dataset.mode);
+          if (match) btn.textContent = match.label;
+        });
+        [
+          ['tone', RB.TONES, 'tone'],
+          ['formatType', RB.FORMAT_TYPES, 'format'],
+          ['channel', RB.CHANNELS, 'channel'],
+          ['intent', RB.INTENTS, 'intent'],
+          ['length', RB.LENGTHS, 'length']
+        ].forEach(([group, items, prefix]) => {
+          if (!items) return;
+          const localized = RB.localizeOptions(items, prefix);
+          root.querySelectorAll(`.rb-chip[data-group="${group}"]`).forEach((btn) => {
+            const match = localized.find((item) => item.value === btn.dataset.value);
+            if (match) btn.textContent = match.label;
+          });
+        });
+      }
+      if (inputLabel) {
+        inputLabel.textContent = RB.t(currentMode === 'reply' ? 'panel.receivedMessage' : 'panel.input');
+      }
+      if (inputEl) {
+        inputEl.placeholder = RB.t(currentMode === 'reply' ? 'panel.placeholder.reply' : 'panel.placeholder.input');
+      }
+      if (notesEl) notesEl.placeholder = RB.t('panel.placeholder.notes');
+      if (processBtn && !processBtn.querySelector('.rb-spinner')) {
+        processBtn.textContent = RB.t('action.' + currentMode) || processBtn.textContent;
+      }
+    }
+
+    function showSettingsView(tab) {
+      if (!settingsEl || typeof RB.settingsFormHtml !== 'function' || typeof RB.bindSettings !== 'function') {
+        if (typeof RB.openSettings === 'function') RB.openSettings();
+        return;
+      }
+      if (!settingsApi) {
+        settingsEl.innerHTML = RB.settingsFormHtml();
+        settingsApi = RB.bindSettings(settingsEl, { onLanguage: relabelPanel });
+      } else if (settingsApi.reload) {
+        settingsApi.reload();
+      }
+      if (writingEl) writingEl.hidden = true;
+      settingsEl.hidden = false;
+      root.classList.add('is-settings');
+      if (settingsBtn) settingsBtn.hidden = true;
+      if (backBtn) backBtn.hidden = false;
+      relabelPanel();
+      if (tab && settingsApi && settingsApi.showTab) settingsApi.showTab(tab);
+    }
+
+    function showWritingView() {
+      const finish = () => {
+        if (settingsEl) settingsEl.hidden = true;
+        if (writingEl) writingEl.hidden = false;
+        root.classList.remove('is-settings');
+        if (settingsBtn) settingsBtn.hidden = false;
+        if (backBtn) backBtn.hidden = true;
+        relabelPanel();
+        refreshPrefs();
+        if (showApiStatus) refreshApiStatus();
+      };
+      if (settingsApi && settingsApi.saveNow) {
+        settingsApi.saveNow().then(finish, finish);
+        return;
+      }
+      finish();
+    }
+
     root.addEventListener('click', (e) => {
       const variantChip = e.target.closest('[data-variant]');
       if (variantChip && root.contains(variantChip)) {
@@ -504,7 +609,8 @@
       if (actionBtn && root.contains(actionBtn)) {
         e.preventDefault();
         if (actionBtn.dataset.action === 'close' && onClose) onClose();
-        if (actionBtn.dataset.action === 'settings') RB.openSettings();
+        if (actionBtn.dataset.action === 'settings') showSettingsView('keys');
+        if (actionBtn.dataset.action === 'settings-back') showWritingView();
       }
     });
 
@@ -522,6 +628,7 @@
     });
 
     root.addEventListener('keydown', (event) => {
+      if (root.classList.contains('is-settings')) return;
       if ((event.ctrlKey || event.metaKey) && event.altKey && (event.key === 'Enter' || event.key === 'Return')) {
         if (!pasteBtn.hidden && !pasteBtn.disabled) {
           event.preventDefault();
@@ -821,7 +928,13 @@
         refreshPasteButton();
       },
       refreshApiStatus,
-      refreshPrefs
+      refreshPrefs,
+      openSettings(tab) {
+        showSettingsView(tab || 'keys');
+      },
+      showWriting() {
+        showWritingView();
+      }
     };
   };
 })(typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : globalThis);

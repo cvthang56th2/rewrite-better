@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 
 struct SettingsView: View {
+    var embedded = false
     @State private var geminiKeys = SettingsStore.shared.keys(for: .gemini)
     @State private var groqKeys = SettingsStore.shared.keys(for: .groq)
     @State private var cerebrasKeys = SettingsStore.shared.keys(for: .cerebras)
@@ -42,7 +43,7 @@ struct SettingsView: View {
                 .tabItem { Label(lang.t("settings.tab.general"), systemImage: "gearshape") }
                 .tag(SettingsTab.general)
         }
-        .frame(minWidth: 520, idealWidth: 560, minHeight: 400, idealHeight: 640)
+        .modifier(SettingsFrame(embedded: embedded))
         .onAppear {
             launchAtLogin = LaunchAtLogin.isEnabled
             geminiKeys = SettingsStore.shared.keys(for: .gemini)
@@ -57,14 +58,18 @@ struct SettingsView: View {
             formatExtra = SettingsStore.shared.extraInstructions(for: .format)
             replyExtra = SettingsStore.shared.extraInstructions(for: .reply)
             voiceSamples = SettingsStore.shared.voiceSamples
-            NSApp.keyWindow?.title = lang.t("settings.windowTitle")
+            if !embedded {
+                NSApp.keyWindow?.title = lang.t("settings.windowTitle")
+            }
             isReady = true
         }
         .onDisappear {
             saveNow()
         }
         .onChange(of: lang.language) { _ in
-            NSApp.keyWindow?.title = lang.t("settings.windowTitle")
+            if !embedded {
+                NSApp.keyWindow?.title = lang.t("settings.windowTitle")
+            }
         }
         .onChange(of: geminiKeys) { _ in scheduleSave() }
         .onChange(of: groqKeys) { _ in scheduleSave() }
@@ -601,5 +606,18 @@ private struct HotkeyRecorderButton: View {
         }
         onCapture(shortcut)
         stopRecording()
+    }
+}
+
+private struct SettingsFrame: ViewModifier {
+    let embedded: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if embedded {
+            content.frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            content.frame(minWidth: 520, idealWidth: 560, minHeight: 400, idealHeight: 640)
+        }
     }
 }

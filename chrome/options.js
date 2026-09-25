@@ -1,70 +1,127 @@
-document.addEventListener('DOMContentLoaded', function () {
-  const RB = window.RewriteBetter;
-  const els = {
-    language: document.getElementById('uiLanguage'),
-    providers: document.getElementById('providerFields'),
-    extraRewrite: document.getElementById('extraRewrite'),
-    extraFormat: document.getElementById('extraFormat'),
-    extraReply: document.getElementById('extraReply'),
-    voiceSamples: document.getElementById('voiceSamples'),
-    test: document.getElementById('testBtn'),
-    message: document.getElementById('message'),
-    results: document.getElementById('testResults')
+(function (global) {
+  const RB = (global.RewriteBetter = global.RewriteBetter || {});
+
+  RB.settingsPageHeaderHtml = function () {
+    return `<header class="rb-settings-header">
+      <h1 data-i18n="options.title">Rewrite Better Settings</h1>
+      <p data-i18n="options.subtitle">Configure API keys to rewrite text on any webpage</p>
+    </header>`;
   };
-  const keyInputs = {};
-  let ready = false;
-  let saveTimer = null;
-  let lastSignature = '';
-  let lastKeysSignature = '';
 
-  function applyI18n() {
-    document.documentElement.lang = RB.uiLanguage;
-    document.title = RB.t('settings.windowTitle');
-    document.querySelectorAll('[data-i18n]').forEach((node) => {
-      node.textContent = RB.t(node.getAttribute('data-i18n'));
-    });
-    els.extraRewrite.placeholder = RB.t('settings.extraRewritePlaceholder');
-    els.extraFormat.placeholder = RB.t('settings.extraFormatPlaceholder');
-    els.extraReply.placeholder = RB.t('settings.extraReplyPlaceholder');
-    els.voiceSamples.placeholder = RB.t('settings.voicePlaceholder');
-    RB.PROVIDERS.forEach((provider) => {
-      const input = keyInputs[provider.value];
-      if (!input) return;
-      input.placeholder = RB.t('settings.placeholder.' + provider.value);
-      const card = input.closest('.rb-provider');
-      const summary = card.querySelector('.rb-provider-summary');
-      if (summary) summary.textContent = RB.t('provider.' + provider.value + '.summary');
-      const label = card.querySelector('.rb-provider-name');
-      if (label) label.textContent = provider.displayName;
-      const toggleLabel = card.querySelector('.rb-switch-label');
-      if (toggleLabel) toggleLabel.textContent = RB.t('settings.providerEnabled');
-      const toggle = card.querySelector('[data-enabled]');
-      if (toggle) {
-        toggle.setAttribute('aria-label', RB.t('settings.providerEnabled') + ' ' + provider.displayName);
+  RB.settingsFormHtml = function () {
+    return `<nav class="rb-settings-tabs" role="tablist" aria-label="Settings">
+      <button type="button" role="tab" data-tab="keys" aria-selected="true" data-i18n="settings.tab.keys">Keys</button>
+      <button type="button" role="tab" data-tab="writing" aria-selected="false" tabindex="-1" data-i18n="settings.tab.writing">Writing</button>
+      <button type="button" role="tab" data-tab="general" aria-selected="false" tabindex="-1" data-i18n="settings.tab.general">General</button>
+    </nav>
+    <section class="rb-settings-panel" role="tabpanel" data-tab-panel="keys">
+      <p class="rb-disclaimer" data-i18n="settings.disclaimer"></p>
+      <p class="rb-hint" data-i18n="settings.failoverOrder"></p>
+      <div data-role="provider-fields"></div>
+      <div class="rb-settings-actions">
+        <button type="button" data-role="test-keys" class="rb-primary-btn" data-i18n="settings.testKeys">Test keys</button>
+      </div>
+      <p data-role="settings-message" class="rb-hint"></p>
+      <div data-role="test-results"></div>
+      <p class="rb-hint" data-i18n="settings.multipleKeys"></p>
+    </section>
+    <section class="rb-settings-panel" role="tabpanel" data-tab-panel="writing" hidden>
+      <h2 data-i18n="settings.extraTitle">Extra instructions</h2>
+      <p class="rb-hint" data-i18n="settings.extraHelp"></p>
+      <label class="rb-field">
+        <span class="rb-field-label" data-i18n="mode.rewrite">Rewrite</span>
+        <textarea data-role="extra-rewrite" rows="2"></textarea>
+      </label>
+      <label class="rb-field">
+        <span class="rb-field-label" data-i18n="mode.format">Format</span>
+        <textarea data-role="extra-format" rows="2"></textarea>
+      </label>
+      <label class="rb-field">
+        <span class="rb-field-label" data-i18n="mode.reply">Reply</span>
+        <textarea data-role="extra-reply" rows="2"></textarea>
+      </label>
+      <h2 data-i18n="settings.voiceTitle">Voice profile</h2>
+      <p class="rb-hint" data-i18n="settings.voiceHelp"></p>
+      <label class="rb-field">
+        <span class="rb-field-label" data-i18n="settings.voiceTitle">Voice profile</span>
+        <textarea data-role="voice-samples" rows="5"></textarea>
+      </label>
+    </section>
+    <section class="rb-settings-panel" role="tabpanel" data-tab-panel="general" hidden>
+      <label class="rb-field">
+        <span class="rb-field-label" data-i18n="settings.language">Interface language</span>
+        <select data-role="ui-language">
+          <option value="en">English</option>
+          <option value="vi">Tiếng Việt</option>
+        </select>
+      </label>
+    </section>`;
+  };
+
+  RB.bindSettings = function (root, hooks) {
+    const opt = hooks || {};
+    const els = {
+      language: root.querySelector('[data-role="ui-language"]'),
+      providers: root.querySelector('[data-role="provider-fields"]'),
+      extraRewrite: root.querySelector('[data-role="extra-rewrite"]'),
+      extraFormat: root.querySelector('[data-role="extra-format"]'),
+      extraReply: root.querySelector('[data-role="extra-reply"]'),
+      voiceSamples: root.querySelector('[data-role="voice-samples"]'),
+      test: root.querySelector('[data-role="test-keys"]'),
+      message: root.querySelector('[data-role="settings-message"]'),
+      results: root.querySelector('[data-role="test-results"]')
+    };
+    const keyInputs = {};
+    let ready = false;
+    let saveTimer = null;
+    let lastSignature = '';
+    let lastKeysSignature = '';
+
+    function applyI18n() {
+      if (document.body && document.body.classList.contains('rb-settings-body')) {
+        document.documentElement.lang = RB.uiLanguage;
+        document.title = RB.t('settings.windowTitle');
       }
-    });
-  }
+      root.querySelectorAll('[data-i18n]').forEach((node) => {
+        node.textContent = RB.t(node.getAttribute('data-i18n'));
+      });
+      els.extraRewrite.placeholder = RB.t('settings.extraRewritePlaceholder');
+      els.extraFormat.placeholder = RB.t('settings.extraFormatPlaceholder');
+      els.extraReply.placeholder = RB.t('settings.extraReplyPlaceholder');
+      els.voiceSamples.placeholder = RB.t('settings.voicePlaceholder');
+      RB.PROVIDERS.forEach((provider) => {
+        const input = keyInputs[provider.value];
+        if (!input) return;
+        input.placeholder = RB.t('settings.placeholder.' + provider.value);
+        const card = input.closest('.rb-provider');
+        const summary = card.querySelector('.rb-provider-summary');
+        if (summary) summary.textContent = RB.t('provider.' + provider.value + '.summary');
+        const label = card.querySelector('.rb-provider-name');
+        if (label) label.textContent = provider.displayName;
+        const toggleLabel = card.querySelector('.rb-switch-label');
+        if (toggleLabel) toggleLabel.textContent = RB.t('settings.providerEnabled');
+        const toggle = card.querySelector('[data-enabled]');
+        if (toggle) {
+          toggle.setAttribute('aria-label', RB.t('settings.providerEnabled') + ' ' + provider.displayName);
+        }
+      });
+      if (opt.onLanguage) opt.onLanguage();
+    }
 
-  function bindTabs() {
-    const tabs = Array.from(document.querySelectorAll('[data-tab]'));
-    function show(id) {
-      document.querySelectorAll('[data-tab-panel]').forEach((panel) => {
+    function showTab(id) {
+      root.querySelectorAll('[data-tab-panel]').forEach((panel) => {
         panel.hidden = panel.getAttribute('data-tab-panel') !== id;
       });
-      tabs.forEach((tab) => {
+      root.querySelectorAll('[data-tab]').forEach((tab) => {
         const on = tab.getAttribute('data-tab') === id;
         tab.setAttribute('aria-selected', on ? 'true' : 'false');
         tab.tabIndex = on ? 0 : -1;
       });
     }
-    tabs.forEach((tab) => {
-      tab.addEventListener('click', () => show(tab.getAttribute('data-tab')));
-    });
-  }
 
-  function renderProviders() {
-    els.providers.innerHTML = RB.PROVIDERS.map((provider) => {
-      return `<div class="rb-provider">
+    function renderProviders() {
+      els.providers.innerHTML = RB.PROVIDERS.map((provider) => {
+        return `<div class="rb-provider">
         <div class="rb-provider-head">
           <div class="rb-provider-title">
             <span class="rb-provider-name">${provider.displayName}</span>
@@ -79,194 +136,225 @@ document.addEventListener('DOMContentLoaded', function () {
         <p class="rb-hint rb-provider-summary">${RB.t('provider.' + provider.value + '.summary')}</p>
         <textarea data-provider="${provider.value}" rows="2" spellcheck="false"></textarea>
       </div>`;
-    }).join('');
-    RB.PROVIDERS.forEach((provider) => {
-      keyInputs[provider.value] = els.providers.querySelector(`[data-provider="${provider.value}"]`);
-    });
-    els.providers.querySelectorAll('[data-enabled]').forEach((toggle) => {
-      toggle.addEventListener('change', () => {
-        syncProviderState();
-        saveNow().catch(() => {});
+      }).join('');
+      RB.PROVIDERS.forEach((provider) => {
+        keyInputs[provider.value] = els.providers.querySelector(`[data-provider="${provider.value}"]`);
       });
-    });
-    syncProviderState();
-  }
-
-  function enabledProvidersFromUI() {
-    const enabled = {};
-    RB.PROVIDERS.forEach((provider) => {
-      const toggle = els.providers.querySelector(`[data-enabled="${provider.value}"]`);
-      enabled[provider.value] = !toggle || toggle.checked;
-    });
-    return enabled;
-  }
-
-  function syncProviderState() {
-    RB.PROVIDERS.forEach((provider) => {
-      const toggle = els.providers.querySelector(`[data-enabled="${provider.value}"]`);
-      const card = toggle && toggle.closest('.rb-provider');
-      if (card) card.classList.toggle('is-disabled', !toggle.checked);
-    });
-  }
-
-  function setMessage(text) {
-    els.message.textContent = text || '';
-  }
-
-  function chromeUnavailable() {
-    return typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.sync;
-  }
-
-  async function load() {
-    if (chromeUnavailable()) {
-      setMessage(RB.t('options.chromeMissing'));
-      return;
+      els.providers.querySelectorAll('[data-enabled]').forEach((toggle) => {
+        toggle.addEventListener('change', () => {
+          syncProviderState();
+          saveNow().catch(() => {});
+        });
+      });
+      syncProviderState();
     }
-    const [keys, prefs] = await Promise.all([RB.getKeysByProvider(), RB.getPrefs()]);
-    RB.setLanguage(prefs.uiLanguage);
-    els.language.value = RB.uiLanguage;
-    RB.PROVIDERS.forEach((provider) => {
-      keyInputs[provider.value].value = keys[provider.value] || '';
-      const toggle = els.providers.querySelector(`[data-enabled="${provider.value}"]`);
-      if (toggle) toggle.checked = RB.normalizeEnabledProviders(prefs.enabledProviders)[provider.value];
-    });
-    syncProviderState();
-    const extra = prefs.extraInstructions || {};
-    els.extraRewrite.value = extra.rewrite || '';
-    els.extraFormat.value = extra.format || '';
-    els.extraReply.value = extra.reply || '';
-    els.voiceSamples.value = prefs.voiceSamples || '';
-    applyI18n();
-    rememberSaved();
-    ready = true;
-  }
 
-  function collectKeys() {
-    const keys = {};
-    RB.PROVIDERS.forEach((provider) => {
-      keys[provider.value] = keyInputs[provider.value].value;
-    });
-    return keys;
-  }
+    function enabledProvidersFromUI() {
+      const enabled = {};
+      RB.PROVIDERS.forEach((provider) => {
+        const toggle = els.providers.querySelector(`[data-enabled="${provider.value}"]`);
+        enabled[provider.value] = !toggle || toggle.checked;
+      });
+      return enabled;
+    }
 
-  function signature() {
-    return JSON.stringify({
-      keys: collectKeys(),
-      uiLanguage: els.language.value,
-      extraInstructions: {
-        rewrite: els.extraRewrite.value,
-        format: els.extraFormat.value,
-        reply: els.extraReply.value
-      },
-      voiceSamples: els.voiceSamples.value,
-      enabledProviders: enabledProvidersFromUI()
-    });
-  }
+    function syncProviderState() {
+      RB.PROVIDERS.forEach((provider) => {
+        const toggle = els.providers.querySelector(`[data-enabled="${provider.value}"]`);
+        const card = toggle && toggle.closest('.rb-provider');
+        if (card) card.classList.toggle('is-disabled', !toggle.checked);
+      });
+    }
 
-  function keysSignature() {
-    return JSON.stringify({
-      keys: collectKeys(),
-      enabledProviders: enabledProvidersFromUI()
-    });
-  }
+    function setMessage(text) {
+      els.message.textContent = text || '';
+    }
 
-  function rememberSaved() {
-    lastSignature = signature();
-    lastKeysSignature = keysSignature();
-  }
+    function chromeUnavailable() {
+      return typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.sync;
+    }
 
-  function scheduleSave() {
-    if (!ready) return;
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-      save().catch((err) => setMessage(RB.t('options.saveError', err.message || err)));
-    }, 600);
-  }
-
-  function saveNow() {
-    if (!ready) return Promise.resolve();
-    clearTimeout(saveTimer);
-    return save().catch((err) => {
-      setMessage(RB.t('options.saveError', err.message || err));
-      throw err;
-    });
-  }
-
-  async function save() {
-    if (!ready) return;
-    const next = signature();
-    if (next === lastSignature) return;
-    const keysChanged = keysSignature() !== lastKeysSignature;
-    await RB.saveKeysAndPrefs(collectKeys(), {
-      uiLanguage: els.language.value,
-      extraInstructions: {
-        rewrite: els.extraRewrite.value,
-        format: els.extraFormat.value,
-        reply: els.extraReply.value
-      },
-      voiceSamples: els.voiceSamples.value,
-      enabledProviders: enabledProvidersFromUI()
-    });
-    rememberSaved();
-    if (keysChanged) RB.dailySkip.clearAll();
-  }
-
-  bindTabs();
-  renderProviders();
-
-  els.language.addEventListener('change', () => {
-    RB.setLanguage(els.language.value);
-    applyI18n();
-    saveNow().catch(() => {});
-  });
-
-  [els.extraRewrite, els.extraFormat, els.extraReply, els.voiceSamples].forEach((field) => {
-    field.addEventListener('input', scheduleSave);
-    field.addEventListener('blur', () => saveNow().catch(() => {}));
-  });
-  els.providers.addEventListener('input', scheduleSave);
-  els.providers.addEventListener('focusout', () => saveNow().catch(() => {}));
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) saveNow().catch(() => {});
-  });
-
-  els.test.addEventListener('click', async () => {
-    els.test.disabled = true;
-    setMessage(RB.t('settings.testing'));
-    els.results.innerHTML = '';
-    try {
-      await saveNow();
-      const results = await RB.testAllKeys();
-      if (!results.length) {
-        setMessage(RB.t('error.missingKey'));
+    async function load() {
+      if (chromeUnavailable()) {
+        setMessage(RB.t('options.chromeMissing'));
         return;
       }
-      const ok = results.filter((r) => r.ok).length;
-      const fail = results.length - ok;
-      if (fail === 0) setMessage(RB.t('settings.allKeysOk', String(ok)));
-      else if (ok === 0) setMessage(RB.t('settings.allKeysFailed', String(fail)));
-      else setMessage(RB.t('settings.keysPartial', String(ok), String(fail)));
-      els.results.innerHTML = results
-        .map((r) => {
-          const name = (RB.PROVIDERS.find((p) => p.value === r.provider) || {}).displayName || r.provider;
-          return `<div class="rb-test-row ${r.ok ? 'is-ok' : 'is-fail'}">
+      const [keys, prefs] = await Promise.all([RB.getKeysByProvider(), RB.getPrefs()]);
+      RB.setLanguage(prefs.uiLanguage);
+      els.language.value = RB.uiLanguage;
+      RB.PROVIDERS.forEach((provider) => {
+        keyInputs[provider.value].value = keys[provider.value] || '';
+        const toggle = els.providers.querySelector(`[data-enabled="${provider.value}"]`);
+        if (toggle) toggle.checked = RB.normalizeEnabledProviders(prefs.enabledProviders)[provider.value];
+      });
+      syncProviderState();
+      const extra = prefs.extraInstructions || {};
+      els.extraRewrite.value = extra.rewrite || '';
+      els.extraFormat.value = extra.format || '';
+      els.extraReply.value = extra.reply || '';
+      els.voiceSamples.value = prefs.voiceSamples || '';
+      applyI18n();
+      rememberSaved();
+      ready = true;
+    }
+
+    function collectKeys() {
+      const keys = {};
+      RB.PROVIDERS.forEach((provider) => {
+        keys[provider.value] = keyInputs[provider.value].value;
+      });
+      return keys;
+    }
+
+    function signature() {
+      return JSON.stringify({
+        keys: collectKeys(),
+        uiLanguage: els.language.value,
+        extraInstructions: {
+          rewrite: els.extraRewrite.value,
+          format: els.extraFormat.value,
+          reply: els.extraReply.value
+        },
+        voiceSamples: els.voiceSamples.value,
+        enabledProviders: enabledProvidersFromUI()
+      });
+    }
+
+    function keysSignature() {
+      return JSON.stringify({
+        keys: collectKeys(),
+        enabledProviders: enabledProvidersFromUI()
+      });
+    }
+
+    function rememberSaved() {
+      lastSignature = signature();
+      lastKeysSignature = keysSignature();
+    }
+
+    function scheduleSave() {
+      if (!ready) return;
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        save().catch((err) => setMessage(RB.t('options.saveError', err.message || err)));
+      }, 600);
+    }
+
+    function saveNow() {
+      if (!ready) return Promise.resolve();
+      clearTimeout(saveTimer);
+      return save().catch((err) => {
+        setMessage(RB.t('options.saveError', err.message || err));
+        throw err;
+      });
+    }
+
+    async function save() {
+      if (!ready) return;
+      const next = signature();
+      if (next === lastSignature) return;
+      const keysChanged = keysSignature() !== lastKeysSignature;
+      await RB.saveKeysAndPrefs(collectKeys(), {
+        uiLanguage: els.language.value,
+        extraInstructions: {
+          rewrite: els.extraRewrite.value,
+          format: els.extraFormat.value,
+          reply: els.extraReply.value
+        },
+        voiceSamples: els.voiceSamples.value,
+        enabledProviders: enabledProvidersFromUI()
+      });
+      rememberSaved();
+      if (keysChanged) RB.dailySkip.clearAll();
+    }
+
+    root.querySelectorAll('[data-tab]').forEach((tab) => {
+      tab.addEventListener('click', () => showTab(tab.getAttribute('data-tab')));
+    });
+    renderProviders();
+
+    els.language.addEventListener('change', () => {
+      RB.setLanguage(els.language.value);
+      applyI18n();
+      saveNow().catch(() => {});
+    });
+
+    [els.extraRewrite, els.extraFormat, els.extraReply, els.voiceSamples].forEach((field) => {
+      field.addEventListener('input', scheduleSave);
+      field.addEventListener('blur', () => saveNow().catch(() => {}));
+    });
+    els.providers.addEventListener('input', scheduleSave);
+    els.providers.addEventListener('focusout', () => saveNow().catch(() => {}));
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) saveNow().catch(() => {});
+    });
+
+    els.test.addEventListener('click', async () => {
+      els.test.disabled = true;
+      setMessage(RB.t('settings.testing'));
+      els.results.innerHTML = '';
+      try {
+        await saveNow();
+        const results = await RB.testAllKeys();
+        if (!results.length) {
+          setMessage(RB.t('error.missingKey'));
+          return;
+        }
+        const ok = results.filter((r) => r.ok).length;
+        const fail = results.length - ok;
+        if (fail === 0) setMessage(RB.t('settings.allKeysOk', String(ok)));
+        else if (ok === 0) setMessage(RB.t('settings.allKeysFailed', String(fail)));
+        else setMessage(RB.t('settings.keysPartial', String(ok), String(fail)));
+        els.results.innerHTML = results
+          .map((r) => {
+            const name = (RB.PROVIDERS.find((p) => p.value === r.provider) || {}).displayName || r.provider;
+            return `<div class="rb-test-row ${r.ok ? 'is-ok' : 'is-fail'}">
             <span class="rb-test-icon" aria-hidden="true"></span>
             <div>
               <div>${name} ${r.id} (${r.keyHint})</div>
               ${r.ok ? '' : `<div class="rb-hint">${r.detail}</div>`}
             </div>
           </div>`;
-        })
-        .join('');
-    } catch (err) {
-      setMessage(RB.formatCompleteError(err));
-    } finally {
-      els.test.disabled = false;
-    }
-  });
+          })
+          .join('');
+      } catch (err) {
+        setMessage(RB.formatCompleteError(err));
+      } finally {
+        els.test.disabled = false;
+      }
+    });
 
-  load().catch((err) => {
-    setMessage(RB.t('panel.settingsError'));
-    console.error(err);
-  });
-});
+    load().catch((err) => {
+      setMessage(RB.t('panel.settingsError'));
+      console.error(err);
+    });
+
+    return {
+      showTab,
+      saveNow,
+      reload() {
+        return load().catch((err) => {
+          setMessage(RB.t('panel.settingsError'));
+          console.error(err);
+        });
+      }
+    };
+  };
+
+  function bootSettingsPage() {
+    if (!document.body || !document.body.classList.contains('rb-settings-body')) return;
+    const host = document.getElementById('settingsRoot');
+    if (!host || host.getAttribute('data-bound') === '1') return;
+    host.setAttribute('data-bound', '1');
+    host.innerHTML = RB.settingsPageHeaderHtml() + RB.settingsFormHtml();
+    RB.bindSettings(host);
+  }
+
+  if (typeof document !== 'undefined' && document.body) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootSettingsPage);
+    } else {
+      bootSettingsPage();
+    }
+  }
+})(typeof window !== 'undefined' ? window : globalThis);

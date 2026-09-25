@@ -272,18 +272,29 @@ struct PanelView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            header
-            modeSelector
-            apiBanner
+            if panel.showSettings {
+                settingsBar
+                SettingsView(embedded: true)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                header
+                modeSelector
+                apiBanner
 
-            // Always two columns; window min width guarantees this fits on Mac.
-            twoColumnLayout
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                // Always two columns; window min width guarantees this fits on Mac.
+                twoColumnLayout
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
         }
         .padding(16)
         .frame(minWidth: 720, idealWidth: 780, minHeight: 460, idealHeight: 540)
         .onAppear {
             vm.syncInput(from: panel)
+        }
+        .onChange(of: panel.showSettings) { showing in
+            if !showing {
+                Task { await vm.refreshApiStatus() }
+            }
         }
         .onChange(of: panel.inputText) { newValue in
             vm.inputText = newValue
@@ -357,6 +368,24 @@ struct PanelView: View {
     }
 
     // MARK: - Sections
+
+    private var settingsBar: some View {
+        HStack(spacing: 8) {
+            Button {
+                panel.closeSettings()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "chevron.left")
+                    Text(lang.t("panel.back"))
+                }
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel(lang.t("panel.back"))
+            Text(lang.t("panel.settings"))
+                .font(.headline)
+            Spacer()
+        }
+    }
 
     private var header: some View {
         HStack(spacing: 10) {
