@@ -34,6 +34,10 @@ function releasePageUrl(repository, version) {
   return `https://github.com/${repository}/releases/tag/v${version}`;
 }
 
+function updateGuideUrl(siteUrl) {
+  return `${String(siteUrl || DEFAULT_SITE_URL).replace(/\/+$/, "")}/update.html`;
+}
+
 function parseApiKeys(raw) {
   const source = Array.isArray(raw) ? raw.join("\n") : raw;
   const keys = [];
@@ -195,20 +199,39 @@ function splitBilingualNotes(notes) {
   return { vi: "", en: raw };
 }
 
-function postSection({ title, downloadLabel, notesLabel, siteUrl, releaseUrl, changesLabel, changes }) {
-  const lines = [title, "", `${downloadLabel}: ${siteUrl}`, `${notesLabel}: ${releaseUrl}`];
+function postSection({
+  title,
+  downloadLabel,
+  updateLabel,
+  notesLabel,
+  siteUrl,
+  updateUrl,
+  releaseUrl,
+  changesLabel,
+  changes,
+}) {
+  const lines = [
+    title,
+    "",
+    `${downloadLabel}: ${siteUrl}`,
+    `${updateLabel}: ${updateUrl}`,
+    `${notesLabel}: ${releaseUrl}`,
+  ];
   if (changes) lines.push("", `${changesLabel}:`, changes);
   return lines.join("\n");
 }
 
 function buildReleaseMessage({ version, notes, siteUrl, releaseUrl }) {
   const { vi, en } = splitBilingualNotes(notes);
+  const updateUrl = updateGuideUrl(siteUrl);
   return [
     postSection({
       title: `Rewrite Better ${version} đã có. (English below)`,
       downloadLabel: "Tải về",
+      updateLabel: "Cách cập nhật",
       notesLabel: "Ghi chú phiên bản",
       siteUrl,
+      updateUrl,
       releaseUrl,
       changesLabel: "Thay đổi",
       changes: vi,
@@ -217,8 +240,10 @@ function buildReleaseMessage({ version, notes, siteUrl, releaseUrl }) {
     postSection({
       title: `Rewrite Better ${version} is available.`,
       downloadLabel: "Download",
+      updateLabel: "How to update",
       notesLabel: "Release notes",
       siteUrl,
+      updateUrl,
       releaseUrl,
       changesLabel: "Changes",
       changes: en,
@@ -293,6 +318,8 @@ async function publishReleasePost({
 
   const version = versionFromTag(tag);
   const releaseUrl = releasePageUrl(repo, version);
+  const pageUrl = siteUrl || DEFAULT_SITE_URL;
+  const updateUrl = updateGuideUrl(pageUrl);
   const postsUrl = new URL(`https://graph.facebook.com/${graphVersion}/${encodeURIComponent(id)}/posts`);
   postsUrl.searchParams.set("fields", "message");
   postsUrl.searchParams.set("limit", "50");
@@ -310,7 +337,7 @@ async function publishReleasePost({
   const message = buildReleaseMessage({
     version,
     notes: changelog,
-    siteUrl: siteUrl || DEFAULT_SITE_URL,
+    siteUrl: pageUrl,
     releaseUrl,
   });
   const feedUrl = `https://graph.facebook.com/${graphVersion}/${encodeURIComponent(id)}/feed`;
@@ -319,7 +346,7 @@ async function publishReleasePost({
     method: "POST",
     body: {
       message,
-      link: releaseUrl,
+      link: updateUrl,
       access_token: token,
     },
   });

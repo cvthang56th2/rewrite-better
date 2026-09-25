@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How to update · Rewrite Better</title>
+  <meta name="description" content="Update Rewrite Better on Mac, Windows, and Chrome without losing your API key." />
+  <meta property="og:title" content="How to update Rewrite Better" />
+  <meta property="og:description" content="Update on Mac, Windows, and Chrome. Your API key and settings stay." />
+  <meta property="og:url" content="https://rewrite-better-ai.vercel.app/update.html" />
+  <link rel="icon" href="icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YH6PG7WBWS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-YH6PG7WBWS');
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
+
+  <div class="nav-shell">
+    <nav class="nav" aria-label="Primary">
+      <a class="brand" href="./">
+        <img src="icon.png" width="28" height="28" alt="" />
+        <span>Rewrite Better</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-cta" href="./#download" data-i18n="nav.download">Download</a>
+        <a href="releases.html" data-i18n="nav.releases">Releases</a>
+        <a href="update.html" aria-current="page" data-i18n="nav.update">Update</a>
+        <a href="privacy.html" data-i18n="nav.privacy">Privacy</a>
+        <a href="./#feedback" data-i18n="nav.feedback">Feedback</a>
+        <a href="https://github.com/cvthang56th2/rewrite-better">GitHub</a>
+        <button type="button" class="lang-btn" data-lang="en" aria-pressed="true" aria-label="English">EN</button>
+        <button type="button" class="lang-btn" data-lang="vi" aria-pressed="false" aria-label="Tiếng Việt">VI</button>
+      </div>
+    </nav>
+  </div>
+
+  <main id="main" class="page wrap">
+    <article class="markdown">
+      <h1 data-i18n="upd.h1">How to update</h1>
+      <p data-i18n="upd.lede">Install the new version over the current one. Your API key and settings stay.</p>
+
+      <h2 id="upd-mac-brew" data-i18n="upd.macbrew">Mac with Homebrew</h2>
+      <p data-i18n="upd.macbrewFirst">The first time, run these three commands:</p>
+      <pre><code>brew tap cvthang56th2/rewrite-better
+brew trust cvthang56th2/rewrite-better
+brew install --cask rewrite-better</code></pre>
+      <p data-i18n-html="upd.macbrewNext">After that, update with <code>brew upgrade --cask rewrite-better</code>.</p>
+      <blockquote><p data-i18n="upd.macbrewGate">The first open can ask you to right-click Rewrite Better in Applications and choose Open.</p></blockquote>
+
+      <h2 id="upd-mac-dmg" data-i18n="upd.macdmg">Mac from the DMG</h2>
+      <p data-i18n-html="upd.macdmgBody">Download the latest DMG from <a href="./#download">this site</a> and drag Rewrite Better into Applications, replacing the app already there.</p>
+
+      <h2 id="upd-windows" data-i18n="upd.win">Windows</h2>
+      <p data-i18n="upd.winBody">From version 1.0.8, the app asks when you open it. You can also choose Check for Updates in the tray menu or in Settings.</p>
+      <p data-i18n-html="upd.winOld">If you installed an older build, <a href="./#windows">download the new installer</a> once and run it over the current app. Later versions then update inside the app.</p>
+      <blockquote><p data-i18n="upd.winSmart">Windows may show a SmartScreen warning on unsigned builds: More info, then Run anyway.</p></blockquote>
+
+      <h2 id="upd-chrome" data-i18n="upd.chrome">Chrome</h2>
+      <ol>
+        <li data-i18n-html="upd.chrome1">Download the new zip from the <a href="./#chrome">homepage</a>.</li>
+        <li data-i18n="upd.chrome2">Unzip it into the same folder that is already loaded in Chrome.</li>
+        <li data-i18n-html="upd.chrome3">Open <a href="chrome://extensions">chrome://extensions</a> and click Reload.</li>
+      </ol>
+      <blockquote><p data-i18n="upd.chromeWarn">If you remove the extension, or load a different folder, Chrome treats it as a new extension and the saved API key is gone.</p></blockquote>
+    </article>
+  </main>
+
+  <footer class="foot wrap">
+    <div class="foot-row">
+      <a class="foot-brand" href="./">
+        <img src="icon.png" width="22" height="22" alt="" />
+        Rewrite Better
+      </a>
+      <span>
+        <a href="./#download" data-i18n="nav.download">Download</a>
+        <a href="releases.html" data-i18n="nav.releases">Releases</a>
+        <a href="update.html" aria-current="page" data-i18n="nav.update">Update</a>
+        <a href="privacy.html" data-i18n="nav.privacy">Privacy</a>
+        <a href="./#feedback" data-i18n="nav.feedback">Feedback</a>
+        <a href="mailto:cvthang56th2@gmail.com" data-i18n="help.email">Email</a>
+        <a href="https://www.facebook.com/people/Rewrite-Better/61594555839619/" data-i18n="help.facebook">Facebook</a>
+        <a href="https://github.com/cvthang56th2/rewrite-better">GitHub</a>
+      </span>
+    </div>
+    <p class="foot-note" data-i18n="foot.note">MIT license. No account. Keys stay on your device.</p>
+  </footer>
+
+  <script src="analytics.js"></script>
+  <script src="site.js"></script>
+</body>
+</html>

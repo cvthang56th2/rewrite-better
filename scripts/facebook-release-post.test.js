@@ -8,6 +8,7 @@ const {
 } = require("./facebook-release-post");
 
 const siteUrl = "https://rewrite-better-ai.vercel.app/";
+const updateUrl = "https://rewrite-better-ai.vercel.app/update.html";
 const releaseUrl = "https://github.com/cvthang56th2/rewrite-better/releases/tag/v1.2.3";
 
 const message = buildReleaseMessage({
@@ -19,12 +20,14 @@ const message = buildReleaseMessage({
 
 assert.ok(message.startsWith("Rewrite Better 1.2.3 đã có. (English below)\n"));
 assert.ok(message.includes(`Tải về: ${siteUrl}`));
+assert.ok(message.includes(`Cách cập nhật: ${updateUrl}`));
 assert.ok(message.includes(`Ghi chú phiên bản: ${releaseUrl}`));
 assert.equal(message.includes("Thay đổi:"), false);
 assert.ok(message.includes("Changes:\n### Features\n\n- Fix the panel on Windows"));
 assert.equal(message.includes("\n\nEnglish below\n\n"), false);
 assert.ok(message.includes("Rewrite Better 1.2.3 is available."));
 assert.ok(message.includes(`Download: ${siteUrl}`));
+assert.ok(message.includes(`How to update: ${updateUrl}`));
 assert.ok(message.includes(`Release notes: ${releaseUrl}`));
 assert.ok(message.indexOf("(English below)") < message.indexOf("Changes:"));
 assert.ok(message.includes("\n\n---------\n\n"));
@@ -125,7 +128,9 @@ async function runPublishCases() {
   const postCall = calls.find((call) => String(call.url).endsWith("/feed"));
   assert.ok(postCall, "expected a feed post");
   const body = JSON.parse(postCall.options.body);
-  assert.equal(body.link, releaseUrl);
+  assert.equal(body.link, updateUrl);
+  assert.ok(body.message.includes(`Cách cập nhật: ${updateUrl}`));
+  assert.ok(body.message.includes(`How to update: ${updateUrl}`));
   assert.equal(body.access_token, token);
   assert.ok(body.message.includes("Rewrite Better 1.2.3 đã có."));
   assert.ok(body.message.includes("Tải về:"));

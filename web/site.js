@@ -3,6 +3,7 @@ const COPY = {
     "nav.download": "Download",
     "nav.privacy": "Privacy",
     "nav.releases": "Releases",
+    "nav.update": "Update",
     "nav.feedback": "Feedback",
     "nav.skip": "Skip to content",
     "nav.shots": "Screenshots",
@@ -134,11 +135,30 @@ const COPY = {
     "rel.banner": "{tag} is out · {date}",
     "rel.bannerLink": "What's new",
     "rel.dismiss": "Dismiss",
+    "upd.link": "How to update an app you already installed.",
+    "upd.h1": "How to update",
+    "upd.lede": "Install the new version over the current one. Your API key and settings stay.",
+    "upd.macbrew": "Mac with Homebrew",
+    "upd.macbrewFirst": "The first time, run these three commands:",
+    "upd.macbrewNext": "After that, update with <code>brew upgrade --cask rewrite-better</code>.",
+    "upd.macbrewGate": "The first open can ask you to right-click Rewrite Better in Applications and choose Open.",
+    "upd.macdmg": "Mac from the DMG",
+    "upd.macdmgBody": "Download the latest DMG from <a href=\"./#download\">this site</a> and drag Rewrite Better into Applications, replacing the app already there.",
+    "upd.win": "Windows",
+    "upd.winBody": "From version 1.0.8, the app asks when you open it. You can also choose Check for Updates in the tray menu or in Settings.",
+    "upd.winOld": "If you installed an older build, <a href=\"./#windows\">download the new installer</a> once and run it over the current app. Later versions then update inside the app.",
+    "upd.winSmart": "Windows may show a SmartScreen warning on unsigned builds: More info, then Run anyway.",
+    "upd.chrome": "Chrome",
+    "upd.chrome1": "Download the new zip from the <a href=\"./#chrome\">homepage</a>.",
+    "upd.chrome2": "Unzip it into the same folder that is already loaded in Chrome.",
+    "upd.chrome3": "Open <a href=\"chrome://extensions\">chrome://extensions</a> and click Reload.",
+    "upd.chromeWarn": "If you remove the extension, or load a different folder, Chrome treats it as a new extension and the saved API key is gone.",
   },
   vi: {
     "nav.download": "Tải về",
     "nav.privacy": "Quyền riêng tư",
     "nav.releases": "Bản phát hành",
+    "nav.update": "Cập nhật",
     "nav.feedback": "Góp ý",
     "nav.skip": "Bỏ qua đến nội dung",
     "nav.shots": "Ảnh chụp",
@@ -270,6 +290,24 @@ const COPY = {
     "rel.banner": "{tag} đã ra mắt · {date}",
     "rel.bannerLink": "Có gì mới",
     "rel.dismiss": "Đóng",
+    "upd.link": "Cách cập nhật nếu bạn đã cài.",
+    "upd.h1": "Cách cập nhật",
+    "upd.lede": "Cài bản mới đè lên bản đang dùng. API key và cài đặt vẫn giữ.",
+    "upd.macbrew": "Mac với Homebrew",
+    "upd.macbrewFirst": "Lần đầu, chạy ba lệnh này:",
+    "upd.macbrewNext": "Những lần sau, cập nhật bằng <code>brew upgrade --cask rewrite-better</code>.",
+    "upd.macbrewGate": "Lần mở đầu, macOS có thể yêu cầu chuột phải Rewrite Better trong Applications rồi chọn Open.",
+    "upd.macdmg": "Mac từ file DMG",
+    "upd.macdmgBody": "Tải DMG mới nhất trên <a href=\"./#download\">trang này</a>, kéo Rewrite Better vào Applications và thay app đang có.",
+    "upd.win": "Windows",
+    "upd.winBody": "Từ bản 1.0.8, app hỏi khi bạn mở. Bạn cũng có thể chọn Check for Updates trên menu khay hệ thống hoặc trong Settings.",
+    "upd.winOld": "Nếu bạn đang dùng bản cũ hơn, <a href=\"./#windows\">tải bộ cài mới</a> một lần và chạy đè app hiện tại. Các bản sau sẽ cập nhật ngay trong app.",
+    "upd.winSmart": "Windows có thể hiện cảnh báo SmartScreen với bản chưa ký: More info, rồi Run anyway.",
+    "upd.chrome": "Chrome",
+    "upd.chrome1": "Tải file zip mới ở <a href=\"./#chrome\">trang chủ</a>.",
+    "upd.chrome2": "Giải nén vào đúng thư mục đang được nạp trong Chrome.",
+    "upd.chrome3": "Mở <a href=\"chrome://extensions\">chrome://extensions</a> và bấm Reload.",
+    "upd.chromeWarn": "Nếu bạn gỡ tiện ích, hoặc nạp một thư mục khác, Chrome coi đó là tiện ích mới và API key đã lưu sẽ mất.",
   },
 };
 
@@ -355,6 +393,10 @@ function applyLang(lang) {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
     if (dict[key]) el.textContent = dict[key];
+  });
+  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-html");
+    if (dict[key]) el.innerHTML = dict[key];
   });
   document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
     const key = el.getAttribute("data-i18n-aria");
